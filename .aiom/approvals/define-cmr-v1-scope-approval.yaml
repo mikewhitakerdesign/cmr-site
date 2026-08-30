@@ -1,0 +1,30 @@
+id: define-cmr-v1-scope-approval
+seed_version: "0.1"
+related_work_item_id: define-cmr-v1-scope
+target_context: >-
+  Governed Work Item .aiom/work/define-cmr-v1-scope.md — the historical,
+  pre-v0.1-hardening decisions it records about Chicago Mountain Runners v1.
+requested_decision: >-
+  Represent, under the current MWD AIOM v0.1 Approval Artifact contract, the
+  Owner's already-made decisions: the defined CMR v1 page/content scope, the
+  Next.js-on-Vercel technical direction, and the bounded third-party
+  newsletter/external-action direction, as a satisfied Owner authorization
+  bound to this Work Item.
+mode: one-time
+scope: >-
+  Covers exactly the decisions already recorded in
+  .aiom/work/define-cmr-v1-scope.md and .aiom/profile.md#v1-scope-decision-2026-08-20:
+  the v1 page/content scope (Home, About, Running Calendar/run detail pages,
+  Chicago hills overview/individual hill profiles, Join/community info,
+  Instagram/Strava outbound links, newsletter signup); Next.js on Vercel as
+  the technical direction; and the single bounded external action already
+  authorized for v1 — a third-party embedded newsletter signup form (e.g.
+  Mailchimp/ConvertKit) plus static Instagram/Strava outbound links, with no
+  payments, custom email sending, other third-party API calls, or Strava API
+  integration. Does not cover any other Work Item, does not authorize
+  deployment to Vercel, and does not authorize any external action beyond
+  the bounded newsletter/social-link integration described above.
+owner: Mike Whitaker
+status: approved
+decision_at: "2026-08-30T21:13:43.000Z"
+provenance: owner-confirmed

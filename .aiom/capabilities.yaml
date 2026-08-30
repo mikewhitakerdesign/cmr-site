@@ -1,0 +1,76 @@
+seed_version: '0.1'
+bundles:
+  - bundle_id: repository-versioned-delivery
+    relevant: 'true'
+    rationale: Destination is already a version-controlled repository.
+    provenance: directly-inspected
+  - bundle_id: software-engineering
+    relevant: 'true'
+    rationale: Building and evolving the site is a software delivery effort.
+    provenance: owner-stated
+  - bundle_id: web-ui-experience
+    relevant: 'true'
+    rationale: A public-facing website is the core deliverable.
+    provenance: owner-stated
+  - bundle_id: content-publication
+    relevant: 'true'
+    rationale: >-
+      Articles, hill profiles, and brand voice are content with their own
+      lifecycle.
+    provenance: owner-stated
+  - bundle_id: external-action-integration
+    relevant: 'true'
+    rationale: >-
+      v1 includes a third-party embedded newsletter signup form (e.g.
+      Mailchimp/ConvertKit) and outbound Instagram/Strava links. Owner has
+      authorized this specific, bounded use only — not a general policy for
+      future external action (membership payments, merch checkout, race
+      registration remain separately gated when scoped).
+  - bundle_id: persistent-operation-monitoring
+    relevant: unknown
+    rationale: >-
+      No scheduled/recurring automation identified yet; revisit if calendar
+      reminders or similar automation is added later.
+capabilities:
+  - capability_id: repository-inspection
+    status: on-demand
+    provenance: ai-inferred
+    rationale: Repository already exists; light inspection needed as implementation proceeds.
+  - capability_id: bounded-delivery
+    status: required
+    provenance: ai-inferred
+    rationale: >-
+      v1 scope and stack are decided; the Next.js scaffold and subsequent
+      changes must be delivered as scoped, reviewable increments.
+  - capability_id: software-implementation
+    status: required
+    provenance: ai-inferred
+    rationale: v1 scope and stack decided; implementation (scaffold, pages, content) begins now.
+  - capability_id: deterministic-validation
+    status: on-demand
+    provenance: ai-inferred
+    rationale: >-
+      npm run lint / npm run build now exist and pass against the v1
+      scaffold; run on-demand as changes are made.
+  - capability_id: ui-implementation
+    status: required
+    provenance: ai-inferred
+    rationale: v1 scope and stack decided; page/UI implementation begins now.
+  - capability_id: research-discovery
+    status: on-demand
+    provenance: ai-inferred
+    rationale: >-
+      Primary scoping research is complete; used as needed going forward
+      (e.g. evaluating a specific newsletter provider or hosting detail).
+  - capability_id: external-action-execution
+    status: on-demand
+    provenance: owner-confirmed
+    rationale: >-
+      Owner authorized one bounded external action for v1 — a third-party
+      embedded newsletter signup form plus static Instagram/Strava outbound
+      links. Scope is limited to that specific integration; any other
+      external action requires separate Owner authorization.
+  - capability_id: persistent-continuation
+    status: not-applicable
+    provenance: ai-inferred
+    rationale: No recurring/scheduled execution identified for v1.
