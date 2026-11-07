@@ -1,0 +1,128 @@
+{
+  "brand colors": {
+    "brand-neutrals": {
+      "50": {
+        "$type": "color",
+        "$value": "{raw colors.white}"
+      },
+      "100": {
+        "$type": "color",
+        "$value": "{raw colors.neutral.100}"
+      },
+      "200": {
+        "$type": "color",
+        "$value": "{raw colors.cmr.divider}"
+      },
+      "300": {
+        "$type": "color",
+        "$value": "{raw colors.neutral.300}"
+      },
+      "400": {
+        "$type": "color",
+        "$value": "{raw colors.neutral.400}"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "{raw colors.neutral.500}"
+      },
+      "600": {
+        "$type": "color",
+        "$value": "{raw colors.neutral.600}"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "{raw colors.neutral.700}"
+      },
+      "800": {
+        "$type": "color",
+        "$value": "{raw colors.neutral.800}"
+      },
+      "900": {
+        "$type": "color",
+        "$value": "{raw colors.neutral.900}"
+      },
+      "950": {
+        "$type": "color",
+        "$value": "{raw colors.black}"
+      }
+    },
+    "brand-shades": {
+      "50": {
+        "$type": "color",
+        "$value": "{raw colors.cmr.mint.50}"
+      },
+      "100": {
+        "$type": "color",
+        "$value": "{raw colors.cmr.mint.100}"
+      },
+      "200": {
+        "$type": "color",
+        "$value": "{raw colors.cmr.mint.200}"
+      },
+      "300": {
+        "$type": "color",
+        "$value": "{raw colors.cmr.mint.300}"
+      },
+      "400": {
+        "$type": "color",
+        "$value": "{raw colors.cmr.mint.400}"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "{raw colors.cmr.mint.500}"
+      },
+      "600": {
+        "$type": "color",
+        "$value": "{raw colors.cmr.mint.600}"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "{raw colors.cmr.mint.700}"
+      },
+      "800": {
+        "$type": "color",
+        "$value": "{raw colors.cmr.mint.800}"
+      },
+      "900": {
+        "$type": "color",
+        "$value": "{raw colors.cmr.mint.900}"
+      },
+      "950": {
+        "$type": "color",
+        "$value": "{raw colors.cmr.mint.950}"
+      }
+    },
+    "brand-combinations": {
+      "1": {
+        "brand": {
+          "$type": "color",
+          "$value": "{raw colors.black}"
+        },
+        "brand foreground": {
+          "$type": "color",
+          "$value": "{raw colors.white}"
+        }
+      },
+      "2": {
+        "brand": {
+          "$type": "color",
+          "$value": "{raw colors.cmr.mint.100}"
+        },
+        "brand foreground": {
+          "$type": "color",
+          "$value": "{raw colors.black}"
+        }
+      },
+      "3": {
+        "brand": {
+          "$type": "color",
+          "$value": "{raw colors.cmr.cream}"
+        },
+        "brand foreground": {
+          "$type": "color",
+          "$value": "{raw colors.black}"
+        }
+      }
+    }
+  }
+}

@@ -97,11 +97,14 @@ bootstrap:
   ready: true
   unresolved_items: []
   next_governed_action: >-
-    Next.js v1 scaffold is complete (see .aiom/work/scaffold-cmr-v1-nextjs.md)
-    with placeholder hill/run content and social links. Remaining before
-    launch: author real content (hills, runs, copy, social handles), choose
-    and connect an actual newsletter provider, and Owner-authorize
-    deployment to Vercel.
+    MWDS token foundation and shared UI (navigation, footer, newsletter
+    signup) are implemented on branch feat/mwds-foundation-shared-ui (see
+    .aiom/work/implement-cmr-mwds-foundation-and-shared-ui.md), pending Owner
+    review. Remaining before launch: author real content (hills, runs, copy,
+    legal pages), supply the social URLs (NEXT_PUBLIC_INSTAGRAM_URL,
+    NEXT_PUBLIC_STRAVA_URL), choose a newsletter provider and set
+    NEXT_PUBLIC_NEWSLETTER_FORM_ACTION, and Owner-authorize deployment to
+    Vercel.
 ---
 ## Context
 
@@ -128,3 +131,13 @@ Owner decided newsletter signup mechanism: a third-party embedded form (e.g.
 Mailchimp/ConvertKit) rather than a custom self-hosted form — CMR's own
 systems do not directly receive or store subscriber PII under this
 approach.
+
+## Newsletter mechanism clarification (2026-11-07)
+
+Owner decided the newsletter signup is a native HTML form (the approved MWDS
+input + button from Figma) whose `action` is the newsletter provider's hosted
+endpoint, rather than a provider-rendered iframe. The browser posts the
+address directly to the provider; CMR's own systems still never receive or
+store subscriber PII, so `data_sensitive: false` and the bounded
+external-action authorization are unchanged. See
+`.aiom/work/implement-cmr-mwds-foundation-and-shared-ui.md`.

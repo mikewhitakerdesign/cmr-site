@@ -21,7 +21,7 @@ export default async function RunPage({
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4 px-6 py-16">
       <h1 className="text-3xl font-semibold tracking-tight">{run.title}</h1>
-      <p className="text-zinc-600 dark:text-zinc-400">
+      <p className="text-muted-foreground">
         {run.date} · {run.time} · {run.meetupLocation}
       </p>
       <p className="max-w-xl">{run.description}</p>

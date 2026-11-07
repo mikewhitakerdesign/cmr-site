@@ -17,14 +17,14 @@ export default async function HillPage({
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4 px-6 py-16">
       <h1 className="text-3xl font-semibold tracking-tight">{hill.name}</h1>
-      <p className="text-zinc-600 dark:text-zinc-400">{hill.neighborhood}</p>
+      <p className="text-muted-foreground">{hill.neighborhood}</p>
       <dl className="grid grid-cols-2 gap-4 text-sm">
         <div>
-          <dt className="text-zinc-500">Elevation gain per repeat</dt>
+          <dt className="text-muted-foreground">Elevation gain per repeat</dt>
           <dd className="font-medium">{hill.elevationGainFt} ft</dd>
         </div>
         <div>
-          <dt className="text-zinc-500">Repeat distance</dt>
+          <dt className="text-muted-foreground">Repeat distance</dt>
           <dd className="font-medium">{hill.repeatDistanceMi} mi</dd>
         </div>
       </dl>

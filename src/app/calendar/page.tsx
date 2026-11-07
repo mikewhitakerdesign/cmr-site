@@ -9,13 +9,13 @@ export default function CalendarPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-16">
       <h1 className="text-3xl font-semibold tracking-tight">Upcoming Runs</h1>
-      <ul className="flex flex-col divide-y divide-black/10 dark:divide-white/10">
+      <ul className="flex flex-col divide-y divide-border">
         {runs.map((run) => (
           <li key={run.slug} className="py-4">
             <Link href={`/calendar/${run.slug}`} className="font-medium hover:underline">
               {run.title}
             </Link>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               {run.date} · {run.time} · {run.meetupLocation}
             </p>
           </li>

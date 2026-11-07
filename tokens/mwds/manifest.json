@@ -1,0 +1,280 @@
+{
+  "source": {
+    "system": "MWD x Shadcn DS (MWDS)",
+    "figmaFileKey": "H08HgMeVx6V23wY7aZdENf",
+    "figmaFileName": "Document",
+    "exportedAt": "2026-11-07T06:05:19.583Z",
+    "exporter": "scripts/tokens/figma-export.js@1.0.0"
+  },
+  "themes": {
+    "cmr": {
+      "semantic colors": "cmr",
+      "brand colors": "cmr"
+    }
+  },
+  "themeEvidence": "CMR file hLEeAchFtgd1WFtboIChil, node 1:324 (NewsletterForm) sets semantic colors=cmr and brand colors=cmr explicitly.",
+  "excluded": [
+    {
+      "collection": "---",
+      "reason": "Empty separator collection."
+    },
+    {
+      "collection": "chart colors",
+      "reason": "No `cmr` mode exists yet; no CMR chart surfaces are in scope."
+    }
+  ],
+  "collections": [
+    {
+      "name": "raw colors",
+      "key": "229de1af611324107305eb5d68a35628cd830b76",
+      "id": "VariableCollectionId:6:100",
+      "defaultMode": "Mode 1",
+      "sourceModes": [
+        {
+          "name": "Mode 1",
+          "id": "6:0"
+        }
+      ],
+      "exportedModes": [
+        {
+          "name": "Mode 1",
+          "id": "6:0",
+          "file": "tokens/mwds/raw-colors/mode-1.tokens.json"
+        }
+      ],
+      "variableCount": 277,
+      "exportedCount": 29,
+      "selection": "alias-closure"
+    },
+    {
+      "name": "border radii",
+      "key": "29c24fa03ababa7d49cf9df26317533f04f32bbb",
+      "id": "VariableCollectionId:596:2",
+      "defaultMode": "shadcn",
+      "sourceModes": [
+        {
+          "name": "shadcn",
+          "id": "851:3"
+        }
+      ],
+      "exportedModes": [
+        {
+          "name": "shadcn",
+          "id": "851:3",
+          "file": "tokens/mwds/border-radii/shadcn.tokens.json"
+        }
+      ],
+      "variableCount": 10,
+      "exportedCount": 10,
+      "selection": "all"
+    },
+    {
+      "name": "spacing",
+      "key": "861670f9ba99402fb41e293257922a8602289e8c",
+      "id": "VariableCollectionId:596:42579",
+      "defaultMode": "shadcn",
+      "sourceModes": [
+        {
+          "name": "shadcn",
+          "id": "899:1"
+        }
+      ],
+      "exportedModes": [
+        {
+          "name": "shadcn",
+          "id": "899:1",
+          "file": "tokens/mwds/spacing/shadcn.tokens.json"
+        }
+      ],
+      "variableCount": 27,
+      "exportedCount": 27,
+      "selection": "all"
+    },
+    {
+      "name": "semantic colors",
+      "key": "705653cfb612c23ac71bec235b2a39ace2521476",
+      "id": "VariableCollectionId:618:31273",
+      "defaultMode": "shadcn",
+      "sourceModes": [
+        {
+          "name": "shadcn",
+          "id": "618:0"
+        },
+        {
+          "name": "shadcn-dark",
+          "id": "618:1"
+        },
+        {
+          "name": "mglo",
+          "id": "3045:2"
+        },
+        {
+          "name": "mglo-dark",
+          "id": "3045:0"
+        },
+        {
+          "name": "cmr",
+          "id": "3076:0"
+        }
+      ],
+      "exportedModes": [
+        {
+          "name": "cmr",
+          "id": "3076:0",
+          "file": "tokens/mwds/semantic-colors/cmr.tokens.json"
+        }
+      ],
+      "variableCount": 54,
+      "exportedCount": 54,
+      "selection": "all"
+    },
+    {
+      "name": "typography",
+      "key": "eb3b494c47841cef0751385ccd56a679064f7e7b",
+      "id": "VariableCollectionId:845:1253573",
+      "defaultMode": "shadcn",
+      "sourceModes": [
+        {
+          "name": "shadcn",
+          "id": "845:1"
+        }
+      ],
+      "exportedModes": [
+        {
+          "name": "shadcn",
+          "id": "845:1",
+          "file": "tokens/mwds/typography/shadcn.tokens.json"
+        }
+      ],
+      "variableCount": 58,
+      "exportedCount": 58,
+      "selection": "all"
+    },
+    {
+      "name": "shadows",
+      "key": "f473bd4631ed4497fbb9b8432abeabf587e36db9",
+      "id": "VariableCollectionId:848:48154",
+      "defaultMode": "shadcn",
+      "sourceModes": [
+        {
+          "name": "shadcn",
+          "id": "848:1"
+        }
+      ],
+      "exportedModes": [
+        {
+          "name": "shadcn",
+          "id": "848:1",
+          "file": "tokens/mwds/shadows/shadcn.tokens.json"
+        }
+      ],
+      "variableCount": 51,
+      "exportedCount": 51,
+      "selection": "all"
+    },
+    {
+      "name": "spacing (absolute)",
+      "key": "1efa12b7842aab8d8ea55d733edb577e2362883f",
+      "id": "VariableCollectionId:1070:2",
+      "defaultMode": "shadcn",
+      "sourceModes": [
+        {
+          "name": "shadcn",
+          "id": "1070:1"
+        }
+      ],
+      "exportedModes": [
+        {
+          "name": "shadcn",
+          "id": "1070:1",
+          "file": "tokens/mwds/spacing-absolute/shadcn.tokens.json"
+        }
+      ],
+      "variableCount": 37,
+      "exportedCount": 37,
+      "selection": "all"
+    },
+    {
+      "name": "border radii (absolute)",
+      "key": "5cd13c798c40774d4fee50ecf024411c60a65177",
+      "id": "VariableCollectionId:1070:38",
+      "defaultMode": "shadcn",
+      "sourceModes": [
+        {
+          "name": "shadcn",
+          "id": "1070:3"
+        }
+      ],
+      "exportedModes": [
+        {
+          "name": "shadcn",
+          "id": "1070:3",
+          "file": "tokens/mwds/border-radii-absolute/shadcn.tokens.json"
+        }
+      ],
+      "variableCount": 10,
+      "exportedCount": 10,
+      "selection": "all"
+    },
+    {
+      "name": "brand colors",
+      "key": "cccccddedb4fd4409fc98096a1e177680e3851ef",
+      "id": "VariableCollectionId:1699:2",
+      "defaultMode": "shadcn",
+      "sourceModes": [
+        {
+          "name": "shadcn",
+          "id": "1699:0"
+        },
+        {
+          "name": "cmr",
+          "id": "3076:1"
+        }
+      ],
+      "exportedModes": [
+        {
+          "name": "cmr",
+          "id": "3076:1",
+          "file": "tokens/mwds/brand-colors/cmr.tokens.json"
+        }
+      ],
+      "variableCount": 28,
+      "exportedCount": 28,
+      "selection": "all"
+    },
+    {
+      "name": "alpha",
+      "key": "af67bb88e423c73d16fe49eec3fe78949d56a909",
+      "id": "VariableCollectionId:1699:11724",
+      "defaultMode": "shadcn",
+      "sourceModes": [
+        {
+          "name": "shadcn",
+          "id": "1699:1"
+        }
+      ],
+      "exportedModes": [
+        {
+          "name": "shadcn",
+          "id": "1699:1",
+          "file": "tokens/mwds/alpha/shadcn.tokens.json"
+        }
+      ],
+      "variableCount": 34,
+      "exportedCount": 2,
+      "selection": "alias-closure"
+    }
+  ],
+  "checksums": {
+    "tokens/mwds/alpha/shadcn.tokens.json": "49ad91ce",
+    "tokens/mwds/border-radii-absolute/shadcn.tokens.json": "eac73e10",
+    "tokens/mwds/border-radii/shadcn.tokens.json": "7866790d",
+    "tokens/mwds/brand-colors/cmr.tokens.json": "c944dc66",
+    "tokens/mwds/raw-colors/mode-1.tokens.json": "461d52fa",
+    "tokens/mwds/semantic-colors/cmr.tokens.json": "79a4bd22",
+    "tokens/mwds/shadows/shadcn.tokens.json": "39413a76",
+    "tokens/mwds/spacing-absolute/shadcn.tokens.json": "bdb001b8",
+    "tokens/mwds/spacing/shadcn.tokens.json": "c0a8fa86",
+    "tokens/mwds/typography/shadcn.tokens.json": "d8a2ba39"
+  }
+}

@@ -1,0 +1,103 @@
+/*
+ * GENERATED FILE — DO NOT EDIT BY HAND.
+ *
+ * Tailwind v4 bridge. Import AFTER mwds-tokens.css. Re-exports only; defines no values.
+ * Source: tokens/mwds/ (exported from Figma "MWD x Shadcn DS (MWDS)",
+ * file H08HgMeVx6V23wY7aZdENf, 2026-11-07T06:05:19.583Z).
+ * Theme: cmr (semantic colors=cmr, brand colors=cmr).
+ * Regenerate: npm run tokens:build. Public contract: tokens/mapping.mjs.
+ */
+
+@theme inline {
+  /* Colors — public semantic API only. */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-ghost-hover: var(--ghost-hover);
+  --color-border-4: var(--border-4);
+  --color-destructive-border: var(--destructive-border);
+  --color-ring-error: var(--ring-error);
+
+  /* Radius scale (MWDS border radii). */
+  --radius-xs: var(--mwd-radius-rounded-xs);
+  --radius-sm: var(--mwd-radius-rounded-sm);
+  --radius-md: var(--mwd-radius-rounded-md);
+  --radius-lg: var(--mwd-radius-rounded-lg);
+  --radius-xl: var(--mwd-radius-rounded-xl);
+  --radius-2xl: var(--mwd-radius-rounded-2xl);
+  --radius-3xl: var(--mwd-radius-rounded-3xl);
+  --radius-full: var(--mwd-radius-rounded-full);
+
+  /* Numeric spacing multiplier = MWDS absolute base unit (p-4 = 16px). */
+  --spacing: var(--mwd-space-abs-1);
+
+  /* Font families (next/font self-hosted Geist; MWDS names asserted in tests). */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui;
+  --font-mono: var(--font-geist-mono), ui-monospace, system-ui;
+
+  /* Weights. */
+  --font-weight-normal: var(--mwd-type-paragraph-paragraph-weight);
+  --font-weight-medium: var(--mwd-type-paragraph-paragraph-medium-weight);
+  --font-weight-semibold: var(--mwd-type-paragraph-paragraph-bold-weight);
+
+  /* Type styles (MWDS paragraph/caption/heading). */
+  --text-p-mini: var(--mwd-type-paragraph-mini-font-size);
+  --text-p-mini--line-height: var(--mwd-type-paragraph-mini-line-height);
+  --text-p-mini--letter-spacing: var(--mwd-type-paragraph-mini-letter-spacing);
+  --text-p-sm: var(--mwd-type-paragraph-small-font-size);
+  --text-p-sm--line-height: var(--mwd-type-paragraph-small-line-height);
+  --text-p-sm--letter-spacing: var(--mwd-type-paragraph-small-letter-spacing);
+  --text-p: var(--mwd-type-paragraph-regular-font-size);
+  --text-p--line-height: var(--mwd-type-paragraph-regular-line-height);
+  --text-p--letter-spacing: var(--mwd-type-paragraph-regular-letter-spacing);
+  --text-p-lg: var(--mwd-type-paragraph-large-font-size);
+  --text-p-lg--line-height: var(--mwd-type-paragraph-large-line-height);
+  --text-p-lg--letter-spacing: var(--mwd-type-paragraph-large-letter-spacing);
+  --text-caption: var(--mwd-type-caption-font-size);
+  --text-caption--line-height: var(--mwd-type-caption-line-height);
+  --text-caption--letter-spacing: var(--mwd-type-caption-letter-spacing);
+  --text-caption--font-weight: var(--mwd-type-caption-font-weight);
+  --text-h1: var(--mwd-type-heading-1-font-size);
+  --text-h1--line-height: var(--mwd-type-heading-1-line-height);
+  --text-h1--letter-spacing: var(--mwd-type-heading-1-letter-spacing);
+  --text-h1--font-weight: var(--mwd-type-heading-1-weight);
+  --text-h2: var(--mwd-type-heading-2-font-size);
+  --text-h2--line-height: var(--mwd-type-heading-2-line-height);
+  --text-h2--letter-spacing: var(--mwd-type-heading-2-letter-spacing);
+  --text-h2--font-weight: var(--mwd-type-heading-2-weight);
+  --text-h3: var(--mwd-type-heading-3-font-size);
+  --text-h3--line-height: var(--mwd-type-heading-3-line-height);
+  --text-h3--letter-spacing: var(--mwd-type-heading-3-letter-spacing);
+  --text-h3--font-weight: var(--mwd-type-heading-3-heading-3-weight);
+  --text-h4: var(--mwd-type-heading-4-font-size);
+  --text-h4--line-height: var(--mwd-type-heading-4-line-height);
+  --text-h4--letter-spacing: var(--mwd-type-heading-4-letter-spacing);
+  --text-h4--font-weight: var(--mwd-type-heading-4-weight);
+
+  /* Shadows. */
+  --shadow-2xs: var(--mwd-shadow-2xs);
+  --shadow-xs: var(--mwd-shadow-xs);
+  --shadow-sm: var(--mwd-shadow-sm);
+  --shadow-md: var(--mwd-shadow-md);
+  --shadow-lg: var(--mwd-shadow-lg);
+  --shadow-xl: var(--mwd-shadow-xl);
+  --shadow-2xl: var(--mwd-shadow-2xl);
+}
