@@ -11,14 +11,20 @@ export default function JoinPage() {
         up. Check the calendar for the next run and follow along on
         Instagram and Strava.
       </p>
-      <div className="flex gap-4 text-sm font-medium">
-        <a href={socialLinks.instagram} className="underline">
-          Instagram
-        </a>
-        <a href={socialLinks.strava} className="underline">
-          Strava
-        </a>
-      </div>
+      {(socialLinks.instagram || socialLinks.strava) && (
+        <div className="flex gap-4 text-sm font-medium">
+          {socialLinks.instagram && (
+            <a href={socialLinks.instagram} className="underline">
+              Instagram
+            </a>
+          )}
+          {socialLinks.strava && (
+            <a href={socialLinks.strava} className="underline">
+              Strava
+            </a>
+          )}
+        </div>
+      )}
     </div>
   );
 }

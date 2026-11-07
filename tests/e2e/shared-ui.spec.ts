@@ -24,6 +24,41 @@ async function axe(page: Page, selector: string) {
   }, selector);
 }
 
+
+/** WCAG relative luminance / contrast for "rgb(r, g, b)" computed colors. */
+const lum = (rgb: string) => {
+  const [r, g, b] = rgb.match(/\d+/g)!.slice(0, 3).map((v) => {
+    const c = Number(v) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contrast = (a: string, b: string) => {
+  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
+/** Parses Chrome's computed box-shadow into the visible [{ color, spread }] ring layers (zero offset/blur). */
+const rings = (shadow: string) =>
+  [...shadow.matchAll(/(rgba?\([^)]+\)) 0px 0px 0px (\d+)px/g)]
+    .map((m) => ({ color: m[1], spread: Number(m[2]) }))
+    .filter((r) => r.spread > 0); // Tailwind always emits transparent zero-width placeholder layers
+
+/**
+ * The newsletter button is disabled until a provider is configured, so it can't
+ * take focus in the shipped app. This enables it in the DOM (styling is what is
+ * under test, not the form) and reaches it with a real Tab key press.
+ */
+async function tabToNewsletterButton(page: Page) {
+  await page.evaluate(() => {
+    document.querySelectorAll<HTMLInputElement | HTMLButtonElement>("footer form input, footer form button").forEach((el) => (el.disabled = false));
+  });
+  await page.getByRole("textbox", { name: "Email address" }).focus();
+  await page.keyboard.press("Tab");
+  const button = page.getByRole("button", { name: "Join the list" });
+  await expect(button).toBeFocused();
+  return button;
+}
+
 test.beforeEach(async ({ page }) => {
   await page.goto("/about");
   await page.evaluate(() => document.fonts.ready);
@@ -145,11 +180,88 @@ test.describe("footer", () => {
   });
 });
 
+test.describe("focus indicators on solid black primary buttons", () => {
+  test("mint footer: ring is offset from the fill and contrasts with it", async ({ page }) => {
+    const button = await tabToNewsletterButton(page);
+    expect(await css(button, "background-color")).toBe("rgb(0, 0, 0)");
+    const [gap, ring] = rings(await css(button, "box-shadow"));
+    expect(gap).toEqual({ color: "rgb(221, 255, 234)", spread: 2 }); // --accent (cmr/mint/100)
+    expect(ring).toEqual({ color: "rgb(0, 0, 0)", spread: 5 }); // 2px gap + 3px MWDS focus/ring
+    expect(contrast(ring.color, gap.color)).toBeGreaterThanOrEqual(3); // WCAG 1.4.11 non-text contrast
+    expect(contrast(gap.color, "rgb(0, 0, 0)")).toBeGreaterThanOrEqual(3); // gap separates ring from fill
+  });
+
+  test("white page background: gap follows the surface", async ({ page }) => {
+    await tabToNewsletterButton(page);
+    // Place a copy of the real button on the white page surface and tab to it.
+    await page.evaluate(() => {
+      const source = document.querySelector("footer form button")!;
+      const before = document.createElement("button");
+      before.id = "before-white";
+      before.textContent = "before";
+      const clone = source.cloneNode(true) as HTMLButtonElement;
+      clone.id = "white-button";
+      clone.type = "button";
+      document.querySelector("main")!.append(before, clone);
+    });
+    await page.locator("#before-white").focus();
+    await page.keyboard.press("Tab");
+    const button = page.locator("#white-button");
+    await expect(button).toBeFocused();
+    const [gap, ring] = rings(await css(button, "box-shadow"));
+    expect(gap).toEqual({ color: "rgb(255, 255, 255)", spread: 2 }); // --background
+    expect(ring).toEqual({ color: "rgb(0, 0, 0)", spread: 5 });
+    expect(contrast(ring.color, gap.color)).toBeGreaterThanOrEqual(3);
+  });
+
+  test("ring appears on keyboard focus and is removed on blur", async ({ page }) => {
+    const button = await tabToNewsletterButton(page);
+    expect(rings(await css(button, "box-shadow")).length).toBe(2);
+    await page.keyboard.press("Shift+Tab");
+    await expect(button).not.toBeFocused();
+    expect(rings(await css(button, "box-shadow"))).toEqual([]);
+  });
+
+  test("the ring is not clipped: footer content clears the 5px ring", async ({ page }) => {
+    const button = await tabToNewsletterButton(page);
+    const b = await box(button);
+    const form = await box(page.locator("footer form"));
+    // The ring may extend beyond the button, but the footer (overflow visible) must not crop it.
+    expect(await css(page.locator("footer"), "overflow")).toBe("visible");
+    expect(b.x + b.width + 5).toBeLessThanOrEqual((await box(page.locator("footer"))).width);
+    expect(form.height).toBeGreaterThan(0);
+  });
+});
+
+test.describe("social links (none configured in this build)", () => {
+  test("no placeholder or dead social links on any page", async ({ page }) => {
+    for (const path of ["/about", "/join", "/"]) {
+      await page.goto(path);
+      const hrefs = await page.locator("a[href]").evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).getAttribute("href")!));
+      expect(hrefs.filter((h) => /instagram|strava|REPLACE_WITH/i.test(h)), path).toEqual([]);
+      await expect(page.getByRole("link", { name: /^(Instagram|Strava)$/ })).toHaveCount(0);
+    }
+  });
+
+  test("footer link row keeps its layout without social links", async ({ page }, info) => {
+    const links = page.getByRole("navigation", { name: "Footer" }).getByRole("link");
+    await expect(links).toHaveText(["Find a Run", "About", "Join Us"]);
+    const first = await box(links.first());
+    const last = await box(links.last());
+    expect(Math.abs(first.y - last.y)).toBeLessThan(2); // still a single row
+    expect(Math.round(first.x)).toBe(info.project.name === "mobile" ? 24 : info.project.name === "tablet" ? 48 : 68);
+  });
+});
+
 test.describe("visual @visual", () => {
   test("header", async ({ page }) => {
     await expect(page.locator("header")).toHaveScreenshot("header.png");
   });
   test("footer", async ({ page }) => {
     await expect(page.locator("footer")).toHaveScreenshot("footer.png");
+  });
+  test("footer with keyboard focus on the primary button", async ({ page }) => {
+    await tabToNewsletterButton(page);
+    await expect(page.locator("footer form")).toHaveScreenshot("footer-button-focus.png");
   });
 });

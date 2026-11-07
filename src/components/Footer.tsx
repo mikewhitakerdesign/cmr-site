@@ -38,7 +38,7 @@ export default function Footer({
   const visibleLegal = legal.filter((l): l is Required<LegalLink> => Boolean(l.href));
 
   return (
-    <footer className={cn("bg-accent text-accent-foreground lg:border-t lg:border-foreground", className)}>
+    <footer className={cn("bg-accent text-accent-foreground [--focus-offset:var(--accent)] lg:border-t lg:border-foreground", className)}>
       <div className="mx-auto max-w-[1400px] px-6 py-12 md:px-12 lg:pt-[62px] lg:pb-16">
         {newsletter !== false && <NewsletterSignup {...newsletter} />}
 

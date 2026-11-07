@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { socialLinks } from "@/lib/social";
+import { socialLinks, type SocialLinks } from "@/lib/social";
 
 export type NavItem = {
   /** Visible label. May contain markup (e.g. the struck-through "Hills"). */
@@ -38,14 +38,22 @@ export const primaryNav: NavItem[] = [
 
 export const joinCta: NavItem = { label: "Join Us", href: "/join" };
 
-/** Footer link row, per Figma (Footer / Newsletter and legal). */
-export const footerNav: NavItem[] = [
-  { label: "Find a Run", href: "/calendar" },
-  { label: "About", href: "/about" },
-  { label: "Join Us", href: "/join" },
-  { label: "Instagram", href: socialLinks.instagram, external: true },
-  { label: "Strava", href: socialLinks.strava, external: true },
-];
+/**
+ * Footer link row, per Figma (Footer / Newsletter and legal). Instagram and
+ * Strava appear only when a genuine destination is configured
+ * (src/lib/social.ts); the row simply has fewer items otherwise.
+ */
+export function buildFooterNav(social: SocialLinks): NavItem[] {
+  return [
+    { label: "Find a Run", href: "/calendar" },
+    { label: "About", href: "/about" },
+    { label: "Join Us", href: "/join" },
+    ...(social.instagram ? [{ label: "Instagram", href: social.instagram, external: true }] : []),
+    ...(social.strava ? [{ label: "Strava", href: social.strava, external: true }] : []),
+  ];
+}
+
+export const footerNav: NavItem[] = buildFooterNav(socialLinks);
 
 /**
  * Owner decision 2026-11-07: legal pages are not authored yet, so these carry

@@ -17,6 +17,17 @@
  */
 
 @layer base {
+  /*
+   * Surface behind focus rings. Buttons draw their 3px MWDS `focus/ring`
+   * after a 2px gap in this color, so the ring stays distinguishable from a
+   * solid black button instead of reading as a larger button. Defaults to the
+   * page background; a tinted surface (e.g. the footer) overrides it with its
+   * own token.
+   */
+  :root {
+    --focus-offset: var(--background);
+  }
+
   body {
     background-color: var(--background);
     color: var(--foreground);

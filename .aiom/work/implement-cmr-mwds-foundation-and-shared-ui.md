@@ -20,7 +20,7 @@ validation_state: passed
 blocker_state: none
 current_responsibility: owner
 created_at: '2026-11-07T05:40:00.000Z'
-updated_at: '2026-11-07T08:05:00.000Z'
+updated_at: '2026-11-07T10:30:00.000Z'
 ---
 ## Objective
 
@@ -67,7 +67,26 @@ approved layouts.
    unchanged. With no endpoint configured, the form renders disabled with a
    status note and never posts to a placeholder. Choosing and connecting a
    provider is still a separate, Owner-authorized external action.
-4. **Tooling: Vitest + Playwright now; Storybook deferred.** See the Storybook
+4. **Social links render only when genuine destinations are supplied
+   (review round, 2026-11-07).** `src/lib/social.ts` no longer holds any
+   default handle. `NEXT_PUBLIC_INSTAGRAM_URL` and `NEXT_PUBLIC_STRAVA_URL`
+   are accepted only if they are absolute https URLs on the platform's own
+   domain with a real account path (not the site root, a look-alike host, or a
+   leftover placeholder). Otherwise the link is hidden in the footer and on
+   `/join`, and the footer row keeps its layout with fewer items. This
+   supersedes the scaffold work item's placeholder handles for rendering.
+   Authoring the real handles remains outstanding content work.
+5. **Focus indicator on solid buttons (review round, 2026-11-07).** Buttons
+   draw the MWDS 3px `focus/ring` after a 2px gap in the surface color
+   (`--focus-offset`, defaulting to `--background` and overridden to `--accent`
+   in the footer). This is a reviewed deviation from the flush MWDS Focus
+   variant, because MWDS Focus is not drawn in the CMR file and the flush ring
+   merges with a solid black fill. All values are MWDS tokens; nothing is
+   hard-coded.
+6. **Next.js security upgrade (review round, 2026-11-07).** `next` and
+   `eslint-config-next` moved from 16.3.1 to 16.4.5 (latest stable). See the
+   dependency audit below.
+7. **Tooling: Vitest + Playwright now; Storybook deferred.** See the Storybook
    evaluation below.
 
 ## Token architecture (implemented)
@@ -119,7 +138,7 @@ See `tokens/README.md` for the full description.
 Accessibility: a skip link, labelled `Primary` and `Footer` nav landmarks,
 `aria-current`, a visually hidden email label, `autocomplete="email"`, a
 `role="status"` note when signup is unavailable, a visible 3px focus ring on
-every interactive element, and the struck-through jokes kept in accessible
+every interactive element (offset from solid buttons), and the struck-through jokes kept in accessible
 names.
 
 ## Validation evidence (2026-11-07)
@@ -129,20 +148,37 @@ Deterministic checks. Passing them is not Owner acceptance.
 - `npm run lint`: pass.
 - `npx tsc --noEmit`: pass.
 - `npm run tokens:check`: pass (committed CSS equals a fresh build).
-- `npm test` (Vitest): 95/95 pass. Token integrity, 44 Figma-oracle
+- `npm test` (Vitest): 120/120 pass. Token integrity, 44 Figma-oracle
   resolutions, the alias chain, the public contract, and the 4px spacing grid;
-  component props, states, and axe (contrast is excluded in jsdom).
+  component props, states, and axe (contrast is excluded in jsdom); social
+  link resolution (accepted and rejected inputs), the footer row with and
+  without destinations, and `/join` with the environment unset, set, and set
+  to a placeholder.
 - Mutation check: a hand-edited token, stale CSS, and a wrong mode pairing
   were each caught (2, 6, and 2 failing tests respectively), then reverted.
 - `npm run build`: pass (all v1 routes prerender).
-- `npm run test:e2e` (Chromium 393/768/1440): 25 pass, 2 skipped (desktop-only
+- `npm run test:e2e` (Chromium 393/768/1440): 43 pass, 2 skipped (desktop-only
   assertion on narrower viewports). Header, logo, CTA, and link positions
   match Figma to the pixel; computed colors are the CMR token values; keyboard
   focus shows a 3px black ring; axe reports no WCAG 2.2 AA violations,
   including color contrast. The desktop layout test was confirmed to fail on a
   real regression found during visual review, which was then fixed.
+- Focus (review round): a real Tab key press reaches the "Join the list"
+  button on the mint footer, and on a copy placed on the white page surface.
+  Computed box-shadow is `2px <surface>` then `5px black` (2px gap + 3px
+  ring): mint `rgb(221,255,234)` on the footer, white on the page. Ring versus
+  gap and gap versus fill each measure at least 3:1 (WCAG 1.4.11). The footer
+  button is disabled until a provider is configured, so these tests enable it
+  in the DOM and test styling, not the form. Removing the offset fails 3
+  browser and 2 unit tests.
+- Social links (review round): no `instagram`/`strava`/`REPLACE_WITH` href on
+  `/`, `/about`, or `/join` in the default build; the footer row is still one
+  line at each breakpoint and starts at the Figma x position.
 - Visual review: header and footer screenshots at three widths compared with
-  the Figma frames. macOS baselines are committed for `npm run test:visual`.
+  the Figma frames, plus a focused-button snapshot per width. macOS baselines
+  are committed for `npm run test:visual` (9 pass). The 1% pixel tolerance did
+  not notice two removed footer links, so the footer baselines were
+  force-regenerated with `--update-snapshots=all` and reviewed.
 
 ## Design-to-code discrepancy log
 
@@ -176,10 +212,12 @@ fix or decision.
 7. **Interaction states are not drawn in the CMR file** (link hover, current
    page, CTA hover, focus). They are implemented with MWDS semantics:
    underline, `ghost-hover`, and a 3px `focus/ring`. Needs design review.
-8. **MWDS focus ring on primary buttons.** In CMR, `focus/ring` is black with
-   no offset, so on the black primary button the ring reads as a slightly
-   larger button. It passes axe; recommend a design review (for example a
-   2px offset).
+8. **MWDS focus ring on primary buttons (addressed in code, design review
+   still recommended).** In CMR, `focus/ring` is black with no offset, so on
+   the black primary button the flush ring read as a slightly larger button.
+   Code now adds a 2px surface-colored gap (decision 5). The MWDS Focus
+   variant in Figma is still flush; Figma should adopt the offset, or the
+   deviation should be rejected.
 9. **Breakpoint inconsistencies reproduced as designed:** 80% link opacity on
    desktop only; footer top border on desktop only; the tablet nav row sits 8px
    inside the logo's bounding box; the footer link row omits Hills.
@@ -229,40 +267,48 @@ visual review (Chromatic). Stories could then reuse the test fixtures.
 2. The custom Join Us CTA versus the existing MWDS variants (discrepancy 6).
 3. Navigation hover, current-page, and keyboard-focus states, which were
    designed in code rather than in Figma (discrepancy 7).
-4. Focus-indicator visibility on black primary buttons (discrepancy 8).
+4. Focus-indicator offset on black primary buttons (discrepancy 8): the
+   code fix is in place and needs design sign-off.
 5. Visual snapshots are macOS-only: CI runs only the platform-independent
    browser checks (geometry, computed colors, focus, axe), so visual
    regressions are caught only when `npm run test:visual` runs on a Mac.
 
-## Dependency audit (2026-11-07; not auto-fixed)
+## Dependency audit (updated 2026-11-07; no `npm audit fix` or `--force`)
 
-`npm audit` on this branch: 18 advisories (2 low, 11 moderate, 4 high,
-1 critical). `main` has 14 (8 moderate, 5 high, 1 critical). No `npm audit
-fix` was applied.
+**Upgrade:** `next` 16.3.1 → **16.4.5** and `eslint-config-next` 16.3.1 →
+**16.4.5**, both pinned exactly; `react` and `react-dom` stay 19.2.8. The
+resolved graph moved `sharp` 0.35.3 → **0.35.5**. Chosen as the latest stable
+(`latest` dist-tag). Checked against GitHub's advisory database: every Next.js
+advisory on the 16.x line is patched at or below 16.4.1
+(GHSA-673q-mjm6-r5xr, the last, at 16.4.1), and both `sharp` advisories are
+patched by 0.35.4 and 0.35.5 (GHSA-rgj7-g3m4-5g8c, GHSA-wq5f-xc86-pv6w).
 
-- **Introduced by this branch (dev and build-time only):** `deepmerge` and
-  `@bundled-es-modules/deepmerge` (low), and `glob` and
-  `@bundled-es-modules/glob` (moderate), all through `style-dictionary`.
-  Style Dictionary runs only on the checked-in token files, never on
-  untrusted input or in the shipped site. The only offered fix is
-  `--force` to style-dictionary 3.9.2, a major downgrade that would break the
-  pipeline; track upstream instead.
-- **Pre-existing on `main`, development tooling:** typescript-eslint,
-  `minimatch`, and `brace-expansion` (through eslint-config-next; the `--force`
-  fix would downgrade it to 15.x), `js-yaml`, and `zod` (through
-  eslint-plugin-react-hooks).
-- **Pre-existing on `main`, RUNTIME, critical:** `next@16.3.1` (range
-  16.0.0–16.4.0). It includes unauthenticated RCE and SSRF advisories in the
-  Image Optimization API, `next/og`, and `use cache`, fixed in 16.4.5
-  (non-major). `sharp@0.35.3` (high, libheif and librsvg) ships with `next`.
-  This branch adds the site's first `next/image` use (the logo); the
-  optimization endpoint exists either way. Recommend a separate,
-  Owner-authorized Next.js upgrade to ≥ 16.4.5 before any deployment.
-- **Resolved on this branch as a side effect:** `source-map-js`.
+| | `main` | PR before | PR now |
+|---|---|---|---|
+| Total | 14 | 18 | **16** |
+| Critical | 1 | 1 | **0** |
+| High | 5 | 4 | **3** |
+| `npm audit --omit=dev` (shipped dependencies) | not recorded | 3 runtime advisory groups (next, sharp) | **0** |
+
+**Runtime advisories remaining: none.** The 16 remaining advisories are all
+development or build-time tooling and are not in the shipped site:
+
+- **Introduced by this branch:** `style-dictionary` (moderate) via
+  `@bundled-es-modules/glob` and `glob` (moderate) and
+  `@bundled-es-modules/deepmerge` and `deepmerge` (low). Style Dictionary only
+  processes the checked-in token files. The only offered fix is `--force` to
+  style-dictionary 3.9.2, a major downgrade that would break the pipeline.
+- **Pre-existing, via `eslint-config-next` (typescript-eslint, `minimatch`,
+  `brace-expansion`) and `eslint-plugin-react-hooks` (`js-yaml`, `zod`):** the
+  only offered fix is `--force`, which would downgrade `eslint-config-next` to
+  15.x. Track upstream releases.
+- Resolved: Next.js (including the critical RCE/SSRF advisories), `sharp`, and
+  `source-map-js`.
 
 ## Out of scope (unchanged)
 
-Newsletter provider selection or connection; real social handles; legal page
+Newsletter provider selection or connection; authoring real social handles
+(the configuration mechanism is in scope; the values are not); legal page
 content; implementing page bodies to Figma; Apparel or merch; accounts and
 databases; deployment; changes to `mwd-x-shadcn` or to the Figma files (all
 Figma access in this item was read-only).

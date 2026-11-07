@@ -101,7 +101,8 @@ bootstrap:
     signup) are implemented on branch feat/mwds-foundation-shared-ui (see
     .aiom/work/implement-cmr-mwds-foundation-and-shared-ui.md), pending Owner
     review. Remaining before launch: author real content (hills, runs, copy,
-    social handles, legal pages), choose a newsletter provider and set
+    legal pages), supply the social URLs (NEXT_PUBLIC_INSTAGRAM_URL,
+    NEXT_PUBLIC_STRAVA_URL), choose a newsletter provider and set
     NEXT_PUBLIC_NEWSLETTER_FORM_ACTION, and Owner-authorize deployment to
     Vercel.
 ---

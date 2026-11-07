@@ -45,8 +45,20 @@ newsletter signup. See [`.aiom/profile.md`](./.aiom/profile.md) for the full
 recorded decision and what's explicitly out of v1.
 
 Hill and run data in `src/lib/hills.ts` and `src/lib/runs.ts` are
-placeholders, as are the social links in `src/lib/social.ts`. Replace them
-with real CMR content before launch.
+placeholders. Replace them with real CMR content before launch.
+
+## Social links
+
+Instagram and Strava links are hidden everywhere until real destinations are
+configured; there are no placeholder defaults.
+
+| Variable | Accepted value |
+|---|---|
+| `NEXT_PUBLIC_INSTAGRAM_URL` | `https://www.instagram.com/<handle>` (https, on instagram.com, with an account path) |
+| `NEXT_PUBLIC_STRAVA_URL` | `https://www.strava.com/clubs/<club>` (https, on strava.com, with a path) |
+
+Values are read at build time. Anything that doesn't qualify is ignored and the
+link stays hidden.
 
 ## Newsletter signup
 

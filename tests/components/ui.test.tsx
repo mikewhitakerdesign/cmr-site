@@ -33,9 +33,24 @@ describe("Button (MWDS)", () => {
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 
-  it("uses the 3px MWDS focus ring", () => {
+  it("uses the 3px MWDS focus ring, separated from the fill by a 2px surface-colored gap", () => {
     render(<Button>Go</Button>);
-    expect(screen.getByRole("button")).toHaveClass("focus-visible:ring-3", "focus-visible:ring-ring");
+    expect(screen.getByRole("button")).toHaveClass(
+      "focus-visible:ring-3",
+      "focus-visible:ring-ring",
+      "focus-visible:ring-offset-2",
+      "focus-visible:ring-offset-(color:--focus-offset)",
+    );
+  });
+
+  it("applies the focus offset to every variant, including when className is overridden", () => {
+    render(
+      <>
+        <Button variant="secondary">A</Button>
+        <Button className="h-12">B</Button>
+      </>,
+    );
+    for (const b of screen.getAllByRole("button")) expect(b).toHaveClass("focus-visible:ring-offset-2");
   });
 });
 

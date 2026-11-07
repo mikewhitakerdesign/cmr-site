@@ -10,7 +10,10 @@ import { cn } from "@/lib/utils";
  * implemented. Each state maps to the variable the MWDS variant binds:
  *   Primary   fill general/primary → hover unofficial/primary hover
  *   Secondary fill general/secondary (CMR: warm cream) → hover unofficial/secondary hover
- *   Focus     3px spread drop shadow in focus/ring (CMR: black), no offset
+ *   Focus     3px focus/ring (CMR: black). MWDS draws it flush against the button;
+ *             on a solid black button that reads as a bigger button, so a 2px gap in
+ *             the surface color (--focus-offset) separates ring from fill. This is a
+ *             reviewed deviation from the MWDS Focus variant, not a Figma-drawn state.
  *   Disabled  50% opacity
  * Sizes: Default h36 px md · Large h40 px xl · Extra Large h48 px 2xl, radius rounded-lg.
  */
@@ -18,7 +21,7 @@ export const buttonVariants = cva(
   [
     "inline-flex shrink-0 items-center justify-center gap-(--space-xs) whitespace-nowrap",
     "rounded-lg font-medium transition-colors outline-none",
-    "focus-visible:ring-3 focus-visible:ring-ring",
+    "focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-(color:--focus-offset)",
     "disabled:pointer-events-none disabled:opacity-50",
     "aria-disabled:pointer-events-none aria-disabled:opacity-50",
   ],
