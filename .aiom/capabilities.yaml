@@ -50,8 +50,9 @@ capabilities:
     status: on-demand
     provenance: ai-inferred
     rationale: >-
-      npm run lint / npm run build now exist and pass against the v1
-      scaffold; run on-demand as changes are made.
+      npm run lint, tokens:check, test (Vitest: token contract vs. Figma,
+      components, axe), build, and test:e2e (Playwright geometry/focus/
+      contrast) exist and run in CI; run on-demand as changes are made.
   - capability_id: ui-implementation
     status: required
     provenance: ai-inferred

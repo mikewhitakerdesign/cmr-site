@@ -1,0 +1,741 @@
+{
+  "shadows": {
+    "2xs": {
+      "color": {
+        "$type": "color",
+        "$value": "{alpha.black.alpha-5}",
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "FRAME_FILL",
+              "STROKE_COLOR",
+              "EFFECT_COLOR"
+            ]
+          }
+        }
+      },
+      "x": {
+        "$type": "dimension",
+        "$value": {
+          "value": 0,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "EFFECT_FLOAT"
+            ]
+          }
+        }
+      },
+      "y": {
+        "$type": "dimension",
+        "$value": {
+          "value": 1,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "EFFECT_FLOAT"
+            ]
+          }
+        }
+      },
+      "blur": {
+        "$type": "dimension",
+        "$value": {
+          "value": 0,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "EFFECT_FLOAT"
+            ]
+          }
+        }
+      },
+      "spread": {
+        "$type": "dimension",
+        "$value": {
+          "value": 0,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "EFFECT_FLOAT"
+            ]
+          }
+        }
+      }
+    },
+    "xs": {
+      "color": {
+        "$type": "color",
+        "$value": "{alpha.black.alpha-5}",
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "FRAME_FILL",
+              "STROKE_COLOR",
+              "EFFECT_COLOR"
+            ]
+          }
+        }
+      },
+      "x": {
+        "$type": "dimension",
+        "$value": {
+          "value": 0,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "EFFECT_FLOAT"
+            ]
+          }
+        }
+      },
+      "y": {
+        "$type": "dimension",
+        "$value": {
+          "value": 1,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "EFFECT_FLOAT"
+            ]
+          }
+        }
+      },
+      "blur": {
+        "$type": "dimension",
+        "$value": {
+          "value": 2,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "EFFECT_FLOAT"
+            ]
+          }
+        }
+      },
+      "spread": {
+        "$type": "dimension",
+        "$value": {
+          "value": 0,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "EFFECT_FLOAT"
+            ]
+          }
+        }
+      }
+    },
+    "sm": {
+      "shadow 1": {
+        "x": {
+          "$type": "dimension",
+          "$value": {
+            "value": 0,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "y": {
+          "$type": "dimension",
+          "$value": {
+            "value": 1,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "blur": {
+          "$type": "dimension",
+          "$value": {
+            "value": 3,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "spread": {
+          "$type": "dimension",
+          "$value": {
+            "value": 0,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        }
+      },
+      "shadow 2": {
+        "x2": {
+          "$type": "dimension",
+          "$value": {
+            "value": 0,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "y": {
+          "$type": "dimension",
+          "$value": {
+            "value": 1,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "blur": {
+          "$type": "dimension",
+          "$value": {
+            "value": 2,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "spread": {
+          "$type": "dimension",
+          "$value": {
+            "value": -1,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        }
+      },
+      "color": {
+        "$type": "color",
+        "$value": "{alpha.black.alpha-10}",
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "FRAME_FILL",
+              "STROKE_COLOR",
+              "EFFECT_COLOR"
+            ]
+          }
+        }
+      }
+    },
+    "md": {
+      "color": {
+        "$type": "color",
+        "$value": "{alpha.black.alpha-10}",
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "FRAME_FILL",
+              "STROKE_COLOR",
+              "EFFECT_COLOR"
+            ]
+          }
+        }
+      },
+      "shadow 1": {
+        "x": {
+          "$type": "dimension",
+          "$value": {
+            "value": 0,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "y": {
+          "$type": "dimension",
+          "$value": {
+            "value": 4,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "blur": {
+          "$type": "dimension",
+          "$value": {
+            "value": 6,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "spread": {
+          "$type": "dimension",
+          "$value": {
+            "value": -1,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        }
+      },
+      "shadow 2": {
+        "x": {
+          "$type": "dimension",
+          "$value": {
+            "value": 0,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "y": {
+          "$type": "dimension",
+          "$value": {
+            "value": 2,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "blur": {
+          "$type": "dimension",
+          "$value": {
+            "value": 4,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "spread": {
+          "$type": "dimension",
+          "$value": {
+            "value": -2,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "lg": {
+      "shadow 1": {
+        "x": {
+          "$type": "dimension",
+          "$value": {
+            "value": 0,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "y": {
+          "$type": "dimension",
+          "$value": {
+            "value": 10,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "blur": {
+          "$type": "dimension",
+          "$value": {
+            "value": 15,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "spread": {
+          "$type": "dimension",
+          "$value": {
+            "value": -3,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        }
+      },
+      "shadow 2": {
+        "x": {
+          "$type": "dimension",
+          "$value": {
+            "value": 0,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "y": {
+          "$type": "dimension",
+          "$value": {
+            "value": 4,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "blur": {
+          "$type": "dimension",
+          "$value": {
+            "value": 6,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "spread": {
+          "$type": "dimension",
+          "$value": {
+            "value": -4,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        }
+      },
+      "color": {
+        "$type": "color",
+        "$value": "{alpha.black.alpha-10}",
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "FRAME_FILL",
+              "STROKE_COLOR",
+              "EFFECT_COLOR"
+            ]
+          }
+        }
+      }
+    },
+    "xl": {
+      "color": {
+        "$type": "color",
+        "$value": "{alpha.black.alpha-10}",
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "FRAME_FILL",
+              "STROKE_COLOR",
+              "EFFECT_COLOR"
+            ]
+          }
+        }
+      },
+      "shadow 1": {
+        "x": {
+          "$type": "dimension",
+          "$value": {
+            "value": 0,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "y": {
+          "$type": "dimension",
+          "$value": {
+            "value": 20,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "blur": {
+          "$type": "dimension",
+          "$value": {
+            "value": 25,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "spread": {
+          "$type": "dimension",
+          "$value": {
+            "value": -5,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        }
+      },
+      "shadow 2": {
+        "x": {
+          "$type": "dimension",
+          "$value": {
+            "value": 0,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "y": {
+          "$type": "dimension",
+          "$value": {
+            "value": 8,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "blur": {
+          "$type": "dimension",
+          "$value": {
+            "value": 10,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        },
+        "spread": {
+          "$type": "dimension",
+          "$value": {
+            "value": -6,
+            "unit": "px"
+          },
+          "$extensions": {
+            "com.figma": {
+              "scopes": [
+                "EFFECT_FLOAT"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "2xl": {
+      "color": {
+        "$type": "color",
+        "$value": "{alpha.black.alpha-10}",
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "FRAME_FILL",
+              "STROKE_COLOR",
+              "EFFECT_COLOR"
+            ]
+          }
+        }
+      },
+      "x": {
+        "$type": "dimension",
+        "$value": {
+          "value": 0,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "EFFECT_FLOAT"
+            ]
+          }
+        }
+      },
+      "y": {
+        "$type": "dimension",
+        "$value": {
+          "value": 25,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "EFFECT_FLOAT"
+            ]
+          }
+        }
+      },
+      "blur": {
+        "$type": "dimension",
+        "$value": {
+          "value": 50,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "EFFECT_FLOAT"
+            ]
+          }
+        }
+      },
+      "spread": {
+        "$type": "dimension",
+        "$value": {
+          "value": -12,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.figma": {
+            "scopes": [
+              "EFFECT_FLOAT"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "alpha": {
+    "black": {
+      "alpha-5": {
+        "$type": "color",
+        "$value": "{raw colors.black}",
+        "$extensions": {
+          "com.figma": {
+            "aliasOpacity": 5
+          }
+        }
+      },
+      "alpha-10": {
+        "$type": "color",
+        "$value": "{raw colors.black}",
+        "$extensions": {
+          "com.figma": {
+            "aliasOpacity": 10
+          }
+        }
+      }
+    }
+  }
+}

@@ -6,7 +6,7 @@ export default function JoinPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4 px-6 py-16">
       <h1 className="text-3xl font-semibold tracking-tight">Join Us</h1>
-      <p className="max-w-xl text-zinc-600 dark:text-zinc-400">
+      <p className="max-w-xl text-muted-foreground">
         No membership fees, no sign-up form, no app to download — just show
         up. Check the calendar for the next run and follow along on
         Instagram and Strava.

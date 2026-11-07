@@ -1,0 +1,5 @@
+/* Clears Tailwind's default color palette. Must be imported before the
+ * generated MWDS Tailwind bridge, which then defines the semantic colors. */
+@theme {
+  --color-*: initial;
+}

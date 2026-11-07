@@ -1,0 +1,117 @@
+{
+  "border radii": {
+    "rounded-none": {
+      "$type": "dimension",
+      "$value": {
+        "value": 0,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.figma": {
+          "scopes": [
+            "CORNER_RADIUS"
+          ]
+        }
+      }
+    },
+    "rounded-xs": {
+      "$type": "dimension",
+      "$value": "{border radii (absolute).radius-2}",
+      "$extensions": {
+        "com.figma": {
+          "scopes": [
+            "CORNER_RADIUS"
+          ]
+        }
+      }
+    },
+    "rounded-sm": {
+      "$type": "dimension",
+      "$value": "{border radii (absolute).radius-4}",
+      "$extensions": {
+        "com.figma": {
+          "scopes": [
+            "CORNER_RADIUS"
+          ]
+        }
+      }
+    },
+    "rounded-md": {
+      "$type": "dimension",
+      "$value": "{border radii (absolute).radius-6}",
+      "$extensions": {
+        "com.figma": {
+          "scopes": [
+            "CORNER_RADIUS"
+          ]
+        }
+      }
+    },
+    "rounded-lg": {
+      "$type": "dimension",
+      "$value": "{border radii (absolute).radius-8}",
+      "$extensions": {
+        "com.figma": {
+          "scopes": [
+            "CORNER_RADIUS"
+          ]
+        }
+      }
+    },
+    "radius": {
+      "$type": "dimension",
+      "$value": "{border radii (absolute).radius-10}",
+      "$extensions": {
+        "com.figma": {
+          "scopes": [
+            "CORNER_RADIUS"
+          ]
+        }
+      }
+    },
+    "rounded-xl": {
+      "$type": "dimension",
+      "$value": "{border radii (absolute).radius-12}",
+      "$extensions": {
+        "com.figma": {
+          "scopes": [
+            "CORNER_RADIUS"
+          ]
+        }
+      }
+    },
+    "rounded-2xl": {
+      "$type": "dimension",
+      "$value": "{border radii (absolute).radius-16}",
+      "$extensions": {
+        "com.figma": {
+          "scopes": [
+            "CORNER_RADIUS"
+          ]
+        }
+      }
+    },
+    "rounded-3xl": {
+      "$type": "dimension",
+      "$value": "{border radii (absolute).radius-24}",
+      "$extensions": {
+        "com.figma": {
+          "scopes": [
+            "CORNER_RADIUS"
+          ]
+        }
+      }
+    },
+    "rounded-full": {
+      "$type": "dimension",
+      "$value": "{border radii (absolute).radius-infinite}",
+      "$extensions": {
+        "com.figma": {
+          "scopes": [
+            "CORNER_RADIUS"
+          ]
+        }
+      }
+    }
+  }
+}

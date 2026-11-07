@@ -6,7 +6,7 @@ export default function Home() {
       <h1 className="text-4xl font-semibold tracking-tight">
         Chicago Mountain Runners
       </h1>
-      <p className="max-w-xl text-lg text-zinc-600 dark:text-zinc-400">
+      <p className="max-w-xl text-lg text-muted-foreground">
         Chicago doesn&apos;t have mountains. We run hills anyway.
       </p>
       <div className="flex gap-4 text-sm font-medium">

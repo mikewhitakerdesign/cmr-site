@@ -14,13 +14,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Node 24 LTS: style-dictionary 5 and vitest 5 require Node >= 22.
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: .nvmrc
           cache: npm
 
       - run: npm ci
 
       - run: npm run lint
 
+      # Generated token CSS must match a fresh Style Dictionary build of tokens/mwds.
+      - run: npm run tokens:check
+
+      - run: npm test
+
       - run: npm run build
+
+  browser:
+    # Geometry vs. Figma, computed token colors, keyboard focus, and axe
+    # (incl. color contrast) in Chromium at 393 / 768 / 1440. Visual snapshot
+    # baselines are macOS-only and excluded here (see playwright.config.ts).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps chromium
+
+      - run: npm run build
+
+      - run: npm run test:e2e

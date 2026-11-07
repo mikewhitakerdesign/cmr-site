@@ -1,0 +1,74 @@
+{
+  "capturedAt": "2026-11-07T06:09:30.581Z",
+  "capturedWith": "scripts/tokens/figma-resolve-oracle.js",
+  "source": {
+    "figmaFileKey": "hLEeAchFtgd1WFtboIChil",
+    "consumerNode": "1:324",
+    "shadowNode": "103:52"
+  },
+  "explicitModes": {
+    "semantic colors": "cmr",
+    "brand colors": "cmr"
+  },
+  "coverage": {
+    "semantic colors": {
+      "available": 27,
+      "resolved": 27
+    },
+    "brand colors": {
+      "available": 15,
+      "resolved": 15
+    },
+    "shadows": {
+      "available": 14,
+      "resolved": 2
+    }
+  },
+  "coverageNote": "A consuming file only exposes the library variables it has imported, so this oracle covers the subset the CMR file uses (27/54 semantic colors). It is Figma's own resolution, independent of the token pipeline.",
+  "values": {
+    "brand colors/brand-neutrals/100": "#f5f5f5",
+    "brand colors/brand-neutrals/200": "#ececec",
+    "brand colors/brand-neutrals/300": "#d4d4d4",
+    "brand colors/brand-neutrals/400": "#a3a3a3",
+    "brand colors/brand-neutrals/50": "#ffffff",
+    "brand colors/brand-neutrals/500": "#737373",
+    "brand colors/brand-neutrals/600": "#525252",
+    "brand colors/brand-neutrals/700": "#404040",
+    "brand colors/brand-neutrals/800": "#262626",
+    "brand colors/brand-neutrals/900": "#171717",
+    "brand colors/brand-neutrals/950": "#000000",
+    "brand colors/brand-shades/100": "#ddffea",
+    "brand colors/brand-shades/50": "#f7fffa",
+    "brand colors/brand-shades/800": "#185b3d",
+    "brand colors/brand-shades/950": "#0b2c20",
+    "semantic colors/focus/ring": "#000000",
+    "semantic colors/focus/ring error": "#fca5a5",
+    "semantic colors/general/accent": "#ddffea",
+    "semantic colors/general/background": "#ffffff",
+    "semantic colors/general/border": "#ececec",
+    "semantic colors/general/destructive": "#dc2626",
+    "semantic colors/general/destructive foreground": "#ffffff",
+    "semantic colors/general/foreground": "#000000",
+    "semantic colors/general/input": "#ffffff",
+    "semantic colors/general/muted foreground": "#737373",
+    "semantic colors/general/primary": "#000000",
+    "semantic colors/general/primary foreground": "#ffffff",
+    "semantic colors/general/secondary": "#f4f1e8",
+    "semantic colors/general/secondary foreground": "#000000",
+    "semantic colors/unofficial/accent 2": "#ddffea",
+    "semantic colors/unofficial/border 3": "#d4d4d4",
+    "semantic colors/unofficial/border 4": "#a3a3a3",
+    "semantic colors/unofficial/border 5": "#737373",
+    "semantic colors/unofficial/destructive border": "#ef4444",
+    "semantic colors/unofficial/ghost": "#ffffff",
+    "semantic colors/unofficial/ghost foreground": "#000000",
+    "semantic colors/unofficial/ghost hover": "#f5f5f5",
+    "semantic colors/unofficial/mid alt": "#525252",
+    "semantic colors/unofficial/outline": "#ececec",
+    "semantic colors/unofficial/outline hover": "#a3a3a3",
+    "semantic colors/unofficial/primary hover": "#262626",
+    "semantic colors/unofficial/secondary hover": "#f5f5f5",
+    "shadows/sm/color": "#0000001a",
+    "shadows/xs/color": "#0000000d"
+  }
+}
