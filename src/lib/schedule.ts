@@ -268,3 +268,9 @@ export function describeSchedule(s: RunSchedule): string {
   const when = `${WEEKDAY_NAMES[weekdayOf(s.date)]}, ${MONTH_NAMES[m - 1]} ${d}, ${y} · ${formatTime(s.time)}`;
   return s.cancelled ? `${when} (cancelled)` : when;
 }
+
+/** Short cadence for listings ("Saturdays · 5:30 AM"); a dated run falls back to `describeSchedule`. */
+export function describeCadence(s: RunSchedule): string {
+  if (s.kind === "weekly") return `${WEEKDAY_NAMES[s.weekday]}s · ${formatTime(s.time)}`;
+  return describeSchedule(s);
+}

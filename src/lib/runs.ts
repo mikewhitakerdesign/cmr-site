@@ -104,3 +104,12 @@ export function getNextOccurrencePerRun(now: Date, all: readonly Run[] = runs): 
   }
   return out;
 }
+
+/**
+ * The next occurrence of each listed run held at `hillSlug`, soonest first —
+ * the Hill → Run side of the bidirectional relationship (IA). Runs with no
+ * upcoming occurrence (ended, cancelled) drop out.
+ */
+export function getRunsAtHill(hillSlug: string, now: Date, all: readonly Run[] = runs): RunOccurrence[] {
+  return getNextOccurrencePerRun(now, all).filter((o) => o.run.hillSlug === hillSlug);
+}
