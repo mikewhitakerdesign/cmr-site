@@ -11,6 +11,9 @@
 @import "../styles/generated/mwds-tokens.css";
 @import "../styles/generated/mwds-tailwind-theme.css";
 
+/* CMR app layer (not MWDS): Geist stylistic set for display headings. */
+@import "../styles/cmr.css";
+
 /*
  * No dark mode: MWDS defines no `cmr-dark` mode, so there is nothing to
  * resolve a dark theme from. Add one in Figma first, then re-export.

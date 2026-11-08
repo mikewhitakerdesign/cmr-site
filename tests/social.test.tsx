@@ -40,7 +40,7 @@ describe("buildFooterNav", () => {
 
   it("includes only the platforms that are supplied", () => {
     const nav = buildFooterNav({ instagram: null, strava: "https://www.strava.com/clubs/cmr" });
-    expect(nav.map((i) => i.label)).toEqual(["Find a Run", "About", "Join Us", "Strava"]);
+    expect(nav.map((i) => i.label)).toEqual(["Find a Run", "About", "Join the club", "Strava"]);
     expect(nav.at(-1)).toMatchObject({ href: "https://www.strava.com/clubs/cmr", external: true });
   });
 });
@@ -56,7 +56,7 @@ describe("environment configuration reaches the footer and /join", () => {
     const { footerNav } = await import("@/lib/navigation");
     render(<JoinPage />);
     expect(screen.queryByRole("link")).not.toBeInTheDocument();
-    expect(footerNav.map((i) => i.label)).toEqual(["Find a Run", "About", "Join Us"]);
+    expect(footerNav.map((i) => i.label)).toEqual(["Find a Run", "About", "Join the club"]);
   });
 
   it("renders configured links on /join and in the footer nav", async () => {
@@ -68,7 +68,7 @@ describe("environment configuration reaches the footer and /join", () => {
     render(<JoinPage />);
     expect(screen.getByRole("link", { name: "Instagram" })).toHaveAttribute("href", "https://www.instagram.com/cmr");
     expect(screen.getByRole("link", { name: "Strava" })).toHaveAttribute("href", "https://www.strava.com/clubs/cmr");
-    expect(footerNav.map((i) => i.label)).toEqual(["Find a Run", "About", "Join Us", "Instagram", "Strava"]);
+    expect(footerNav.map((i) => i.label)).toEqual(["Find a Run", "About", "Join the club", "Instagram", "Strava"]);
   });
 
   it("ignores a configured value that isn't a genuine destination", async () => {

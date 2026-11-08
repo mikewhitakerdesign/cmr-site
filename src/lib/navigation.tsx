@@ -36,7 +36,8 @@ export const primaryNav: NavItem[] = [
   { label: "About", href: "/about" },
 ];
 
-export const joinCta: NavItem = { label: "Join Us", href: "/join" };
+/** Header CTA. "Join the club" is the label of every Join CTA (header, hero, Just show up, footer). */
+export const joinCta: NavItem = { label: "Join the club", href: "/join" };
 
 /**
  * Footer link row, per Figma (Footer / Newsletter and legal). Instagram and
@@ -47,7 +48,7 @@ export function buildFooterNav(social: SocialLinks): NavItem[] {
   return [
     { label: "Find a Run", href: "/calendar" },
     { label: "About", href: "/about" },
-    { label: "Join Us", href: "/join" },
+    { label: "Join the club", href: "/join" },
     ...(social.instagram ? [{ label: "Instagram", href: social.instagram, external: true }] : []),
     ...(social.strava ? [{ label: "Strava", href: social.strava, external: true }] : []),
   ];

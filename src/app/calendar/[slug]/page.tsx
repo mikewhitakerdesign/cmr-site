@@ -1,12 +1,15 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getRun, runs } from "@/lib/runs";
+import { ProvisionalBadge } from "@/components/ProvisionalBadge";
+import { getRun, runs, workoutLabel } from "@/lib/runs";
 import { getHill } from "@/lib/hills";
+import { describeSchedule } from "@/lib/schedule";
 
 export function generateStaticParams() {
   return runs.map((run) => ({ slug: run.slug }));
 }
 
+// Scaffold page (not yet designed).
 export default async function RunPage({
   params,
 }: {
@@ -17,13 +20,20 @@ export default async function RunPage({
   if (!run) notFound();
 
   const hill = getHill(run.hillSlug);
+  const workout = workoutLabel(run);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4 px-6 py-16">
       <h1 className="text-3xl font-semibold tracking-tight">{run.title}</h1>
+      {run.status !== "verified" && (
+        <p>
+          <ProvisionalBadge>{run.status === "placeholder" ? "Placeholder" : "Sample · unconfirmed"}</ProvisionalBadge>
+        </p>
+      )}
       <p className="text-muted-foreground">
-        {run.date} · {run.time} · {run.meetupLocation}
+        {describeSchedule(run.schedule)} · {run.meetupLocation}
       </p>
+      {workout && <p className="text-sm">{workout}</p>}
       <p className="max-w-xl">{run.description}</p>
       {hill && (
         <p className="text-sm">

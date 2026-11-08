@@ -38,6 +38,8 @@ export type NewsletterSignupProps = {
   /** Shown while no provider endpoint is configured. */
   unavailableMessage?: string;
   className?: string;
+  /** Extra classes for the email input (e.g. a surface-specific border). */
+  inputClassName?: string;
 };
 
 /** Returns the endpoint only if it is an absolute https URL; anything else counts as unconfigured. */
@@ -71,6 +73,7 @@ export default function NewsletterSignup({
   submitLabel = "Join the list",
   unavailableMessage = "Newsletter signup isn’t open yet.",
   className,
+  inputClassName,
 }: NewsletterSignupProps) {
   const id = useId();
   const headingId = `${id}-heading`;
@@ -113,7 +116,7 @@ export default function NewsletterSignup({
           spellCheck={false}
           placeholder={placeholder}
           disabled={!enabled}
-          className="h-12 flex-1 lg:h-11"
+          className={cn("h-12 flex-1 lg:h-11", inputClassName)}
         />
         {enabled &&
           Object.entries(hiddenFields ?? {}).map(([name, value]) => (

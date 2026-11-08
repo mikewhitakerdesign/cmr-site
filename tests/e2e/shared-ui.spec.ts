@@ -2,12 +2,16 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const AXE_PATH = require.resolve("axe-core");
 
-// Figma measurements per frame (Home / Mobile 393, Tablet 768, Desktop).
+// Figma measurements per frame (Home / Mobile 393, Tablet 768, Desktop), as
+// revised in homepage Round 2 (Owner direction, 2026-11-08): links moved right
+// beside the CTA (one row from tablet up; a right-aligned second row on mobile),
+// and a 1px bottom rule that is transparent until the header turns compact
+// (+1px on the expanded height). Logo and CTA sizes are Figma's.
 // Desktop content is a 1400px container centred in the viewport, 48px padding.
 const FIGMA = {
-  mobile: { headerH: 144, logo: [24, 12, 100], cta: [259, 18, 110], linksY: 102, linkPx: 13, formH: 48, headingPx: 28, footerBorder: false },
-  tablet: { headerH: 122, logo: [48, 17, 128], cta: [592, 32, 128], linksY: 76, linkPx: 14, formH: 48, headingPx: 30, footerBorder: false },
-  desktop: { headerH: 122, logo: [68, 12, 188], cta: [1222, 43, 150], linksY: 51, linkPx: 14, formH: 44, headingPx: 30, footerBorder: true },
+  mobile: { headerH: 137, logo: [24, 12, 100], cta: [259, 18, 110], linksY: 94, linkPx: 13, linkGap: 12, formH: 48, headingPx: 28 },
+  tablet: { headerH: 100, logo: [48, 16, 128], cta: [592, 31, 128], linksY: 39, linkPx: 14, linkGap: 24, formH: 48, headingPx: 30 },
+  desktop: { headerH: 123, logo: [68, 12, 188], cta: [1222, 43, 150], linksY: 51, linkPx: 14, linkGap: 36, formH: 44, headingPx: 30 },
 } as const;
 
 type Spec = (typeof FIGMA)[keyof typeof FIGMA];
@@ -76,9 +80,13 @@ test.describe("header", () => {
     expect(Math.round(logo.width)).toBe(s.logo[2]);
     expect(logo.width / logo.height).toBeCloseTo(188 / 98, 1);
 
-    const cta = await box(page.getByRole("banner").getByRole("link", { name: "Join Us" }));
+    const cta = await box(page.getByRole("banner").getByRole("link", { name: "Join the club" }));
     expect(Math.round(cta.width)).toBe(s.cta[2]);
     expect(Math.round(cta.height)).toBe(36);
+    // Round 2.1: 1px border, matching the bar's 1px bottom rule.
+    const ctaLink = page.getByRole("banner").getByRole("link", { name: "Join the club" });
+    expect(await css(ctaLink, "border-top-width")).toBe("1px");
+    expect(await css(ctaLink, "border-top-color")).toBe("rgb(0, 0, 0)");
     // Desktop: 1440 viewport → 1400 container + 48px padding puts the CTA's
     // right edge at 1372 (Figma: 48px inside the container edge).
     expect(Math.round(cta.x)).toBe(s.cta[0]);
@@ -89,12 +97,33 @@ test.describe("header", () => {
     expect(Math.round((await box(first)).y)).toBe(s.linksY);
     expect(await css(first, "font-size")).toBe(`${s.linkPx}px`);
 
-    if (info.project.name === "desktop") {
-      // Single row with space-between: links sit clear of both logo and CTA.
-      const links = await box(nav);
+    // Links sit on the right: the gap before the CTA equals the gap between links.
+    const links = await box(nav);
+    if (info.project.name === "mobile") {
+      expect(Math.round(links.x + links.width)).toBe(Math.round(cta.x + cta.width)); // right-aligned under the CTA
+    } else {
+      expect(Math.round(cta.x - (links.x + links.width))).toBe(s.linkGap);
+      const [a, b] = await nav.getByRole("link").all();
+      expect(Math.round((await box(b)).x - ((await box(a)).x + (await box(a)).width))).toBe(s.linkGap);
       expect(links.x).toBeGreaterThan(logo.x + logo.width + 100);
-      expect(links.x + links.width).toBeLessThan(cta.x - 100);
     }
+  });
+
+  test("the Join the club CTA flips to black on hover and keeps a visible focus ring", async ({ page }, info) => {
+    const cta = page.getByRole("banner").getByRole("link", { name: "Join the club" });
+    expect(await css(cta, "background-color")).toBe("rgba(0, 0, 0, 0)");
+    if (info.project.name === "desktop") {
+      await cta.hover();
+      await expect.poll(() => css(cta, "background-color")).toBe("rgb(0, 0, 0)");
+      expect(await css(cta, "color")).toBe("rgb(255, 255, 255)");
+      await page.mouse.move(5, 300);
+    }
+    await cta.focus();
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Tab");
+    await expect(cta).toBeFocused();
+    const shadow = await css(cta, "box-shadow");
+    expect(rings(shadow).map((r) => r.spread)).toEqual([2, 5]); // 2px gap + 3px ring
   });
 
   test("desktop links are 80% opacity except the current page", async ({ page }, info) => {
@@ -142,12 +171,17 @@ test.describe("header", () => {
 });
 
 test.describe("footer", () => {
-  test("uses the CMR accent surface and Figma typography", async ({ page }, info) => {
+  test("uses the Round 2 quiet neutral surface, a tone-on-tone logo and Figma typography", async ({ page }, info) => {
     const s = spec(info.project.name);
     const footer = page.locator("footer");
-    expect(await css(footer, "background-color")).toBe("rgb(221, 255, 234)"); // cmr/mint/100
-    expect(await css(footer, "color")).toBe("rgb(0, 0, 0)");
-    expect(await css(footer, "border-top-width")).toBe(s.footerBorder ? "1px" : "0px");
+    expect(await css(footer, "background-color")).toBe("rgb(245, 245, 245)"); // MWDS muted (neutrals 100)
+    expect(await css(footer, "color")).toBe("rgb(64, 64, 64)"); // neutrals 700, 9.4:1 on the surface
+    expect(contrast("rgb(64, 64, 64)", "rgb(245, 245, 245)")).toBeGreaterThanOrEqual(7);
+    expect(await css(footer, "border-top-width")).toBe("1px");
+    const logo = footer.getByRole("img", { name: "Chicago Mountain Runners" });
+    await expect(logo).toBeVisible();
+    expect((await box(logo)).y).toBeLessThan((await box(footer.getByRole("heading"))).y); // above the heading
+    expect(Math.round((await box(logo)).x)).toBe(Math.round((await box(footer.getByRole("heading"))).x)); // left-aligned
 
     const heading = footer.getByRole("heading", { name: "Get the next run in your inbox." });
     expect(await css(heading, "font-size")).toBe(`${s.headingPx}px`);
@@ -164,7 +198,9 @@ test.describe("footer", () => {
     expect(Math.abs((await box(button)).width - 131)).toBeLessThanOrEqual(3);
     expect(await css(button, "background-color")).toBe("rgb(0, 0, 0)"); // general/primary (CMR)
     expect(await css(button, "color")).toBe("rgb(255, 255, 255)");
-    expect(await css(input, "border-color")).toBe("rgb(236, 236, 236)"); // general/border (CMR)
+    // Round 2: input border in the darker neutral (neutrals 500) so the field reads ≥ 3:1 on the gray surface.
+    expect(await css(input, "border-color")).toBe("rgb(115, 115, 115)");
+    expect(contrast("rgb(115, 115, 115)", "rgb(245, 245, 245)")).toBeGreaterThanOrEqual(3);
     expect(await css(input, "border-radius")).toBe("8px");
     if (info.project.name === "desktop") expect(Math.round((await box(input)).width)).toBe(309);
     if (info.project.name === "mobile") expect(Math.abs((await box(input)).width - 206)).toBeLessThanOrEqual(3);
@@ -181,11 +217,11 @@ test.describe("footer", () => {
 });
 
 test.describe("focus indicators on solid black primary buttons", () => {
-  test("mint footer: ring is offset from the fill and contrasts with it", async ({ page }) => {
+  test("gray footer: ring is offset from the fill and contrasts with it", async ({ page }) => {
     const button = await tabToNewsletterButton(page);
     expect(await css(button, "background-color")).toBe("rgb(0, 0, 0)");
     const [gap, ring] = rings(await css(button, "box-shadow"));
-    expect(gap).toEqual({ color: "rgb(221, 255, 234)", spread: 2 }); // --accent (cmr/mint/100)
+    expect(gap).toEqual({ color: "rgb(245, 245, 245)", spread: 2 }); // --muted (Round 2 footer surface)
     expect(ring).toEqual({ color: "rgb(0, 0, 0)", spread: 5 }); // 2px gap + 3px MWDS focus/ring
     expect(contrast(ring.color, gap.color)).toBeGreaterThanOrEqual(3); // WCAG 1.4.11 non-text contrast
     expect(contrast(gap.color, "rgb(0, 0, 0)")).toBeGreaterThanOrEqual(3); // gap separates ring from fill
@@ -245,7 +281,7 @@ test.describe("social links (none configured in this build)", () => {
 
   test("footer link row keeps its layout without social links", async ({ page }, info) => {
     const links = page.getByRole("navigation", { name: "Footer" }).getByRole("link");
-    await expect(links).toHaveText(["Find a Run", "About", "Join Us"]);
+    await expect(links).toHaveText(["Find a Run", "About", "Join the club"]);
     const first = await box(links.first());
     const last = await box(links.last());
     expect(Math.abs(first.y - last.y)).toBeLessThan(2); // still a single row
