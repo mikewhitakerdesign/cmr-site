@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { QuestionsWidget } from "@/components/QuestionsWidget";
 import "./globals.css";
 
 // Family names must match MWDS typography/font definitions (asserted in tests/tokens.test.ts).
@@ -30,7 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-(--space-md) focus:py-(--space-xs) focus:text-p-sm focus:font-medium focus:ring-3 focus:ring-ring"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:rounded-md focus:bg-background focus:px-(--space-md) focus:py-(--space-xs) focus:text-p-sm focus:font-medium focus:ring-3 focus:ring-ring"
         >
           Skip to content
         </a>
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <Footer />
+        <QuestionsWidget />
       </body>
     </html>
   );
