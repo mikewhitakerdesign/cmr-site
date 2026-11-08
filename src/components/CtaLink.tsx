@@ -4,45 +4,39 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 /**
- * CMR call-to-action link for dark and photographic surfaces — Figma
- * "Action / Find a Run" (white fill) and "Action / Become a Mtn Runner" /
- * "Action / Join Us" (2px white outline) in the Hero (1:395) and Just show up
- * (1:305) sections. These are not MWDS Button instances in Figma and MWDS has
- * no inverse-on-photo variant, so this is a CMR composition on MWDS tokens
- * (same reasoning as the header's Join Us CTA, foundation discrepancy 6).
+ * CMR call-to-action link for photographic and dark surfaces — the Hero
+ * (1:395) and Just show up (1:305) CTA pairs. Not MWDS Button instances in
+ * Figma, and MWDS has no on-photo variant, so this is a CMR composition on
+ * MWDS tokens.
  *
- * Geometry (height, padding, type size) differs per section and breakpoint
- * and is set by the caller. Radius 6 = `rounded-md`.
+ * Round 2 (Owner direction, 2026-11-08) replaced Figma's white / white-outline
+ * pair with two solid buttons:
  *
- * States (not drawn in Figma; reviewed choices, see the Work Item):
- *   solid    white → hover cream (`secondary`) → active `border` grey
- *   outline  white outline on 50% black → hover inverts to white fill, black label → active grey fill
- *   focus    3px ring + 2px gap in the surface color (white ring, black gap on photos)
- *   disabled `aria-disabled` → 50% opacity, not clickable (links cannot be `disabled`)
+ *   primary    black fill, white label   hover primary-hover (neutral 800) · active lifts to neutral 700 via 80% fill
+ *   secondary  white fill, black label   hover cream (`secondary`) · active `border` grey
+ *   focus      3px ring + 2px gap in the surface color (white ring, black gap on photos)
+ *   disabled   `aria-disabled` → 50% opacity, not clickable (links cannot be `disabled`)
+ *   press      1px nudge down (motion-safe)
+ *
+ * Both labels are solid on solid fills (21:1), so neither depends on the photo
+ * behind it. Geometry (height, padding, type size) is set by the caller.
+ * Radius 6 = `rounded-md`.
  */
 export const ctaLinkVariants = cva(
   [
     "inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-md font-semibold outline-none",
     "focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-(color:--focus-offset)",
-    "motion-safe:transition-colors motion-safe:duration-150",
+    "motion-safe:transition-[background-color,color,transform] motion-safe:duration-150 motion-safe:active:translate-y-px",
     "aria-disabled:pointer-events-none aria-disabled:opacity-50",
   ],
   {
     variants: {
       variant: {
-        solid: "bg-primary-foreground text-primary hover:bg-secondary active:bg-border",
-        outline: [
-          // Translucent black fill (not in Figma, which has none): over pale sky the
-          // white label measured ~1.5:1. 50% black is the smallest fill that keeps the
-          // label ≥ 4.5:1 over the brightest sky in both photos (contrast test in
-          // tests/e2e/home.spec.ts). Reviewed deviation, Owner decision D6.
-          "border-2 border-primary-foreground bg-primary/50 text-primary-foreground",
-          "hover:bg-primary-foreground hover:text-primary",
-          "active:border-border active:bg-border active:text-primary",
-        ],
+        primary: "bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary/80",
+        secondary: "bg-primary-foreground text-primary hover:bg-secondary active:bg-border",
       },
     },
-    defaultVariants: { variant: "solid" },
+    defaultVariants: { variant: "primary" },
   },
 );
 

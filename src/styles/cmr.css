@@ -1,12 +1,68 @@
 /*
  * CMR application layer — not MWDS.
  *
- * Holds the few typographic features the approved CMR Figma uses that MWDS
- * has no token or utility for. It adds no colors, sizes, or spacing: those
- * stay MWDS tokens, or fluid layout values set per element (src/lib/fluid.ts).
+ * Holds the few things the CMR site needs that MWDS has no token or utility
+ * for. Colors here are either aliases of MWDS tokens (named for the CMR role
+ * they play) or, for the Round 2 pastel tints, a deliberately tiny decorative
+ * set used only by homepage compositions. None of them is a Tailwind palette
+ * color: components read them as `bg-(--cmr-…)`, so they cannot spread as a
+ * second utility vocabulary. Candidates for MWDS (Figma) once approved.
+ * Sizes and spacing stay MWDS tokens or fluid layout values (src/lib/fluid.ts).
  */
+
+:root {
+  /*
+   * Quiet neutrals (aliases of MWDS brand neutrals) — the Round 2 footer.
+   *   surface   neutrals 100  #f5f5f5  = MWDS `muted`
+   *   ink       neutrals 700  #404040  9.4:1 on surface (text, logo, input text)
+   *   edge      neutrals 500  #737373  4.4:1 on surface (input border; ≥ 3:1 for UI)
+   */
+  --cmr-quiet-ink: var(--mwd-brand-brand-neutrals-700);
+  --cmr-quiet-edge: var(--mwd-brand-brand-neutrals-500);
+
+  /*
+   * Pastel tints (Round 2, Owner direction 2026-11-08): very pale mint, peach,
+   * lavender and blue, picked from the hues of the CMR mesh gradient
+   * (public/home/mesh-gradient.png) and lifted to ~95% lightness. Each has a
+   * `-wash` (fill) and a slightly deeper `-dye` for the tie-dye blooms. Mint
+   * reuses MWDS cmr/mint. Black text on any of them is ≥ 17:1.
+   */
+  --cmr-tint-mint-wash: var(--mwd-raw-cmr-mint-50);
+  --cmr-tint-mint-dye: var(--mwd-raw-cmr-mint-100);
+  --cmr-tint-peach-wash: #fff6ef;
+  --cmr-tint-peach-dye: #ffe4d2;
+  --cmr-tint-lavender-wash: #f7f4ff;
+  --cmr-tint-lavender-dye: #e8e0ff;
+  --cmr-tint-blue-wash: #f2f8ff;
+  --cmr-tint-blue-dye: #dbeafe;
+}
+
+@layer base {
+  /* Keeps focused or anchored content clear of the sticky header (WCAG 2.4.11). */
+  html {
+    scroll-padding-top: 6rem;
+  }
+}
 
 /* Geist stylistic set 08, applied in Figma to CMR display headings. */
 @utility ss08 {
   font-feature-settings: "ss08" 1;
+}
+
+/*
+ * Very pale tie-dye fill (Round 2 club totals). Reads --tie-wash, --tie-dye
+ * and --tie-accent from the element (set per circle). Soft blooms and faint
+ * rings over a slow conic swirl, blurred into one another; the layer overhangs
+ * its clipped parent so the blur never lightens the edge. Decorative only.
+ */
+@utility cmr-tie-dye {
+  inset: -14%;
+  background:
+    radial-gradient(34% 30% at 36% 32%, var(--tie-dye) 0%, transparent 100%),
+    radial-gradient(28% 32% at 68% 70%, var(--tie-accent) 0%, transparent 100%),
+    radial-gradient(18% 16% at 70% 30%, var(--tie-dye) 0%, transparent 100%),
+    repeating-radial-gradient(circle at 46% 54%, transparent 0 8%, color-mix(in srgb, var(--tie-dye) 70%, transparent) 10% 11.5%, transparent 13.5% 16%),
+    repeating-conic-gradient(from 18deg at 46% 54%, var(--tie-wash) 0deg 14deg, var(--tie-dye) 24deg 28deg, var(--tie-wash) 38deg 45deg),
+    var(--tie-wash);
+  filter: blur(10px);
 }

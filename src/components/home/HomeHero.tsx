@@ -26,7 +26,8 @@ import { cn } from "@/lib/utils";
  *   - Figma's desktop fill is a 768×1024 portrait photo stretched non-uniformly
  *     (≈2.26× across, 0.95× down). The code crops the same photo uniformly and
  *     places the crest where Figma has it (≈72% down) instead of distorting it.
- *     Both are soft at desktop size until the original photo is supplied (D3).
+ *     Desktop uses a restrained 2× Lanczos upscale of that fill (Round 2); it
+ *     is still soft until an edit of the original photograph is supplied (D3).
  *   - "OWN MTNS" tracking is 0.048em (Figma: +10px at every size, which only
  *     matches line one's width on desktop).
  *
@@ -51,9 +52,18 @@ export function HomeHero({ next, now }: { next: RunOccurrence | null; now: Date 
 
   // Two Figma rasters: desktop (1:377) and tablet/mobile (78:279, 78:397) use
   // different frames of the same scene. Art-directed with <picture>.
-  const common = { alt: "", sizes: "100vw", fetchPriority: "high" as const, width: 768, height: 1024 };
-  const { props: desktopProps } = getImageProps({ ...common, src: "/home/hero-desktop.jpg" });
-  const { props: imgProps } = getImageProps({ ...common, src: "/home/hero.jpg", loading: "eager" });
+  // The desktop file is a provisional 2× upscale of the Figma fill (Round 2,
+  // scripts/assets/upscale-hero-desktop.mjs), served at quality 90 so the
+  // optimizer doesn't add artifacts on top of an already-soft source.
+  const common = { alt: "", sizes: "100vw", fetchPriority: "high" as const };
+  const { props: desktopProps } = getImageProps({
+    ...common,
+    src: "/home/hero-desktop.jpg",
+    width: 1536,
+    height: 2048,
+    quality: 90,
+  });
+  const { props: imgProps } = getImageProps({ ...common, src: "/home/hero.jpg", width: 768, height: 1024, loading: "eager" });
 
   return (
     <section
@@ -108,10 +118,10 @@ export function HomeHero({ next, now }: { next: RunOccurrence | null; now: Date 
               "*:h-(--hero-cta-h-a) md:*:h-(--hero-cta-h-b)",
             )}
           >
-            <CtaLink href="/calendar" variant="solid" className="px-5 md:px-7">
+            <CtaLink href="/calendar" variant="primary" className="px-5 md:px-7">
               Find a Run
             </CtaLink>
-            <CtaLink href="/join" variant="outline" className="grow px-5 md:grow-0 md:px-7">
+            <CtaLink href="/join" variant="secondary" className="grow px-5 md:grow-0 md:px-7">
               Become a Mtn Runner
             </CtaLink>
           </div>

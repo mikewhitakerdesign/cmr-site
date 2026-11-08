@@ -36,7 +36,8 @@ export const primaryNav: NavItem[] = [
   { label: "About", href: "/about" },
 ];
 
-export const joinCta: NavItem = { label: "Join Us", href: "/join" };
+/** Header CTA. Round 2 (Owner direction, 2026-11-08): "Join Us" → "Join the club". */
+export const joinCta: NavItem = { label: "Join the club", href: "/join" };
 
 /**
  * Footer link row, per Figma (Footer / Newsletter and legal). Instagram and
