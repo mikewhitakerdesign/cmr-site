@@ -84,6 +84,14 @@ Resolution is the file's own 1920px: ≈0.75× on a 1440px screen, sharp at 1×
 displays up to 1920px, soft only on 2× displays wider than ~960px. Rights remain
 unconfirmed. The approved raster is kept as `scripts/assets/source/hero-figma-approved.jpg`.
 
+### Delivery status
+
+Verified implementation head **`2e05a14`**: GitHub CI `validate` and `browser` pass
+(run 42513033456); Vercel deployment `AViVeThskBSKQiJhGbZScL2V7RGC` Ready as a
+**Preview** at https://cmr-site-git-feat-cmr-homepage-mikewhitaker-projects.vercel.app
+(Vercel SSO-protected). PR #3 open, not merged; no production deployment. Commits
+after it only update this record.
+
 ### A product bug found and fixed on the way
 
 The repeated sticky-header test exposed that clicking the logo on the homepage
