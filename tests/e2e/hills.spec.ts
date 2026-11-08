@@ -1,0 +1,263 @@
+import { expect, test, type Locator, type Page } from "@playwright/test";
+import { measureTextContrast } from "./contrast.mjs";
+
+/**
+ * Chicago Hills browser checks at the three frame widths (mobile 393, tablet
+ * 768, desktop 1440). Figma: Hill Details / Desktop 1:6363, Tablet 1:6703,
+ * Mobile 1:7032. /hills has no Figma frame (composed; see the Work Item).
+ */
+
+const AXE_PATH = require.resolve("axe-core");
+const SLUGS = ["cricket-hill", "warren-hill", "horner-hill", "schiller-hill", "mt-trashmore"] as const;
+const NAMES = ["Cricket Hill", "Warren Hill", "Horner Hill", "Schiller Hill", "Mt. Trashmore"];
+
+/** Figma measurements per frame. Hero height is below the sticky header (Figma draws it over the hero). */
+const FIGMA = {
+  mobile: { heroH: 540, h1: 48, statCols: 2, lede: 36 },
+  tablet: { heroH: 697, h1: 72.96, statCols: 5, lede: 36 },
+  desktop: { heroH: 844, h1: 144, statCols: 5, lede: 64 },
+} as const;
+const spec = (name: string) => FIGMA[name as keyof typeof FIGMA];
+
+const box = async (l: Locator) => (await l.boundingBox())!;
+const css = (l: Locator, prop: string, pseudo?: string) =>
+  l.evaluate((el, [p, ps]) => getComputedStyle(el, ps ?? null).getPropertyValue(p!), [prop, pseudo] as const);
+
+async function axe(page: Page) {
+  await page.addScriptTag({ path: AXE_PATH });
+  return page.evaluate(async () => {
+    // @ts-expect-error injected global
+    const r = await window.axe.run(document, { runOnly: ["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"] });
+    return r.violations.map((v: { id: string; nodes: { target: string[] }[] }) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`);
+  });
+}
+
+async function loadAll(page: Page) {
+  const h = await page.evaluate(() => document.documentElement.scrollHeight);
+  for (let y = 0; y < h; y += 600) await page.evaluate((yy) => window.scrollTo(0, yy), y);
+  await page.evaluate(async () => {
+    await Promise.all([...document.images].map((i) => (i.complete ? null : new Promise((r) => { i.onload = i.onerror = r; }))));
+    window.scrollTo(0, 0);
+  });
+}
+
+const overflowX = (page: Page) => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+
+test.beforeEach(async ({ page }) => {
+  // Never reach the live Formspree form (Owner instruction) or a map service from tests.
+  await page.route("https://formspree.io/**", (r) => r.abort());
+  await page.route("https://www.google.com/maps/**", (r) => r.abort());
+});
+
+test.describe("/hills directory", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/hills");
+    await page.evaluate(() => document.fonts.ready);
+  });
+
+  test("title, heading and the five hills in order, each linked", async ({ page }) => {
+    await expect(page).toHaveTitle("Chicago Hills — Chicago Mountain Runners");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Chicago Hills Mtns");
+    const rows = page.locator("main ol > li");
+    await expect(rows).toHaveCount(5);
+    for (const [i, slug] of SLUGS.entries()) {
+      await expect(rows.nth(i).getByRole("link")).toHaveAttribute("href", `/hills/${slug}`);
+      await expect(rows.nth(i).getByRole("heading", { level: 2 })).toHaveText(NAMES[i]);
+    }
+    await expect(page.getByText("Vertical scale exaggerated.", { exact: false })).toBeVisible();
+    await expect(page.locator("[data-slot=content-status]")).toContainText("Provisional");
+  });
+
+  test("the header marks Hills as the current section", async ({ page }) => {
+    await expect(page.locator("header").getByRole("link", { name: /Chicago.*Mtns/ })).toHaveAttribute("aria-current", "page");
+  });
+
+  test("the whole row is clickable (clicking the drawing opens the hill)", async ({ page }) => {
+    // A real click at the drawing's center: the row link's ::after must be what receives it.
+    const drawing = page.locator("main ol > li").nth(2).locator("[data-hill-profile]");
+    await drawing.scrollIntoViewIfNeeded();
+    const b = await box(drawing);
+    await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+    await expect(page).toHaveURL(/\/hills\/horner-hill$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Horner Hill");
+  });
+
+  test("hover greys the row; keyboard focus rings the whole row", async ({ page }, info) => {
+    const row = page.locator("main ol > li").first();
+    const link = row.getByRole("link");
+    if (info.project.name === "desktop") {
+      await row.hover();
+      await expect.poll(() => css(row, "background-color")).toBe("rgb(236, 236, 236)") // MWDS `border` (#ececec), as the homepage rows;
+    }
+    await link.focus();
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Tab");
+    await expect(link).toBeFocused();
+    expect(await css(link, "box-shadow", "::after")).toMatch(/0px 0px 0px 3px/);
+    const rowBox = await box(row);
+    const after = await link.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const s = getComputedStyle(el, "::after");
+      return { position: s.position, w: s.width, h: s.height, linkW: r.width };
+    });
+    expect(after.position).toBe("absolute");
+    expect(parseFloat(after.w)).toBeCloseTo(rowBox.width, 0);
+  });
+
+  test("comparison columns line up on desktop", async ({ page }, info) => {
+    test.skip(info.project.name !== "desktop", "one-row layout is desktop only");
+    const rises = page.locator("main ol > li dl > div:first-child");
+    const xs = await rises.evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().left)));
+    expect(new Set(xs).size).toBe(1);
+    // Per-row labels are visually hidden on desktop (the header row carries them).
+    await expect(page.locator("main ol > li dt").first()).toHaveClass(/lg:sr-only/);
+  });
+
+  test("no horizontal overflow, 320 to 1920", async ({ page }) => {
+    for (const w of [320, 360, 393, 600, 768, 1024, 1280, 1440, 1920]) {
+      await page.setViewportSize({ width: w, height: 900 });
+      expect(await overflowX(page), `${w}px`).toBeLessThanOrEqual(0);
+    }
+  });
+
+  test("axe (WCAG 2.2 AA incl. contrast): clean", async ({ page }) => {
+    await loadAll(page);
+    expect(await axe(page)).toEqual([]);
+  });
+
+  test("the closing band leads to the calendar and Join", async ({ page }) => {
+    const band = page.locator("section[aria-labelledby=pick-heading]");
+    await expect(band.getByRole("link", { name: "Find a Run" })).toHaveAttribute("href", "/calendar");
+    await expect(band.getByRole("link", { name: "Join the club" })).toHaveAttribute("href", "/join");
+  });
+});
+
+test.describe("hill detail pages", () => {
+  for (const [i, slug] of SLUGS.entries()) {
+    test(`${slug}: renders, has metadata, and passes axe`, async ({ page }) => {
+      const res = await page.goto(`/hills/${slug}`);
+      expect(res?.status()).toBe(200);
+      await expect(page).toHaveTitle(`${NAMES[i]} — Chicago Mountain Runners`);
+      expect(await page.locator('meta[name="description"]').getAttribute("content")).toBeTruthy();
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText(NAMES[i]);
+      await expect(page.locator("header").getByRole("link", { name: /Chicago.*Mtns/ })).toHaveAttribute("aria-current", "page");
+      await loadAll(page);
+      expect(await axe(page)).toEqual([]);
+      expect(await overflowX(page)).toBeLessThanOrEqual(0);
+    });
+  }
+
+  test("the placeholder hill has no page", async ({ page }) => {
+    const res = await page.goto("/hills/example-hill");
+    expect(res?.status()).toBe(404);
+  });
+
+  test("Figma geometry: hero height, h1 and lede size, stats columns", async ({ page }, info) => {
+    const f = spec(info.project.name);
+    await page.goto("/hills/cricket-hill");
+    await page.evaluate(() => document.fonts.ready);
+    const hero = page.locator("section[aria-labelledby=hill-heading]");
+    expect(Math.abs((await box(hero)).height - f.heroH)).toBeLessThanOrEqual(2);
+    expect(parseFloat(await css(page.locator("#hill-heading"), "font-size"))).toBeCloseTo(f.h1, 0);
+    expect(parseFloat(await css(page.locator("section[aria-label=Overview] p").first(), "font-size"))).toBeCloseTo(f.lede, 0);
+    const stats = page.locator("[data-slot=hill-stat]");
+    const tops = await stats.evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+    expect(tops.filter((t) => t === tops[0])).toHaveLength(f.statCols);
+  });
+
+  test("the hero text is legible over the photograph", async ({ page }, info) => {
+    await page.goto("/hills/cricket-hill");
+    await loadAll(page);
+    for (const [name, locate, need] of [
+      ["hill name", page.locator("#hill-heading"), 3],
+      ["eyebrow", page.locator("#hill-heading").locator("xpath=preceding-sibling::p"), 4.5],
+      ["breadcrumb", page.getByRole("navigation", { name: "Breadcrumb" }), 4.5],
+    ] as const) {
+      const r = await measureTextContrast(page, locate);
+      info.annotations.push({ type: `contrast ${name}`, description: `worst ${r.worst} (median ${r.median}) over ${r.cells} cells` });
+      expect(r.cells, `${name}: measurable regions`).toBeGreaterThan(0);
+      expect.soft(r.worst, `${name} worst-region contrast`).toBeGreaterThanOrEqual(need);
+    }
+  });
+
+  test("the terrain profile keeps its labels and exaggeration caption", async ({ page }) => {
+    await page.goto("/hills/mt-trashmore");
+    const fig = page.locator("section[aria-labelledby=profile-heading] figure");
+    await expect(fig.locator("[data-slot=rise-legend]")).toContainText("≈ 60 ft");
+    await expect(fig.locator("figcaption")).toContainText("Vertical scale exaggerated.");
+    await expect(fig.locator("img")).toHaveJSProperty("complete", true);
+  });
+
+  test("Hill → Run → Hill: the run band links the run, whose page links back", async ({ page }) => {
+    await page.goto("/hills/cricket-hill");
+    await page.getByRole("link", { name: "View run: Cricket Mtn Repeats" }).click();
+    await expect(page).toHaveURL(/\/calendar\/cricket-mtn-repeats$/);
+    await page.getByRole("link", { name: "Cricket Hill" }).click();
+    await expect(page).toHaveURL(/\/hills\/cricket-hill$/);
+  });
+
+  test("a hill without a CMR run says so", async ({ page }) => {
+    await page.goto("/hills/schiller-hill");
+    await expect(page.getByRole("heading", { name: "No group runs here yet." })).toBeVisible();
+  });
+
+  test("map links open off-site in a new tab, and nothing is fetched from a map service", async ({ page }) => {
+    const external: string[] = [];
+    page.on("request", (r) => {
+      if (!r.url().startsWith("http://localhost")) external.push(r.url());
+    });
+    await page.goto("/hills/horner-hill");
+    await loadAll(page);
+    const dir = page.getByRole("link", { name: /Get directions/ });
+    await expect(dir).toHaveAttribute("target", "_blank");
+    await expect(dir).toHaveAttribute("href", /^https:\/\/www\.google\.com\/maps\/dir\/\?api=1&destination=Horner%20Park/);
+    expect(external).toEqual([]);
+  });
+
+  test("breadcrumb and More hills lead back into the directory", async ({ page }) => {
+    await page.goto("/hills/horner-hill");
+    const more = page.locator("section[aria-labelledby=more-heading]");
+    await expect(more.locator("ol > li")).toHaveCount(4);
+    await expect(more.locator("ol > li").first().getByRole("link")).toHaveAttribute("href", "/hills/schiller-hill");
+    await more.getByRole("link", { name: "All hills" }).click();
+    await expect(page).toHaveURL(/\/hills$/);
+    await page.goto("/hills/horner-hill");
+    await page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link").click();
+    await expect(page).toHaveURL(/\/hills$/);
+  });
+
+  test("no horizontal overflow, 320 to 1920", async ({ page }) => {
+    for (const slug of ["cricket-hill", "warren-hill"]) {
+      await page.goto(`/hills/${slug}`);
+      for (const w of [320, 360, 393, 600, 768, 1024, 1280, 1440, 1920]) {
+        await page.setViewportSize({ width: w, height: 900 });
+        expect(await overflowX(page), `${slug} at ${w}px`).toBeLessThanOrEqual(0);
+      }
+    }
+  });
+});
+
+test.describe("from the homepage", () => {
+  test("“Explore all hills” and each hill row reach the new pages", async ({ page }) => {
+    await page.goto("/");
+    const hills = page.locator("section[aria-labelledby=hills-heading]");
+    await hills.getByRole("link", { name: "Explore all hills" }).click();
+    await expect(page).toHaveURL(/\/hills$/);
+    await page.goto("/");
+    await hills.getByRole("link", { name: "Mt. Trashmore" }).click();
+    await expect(page).toHaveURL(/\/hills\/mt-trashmore$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mt. Trashmore");
+  });
+});
+
+test.describe("visual @visual", () => {
+  for (const path of ["/hills", "/hills/cricket-hill", "/hills/warren-hill"]) {
+    test(`full page ${path}`, async ({ page }, info) => {
+      await page.goto(path);
+      await page.evaluate(() => document.fonts.ready);
+      await loadAll(page);
+      const name = path.replaceAll("/", "-").slice(1);
+      await expect(page).toHaveScreenshot(`${name}-${info.project.name}.png`, { fullPage: true, animations: "disabled" });
+    });
+  }
+});
