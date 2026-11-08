@@ -47,15 +47,28 @@ export async function measureTextContrast(page, target) {
       [data-cmask] { opacity: 1 !important; }
       [data-cbg], [data-cbg] * { color: transparent !important; -webkit-text-fill-color: transparent !important; }`,
   });
-  // Scroll only after transitions are off, then let the sticky header settle
-  // (it may turn compact, shifting content) before the element is located.
+  // Scroll only after transitions are off, then wait until the element's box is
+  // stable (the sticky header may change height a frame or two later, shifting
+  // content; slower machines need more frames). The three captures must align.
   await target.evaluate((el) => el.scrollIntoView({ block: "center" }));
-  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
-  const box = await target.boundingBox();
-  if (!box) throw new Error("element not visible");
-  const clip = { x: Math.floor(box.x), y: Math.floor(box.y), width: Math.ceil(box.width), height: Math.ceil(box.height) };
+  const settle = () =>
+    target.evaluate(
+      (el) =>
+        new Promise((resolve) => {
+          let last = "", same = 0, frames = 0;
+          const tick = () => {
+            const r = el.getBoundingClientRect();
+            const key = `${r.x},${r.y},${r.width},${r.height}`;
+            same = key === last ? same + 1 : 0;
+            last = key;
+            if (same >= 3 || ++frames > 120) resolve(key);
+            else requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }),
+    );
   // Inline !important beats any stylesheet rule, whatever its specificity.
-  const shoot = async (attr) => {
+  const shoot = async (attr, clip) => {
     if (attr)
       await target.evaluate((el, a) => {
         el.setAttribute(a, "");
@@ -71,9 +84,18 @@ export async function measureTextContrast(page, target) {
       }, attr);
     return png.toString("base64");
   };
-  const normal = await shoot(null);
-  const mask = await shoot("data-cmask");
-  const background = await shoot("data-cbg");
+  let normal, mask, background;
+  for (let attempt = 0; ; attempt++) {
+    const before = await settle();
+    const box = await target.boundingBox();
+    if (!box) throw new Error("element not visible");
+    const clip = { x: Math.floor(box.x), y: Math.floor(box.y), width: Math.ceil(box.width), height: Math.ceil(box.height) };
+    normal = await shoot(null, clip);
+    mask = await shoot("data-cmask", clip);
+    background = await shoot("data-cbg", clip);
+    // If the layout moved during the captures, they don't line up: take them again.
+    if ((await settle()) === before || attempt >= 2) break;
+  }
   const fontSize = parseFloat(await target.evaluate((el) => getComputedStyle(el).fontSize));
 
   return page.evaluate(

@@ -165,6 +165,14 @@ original at ≥ 3464px wide. Rights for the photograph remain unconfirmed.
   1.32 / 1.23 / 1.24:1; Just show up copy 3.74 / 3.81 / 3.56:1 (393 / 768 / 1440).
 - axe (WCAG 2.2 AA incl. contrast): clean on the homepage, header, footer and
   the open Questions panel.
+- First Linux CI run on `7406b85`: `validate` passed; `browser` failed twice,
+  both measurement timing on the slower runner, not product defects: (1) the
+  320px contrast sweep's first capture returned *no measurable cells* (NaN) —
+  the sticky header re-expanded mid-capture; the helper now waits for the
+  element's box to be stable and retakes the three captures if it moved;
+  (2) the hills layout-shift check saw 0.5px when section and list were read in
+  separate calls — now read in one pass, allowing ≤ 1px (sub-pixel). Contrast
+  thresholds and exceptions unchanged.
 
 ### Round 2 open Owner decisions
 

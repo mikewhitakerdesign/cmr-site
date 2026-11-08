@@ -482,8 +482,14 @@ test.describe("Round 2 interactions", () => {
   test("hill rows preview their profile on hover and focus, without moving the layout", async ({ page }, info) => {
     const shown = () => hills(page).locator("[data-slot=hill-profiles] > [data-active]");
     await expect(shown()).toHaveAttribute("data-hill", "mt-trashmore");
-    const section = await box(hills(page));
-    const list = await box(hills(page).locator("ol"));
+    // Section height and the list's offset inside it, read in one pass so a
+    // settling sticky header can't skew them.
+    const layout = () =>
+      hills(page).evaluate((sec) => {
+        const s = sec.getBoundingClientRect(), l = sec.querySelector("ol")!.getBoundingClientRect();
+        return { height: s.height, listOffset: l.y - s.y };
+      });
+    const before = await layout();
     // All five drawings are fetched together, so switching never waits on the network.
     await hills(page).scrollIntoViewIfNeeded();
     await expect
@@ -496,8 +502,9 @@ test.describe("Round 2 interactions", () => {
     }
     await hills(page).getByRole("link", { name: "Cricket Hill" }).focus();
     await expect(shown()).toHaveAttribute("data-hill", "cricket-hill");
-    expect((await box(hills(page))).height).toBeCloseTo(section.height, 0);
-    expect((await box(hills(page).locator("ol"))).y - (await box(hills(page))).y).toBeCloseTo(list.y - section.y, 0);
+    const after = await layout();
+    expect(Math.abs(after.height - before.height)).toBeLessThanOrEqual(1);
+    expect(Math.abs(after.listOffset - before.listOffset)).toBeLessThanOrEqual(1);
   });
 
   test("touch-sized screens get explicit preview buttons; rows still navigate", async ({ page }, info) => {
