@@ -44,13 +44,17 @@ describe("FlatStateOfMind", () => {
     expect(screen.queryByRole("heading")).not.toBeInTheDocument();
   });
 
-  it("draws the topographic pattern decoratively, without re-applying Figma's baked opacity", () => {
+  it("draws the vector topographic pattern decoratively, static until the client opts in", () => {
     const { container } = render(<FlatStateOfMind />);
-    const img = container.querySelector("img")!;
-    expect(img.getAttribute("src")).toContain("topo-pattern.png");
-    expect(img).toHaveAttribute("alt", "");
-    expect(img.closest("[aria-hidden]")).not.toBeNull();
-    expect(img.className).not.toMatch(/opacity-/);
+    const svg = container.querySelector("[data-slot=topo-field]")!;
+    expect(svg).toHaveAttribute("aria-hidden");
+    expect(svg).toHaveAttribute("preserveAspectRatio", "xMidYMid slice");
+    const uses = svg.querySelectorAll("use");
+    expect(uses[0].getAttribute("href")).toBe("/home/topo.svg#topo");
+    // jsdom has no fine pointer: the liquid layer and filter never mount.
+    expect(svg).not.toHaveAttribute("data-live");
+    expect(uses).toHaveLength(1);
+    expect(svg.querySelector("filter")).toBeNull();
   });
 
   it("has no axe violations", async () => {

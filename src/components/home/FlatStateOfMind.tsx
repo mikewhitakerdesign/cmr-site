@@ -1,13 +1,17 @@
-import Image from "next/image";
 import { Container } from "@/components/Container";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
 import { cn } from "@/lib/utils";
+import { TopoField } from "@/components/home/TopoField";
 
 /**
  * "FLAT IS A STATE OF MIND." — Figma 1:376 (desktop), 78:355 (tablet),
- * 78:473 (mobile). White with the topographic line pattern (Figma image fill,
- * unaltered, `object-cover`; its 20% opacity is baked into the export) and a 1px
- * top rule at 40% black.
+ * 78:473 (mobile). White with the topographic line pattern and a 1px top
+ * rule at 40% black.
+ *
+ * Round 2 (Owner direction, 2026-11-08): the pattern is now vector — the Figma
+ * fill traced to paths (scripts/assets/vectorize-topo.mjs) — with a restrained
+ * liquid cursor effect on fine-pointer devices (TopoField). Static for touch
+ * and reduced motion; the statement itself never moves.
  *
  *            height  lines                 vertical padding
  *   mobile   398     70/70 ×3              94
@@ -27,10 +31,8 @@ export function FlatStateOfMind() {
       style={layout}
       className="relative isolate border-t border-foreground/40 bg-background text-foreground py-(--flat-py-a) md:py-(--flat-py-b)"
     >
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        {/* The exported fill already carries Figma's 20% layer opacity (black lines at
-            alpha 51 → gray 204, measured against the Figma render), so no CSS opacity. */}
-        <Image src="/home/topo-pattern.png" alt="" fill sizes="100vw" className="object-cover" />
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <TopoField />
       </div>
       <Container>
         <p style={statement} className={cn(FLUID_TYPE, "text-center font-black tracking-[-0.045em]")}>
