@@ -1,22 +1,19 @@
-import Link from "next/link";
+import { HomeHero } from "@/components/home/HomeHero";
+import { getUpcomingRuns } from "@/lib/runs";
+
+/**
+ * Homepage — Figma Home / Desktop 1:10, Tablet 1:451, Mobile 1:884.
+ * Header and Footer come from the root layout.
+ *
+ * The next run and upcoming list depend on the current Chicago time, so the
+ * page is regenerated hourly (route segment `revalidate`; Cache Components is
+ * not enabled). No client polling (Owner decision D5).
+ */
+export const revalidate = 3600;
 
 export default function Home() {
-  return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-24">
-      <h1 className="text-4xl font-semibold tracking-tight">
-        Chicago Mountain Runners
-      </h1>
-      <p className="max-w-xl text-lg text-muted-foreground">
-        Chicago doesn&apos;t have mountains. We run hills anyway.
-      </p>
-      <div className="flex gap-4 text-sm font-medium">
-        <Link href="/calendar" className="underline">
-          See upcoming runs
-        </Link>
-        <Link href="/hills" className="underline">
-          Browse the hills
-        </Link>
-      </div>
-    </div>
-  );
+  const now = new Date();
+  const upcoming = getUpcomingRuns(now, 3);
+
+  return <HomeHero next={upcoming[0] ?? null} now={now} />;
 }

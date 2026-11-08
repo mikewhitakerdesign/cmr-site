@@ -1,0 +1,12 @@
+/*
+ * CMR application layer — not MWDS.
+ *
+ * Holds the few typographic features the approved CMR Figma uses that MWDS
+ * has no token or utility for. It adds no colors, sizes, or spacing: those
+ * stay MWDS tokens, or fluid layout values set per element (src/lib/fluid.ts).
+ */
+
+/* Geist stylistic set 08, applied in Figma to CMR display headings. */
+@utility ss08 {
+  font-feature-settings: "ss08" 1;
+}

@@ -1,0 +1,564 @@
+---
+seed_version: '0.1'
+id: implement-cmr-homepage
+title: Implement the CMR homepage from the approved Figma design
+objective: >-
+  Translate the approved CMR homepage (Figma Home / Desktop 1:10, Tablet
+  1:451, Mobile 1:884) into a production-quality, responsive Next.js page
+  that reuses the merged MWDS foundation and shared UI, with strong visual
+  fidelity, real routes, accessible interaction, and automated plus
+  screenshot-reviewed validation.
+status: active
+stage: implementation
+active_capability: ui-implementation
+bundle_references:
+  - repository-versioned-delivery
+  - software-engineering
+  - web-ui-experience
+  - content-publication
+authority_requirement: none
+validation_state: in-progress
+blocker_state: none
+current_responsibility: orchestrator
+created_at: '2026-11-07T23:52:00.000Z'
+updated_at: '2026-11-08T00:55:00.000Z'
+---
+## Status
+
+**Implementation authorized and in progress** on branch `feat/cmr-homepage`
+(from `main` at `e610c25`). The Owner reviewed this plan and authorized all six
+slices to run consecutively without intermediate reviews (2026-11-07, "CMR —
+Complete Homepage Implementation"). The completed homepage is reviewed as one
+experience. Merge and deployment are not authorized.
+
+## Owner authorization and approved decisions (2026-11-07)
+
+These supersede "Owner decisions requested" (kept below for history).
+
+- **D1, content → provisional.** Unverified Figma content (runs, club totals,
+  Mt. Trashmore figures) may be used for visual development but must be
+  visibly marked so it cannot be mistaken for verified data. Nothing is
+  fabricated. Existing placeholder records stay identifiable.
+- **D2, gradient → static image.** Extract the static Figma gradient as an
+  optimized image. No WebGPU runtime.
+- **D3, hero photo → provisional.** Use the existing Figma raster; record the
+  resolution and rights requirement for launch. Use the high-resolution "Just
+  show up" photo, optimized. No stock or generated substitutes.
+- **D4, breakpoints → judgment, documented.** Follow all three frames. Correct
+  obvious inconsistencies (off-container elements, colliding type). Do **not**
+  automatically carry desktop decoration to tablet and mobile; classify each
+  difference as intentional adaptation, incomplete design, or needing design
+  review.
+- **D5, scheduling → both.** Support weekly recurrence rules, individual dated
+  runs, cancellations/exceptions, one-off special runs, and overrides, in
+  `America/Chicago` including DST. Simplest maintainable v1 model; no
+  database, CMS, scheduling service, or browser polling. Routes unchanged.
+- **D6, interaction → complete states.** Keyboard, hover, focus, active, and
+  disabled states; contrast-appropriate focus on white, black, mint, and
+  photographic surfaces; the smallest visually appropriate adjustment where
+  text over imagery lacks contrast; reduced motion respected; no reliance on
+  accessibility exceptions or on axe alone.
+- **Design system:** MWDS tokens and existing primitives; keep the three
+  component layers distinct; no parallel color or type system; no MWDS
+  library or Figma changes; no Code Connect.
+- **Revised slice order:** 1 Hero + next-run card; 2 Community statement + club
+  totals; 3 Upcoming runs (completes the scheduling model); 4 Chicago hills;
+  5 Just show up + Flat; 6 full-page refinement and hardening, compared at 393,
+  768, 1024, 1440, and 1732.
+- **Delivery:** commit cohesive increments, push the branch, open one PR, do
+  not merge or deploy.
+
+## Inputs and evidence
+
+- Baseline: `main` at `e610c25c3bd11dfb1bc7f816dc56a857244731a2` (PR #2,
+  MWDS foundation and shared UI, merged).
+- CMR Figma `hLEeAchFtgd1WFtboIChil`: Home / Desktop `1:10` (1732 × 5702),
+  Tablet `1:451` (768 × 4500), Mobile `1:884` (393 × 4873). Inspected with
+  `get_metadata`, `get_design_context` per section per breakpoint,
+  `get_variable_defs`, and full-frame plus section screenshots.
+- MWDS library `H08HgMeVx6V23wY7aZdENf`: searched for icon and card components
+  (`search_design_system`).
+- Governing records: `define-cmr-v1-scope` (+ approval), the IA and content
+  model (`define-cmr-v1-ia-and-content-model`, untracked, read only), visual
+  direction (`explore-cmr-v1-visual-direction`, untracked, read only),
+  `implement-cmr-mwds-foundation-and-shared-ui`, `implement-mwds-code-connect`.
+- Next.js 16.4.5 bundled docs (`node_modules/next/dist/docs/`): Image
+  (`preload` replaces the deprecated `priority`; art direction via
+  `getImageProps`), route segment `revalidate` (previous caching model;
+  `cacheComponents` is not enabled in `next.config.ts`).
+
+Evidence (E) and inference (I) are labelled where the distinction matters.
+
+## Current-state assessment
+
+**Exists and is reused unchanged**
+
+| Asset | Use on the homepage |
+|---|---|
+| `Header` + `NavLink` + `CmrLogo` (root layout) | Figma Navigation 1:436 / 78:259 / 78:377 is already implemented and geometry-tested. The homepage needs no header change: Figma's desktop nav is opaque white and sits over the top 122px of the hero frame, which equals the existing in-flow header. |
+| `Footer` + `NewsletterSignup` (root layout) | Figma Footer 1:314 / 78:359 / 78:477 is already implemented. Its decisions (legal links hidden, social links env-gated, newsletter disabled until a provider is configured) apply unchanged. |
+| `ui/button`, `ui/input` | Only inside `NewsletterSignup`. No homepage body element is an MWDS Button instance (E: hero and "Just show up" CTAs are plain frames). |
+| MWDS tokens and Tailwind bridge | Colors, radii, spacing (4px grid), `text-p*`, `text-caption`, `text-h2`, `text-h3`, `font-mono`, shadows. |
+| `src/lib/runs.ts`, `src/lib/hills.ts` | The data source for the runs list, next-run card, and hills list. Both currently hold one labeled placeholder record each. |
+| `src/lib/navigation.tsx` | Route destinations (`/calendar`, `/hills`, `/about`, `/join`). |
+| Vitest, Playwright (393/768/1440), axe, macOS `@visual` baselines, CI | Extended, not replaced. |
+
+**Exists and is replaced:** `src/app/page.tsx` (scaffold placeholder).
+
+**Missing:** every homepage section, CMR display typography and fluid scaling,
+icons, inverse (on-dark and on-photo) CTA and focus treatments, the photo and
+mesh-gradient backdrop, the run schedule model (weekday recurrence, workout
+summary, duration), club totals data, and all homepage imagery.
+
+**Observed, out of scope, not changed:** `CmrLogo` passes `priority` to
+`next/image`, which Next.js 16 deprecates in favour of `preload`. It still
+works. Recommend a one-line fix in a later shared-UI change.
+
+## Figma section inventory
+
+Display order is identical at all three breakpoints. Desktop measurements are
+inside the 1400px container (48px side padding, so content is 1304px wide);
+tablet uses 48px and mobile 24px side padding. "lh" is line height.
+
+| # | Section | Desktop / Tablet / Mobile nodes | Content and structure | Destinations |
+|---|---|---|---|---|
+| 0 | Navigation | 1:436 / 78:259 / 78:377 | Existing `Header` | existing |
+| 1 | Hero "Make your own MTNS" | 1:377 / 78:279 / 78:397 | Photo + mesh-gradient shader fill (20%); h1 "MAKE YOUR / OWN MTNS" (Geist Black, white, 60% opacity, centered, line 2 tracking +10px); CTAs "Find a Run" (white solid) and "Become a Mtn Runner" (2px white outline); black "Next run" card (eyebrow, title, clock + "TUE · 5:30 AM" in Geist Mono, pin + "Cricket Hill · Montrose Beach", "Run details →") | `/calendar`, `/join` (I), `/calendar/[slug]` |
+| 2 | Community introduction | 1:16 / 78:291 / 78:409 | Vertical black hill-silhouette mark (raster, rotated −90°) beside a Geist Black + ss08 statement: "Chicago Mountain Runners™ is a running community for finding elevation, running it repeatedly and occasionally questioning our ~~sanity~~ decisions." | none |
+| 3 | 2026 club totals | 1:243 / 78:294 / 78:412 | Heading; four stats: 132K ft Vertical climbed, 2.5K Total miles, 2 Runners on the hills, 240 Number of runs | none |
+| 4 | Upcoming runs | 1:24 / 78:304 / 78:422 | Black surface. Eyebrow "Upcoming runs"; h2 "See you on the hill."; "See the full schedule →"; three run rows: day · time, run name, location, workout · duration, ↗ | `/calendar`, `/calendar/[slug]` |
+| 5 | Chicago hills | 1:118 / 78:323 / 78:441 | h2 "Get high in the city."; intro copy; "Explore all hills →" (desktop only, see D4); Mt. Trashmore labeled 3D profile illustration; five numbered hill rows (01–05: name, park · neighborhood, ↗); the Mt. Trashmore row has a `#ececec` fill | `/hills`, `/hills/[slug]` |
+| 6 | Just show up | 1:296 / 78:348 / 78:466 | Photo + the same mesh gradient (50%); h2 "JUST SHOW UP."; copy at 75% white; CTAs "Find a Run" (solid) and "Join Us" (outline) | `/calendar`, `/join` |
+| 7 | Flat is a state of mind | 1:376 / 78:355 / 78:473 | White + topographic line pattern (raster, 20% opacity); 1px top border at 40% black; centered three-line Geist Black statement | none |
+| 8 | Footer | 1:314 / 78:359 / 78:477 | Existing `Footer` | existing |
+
+### Responsive layout by section (Figma, E)
+
+| Section | Desktop (≥1400 container) | Tablet 768 | Mobile 393 |
+|---|---|---|---|
+| Hero | Frame 968 tall, of which 846 is visible below the header. h1 209/204. CTA row (h56, px28, 18px semibold, gap 12) and card share a top edge 799px from the frame top. Card is 542 wide, p32, radius 8, `0 24 30 rgba(65,65,65,.55)` shadow, and overhangs the next section by about 74px. | 670 tall. h1 98/102. CTAs h56 at y304. Card 380 × 245 at (340, 400), inside the hero, no radius, no icons. | 614 tall. h1 48/52. CTAs h48 with 15px text at y230. Card 345 × 245 full width at y326, no radius, no icons. |
+| Community | Mark 93 × 385; statement 64/68, about 1053 wide, 36px gap | Mark 60.5 × 250; statement 42/44, 584 wide at x136 | Mark 30.7 × 127; statement 27/29, 297 wide at x72 |
+| Totals | py96; heading 64/60.8 Black ss08; grid pt56, 4 × 302 columns, gap 32; value 96/60.8 (−1.92), unit "ft" 24; label pt12 16/24 | heading 44/46; 4 × 150 columns, gap 24; value 48/54; label 13/18 | heading 32/34; 2 × 2 grid, 162.5 columns, gap 20, rows 112 apart; value 48/54; label 13/18 |
+| Upcoming runs | py96; heading row with link bottom-right; list pt56; row = grid 170 / 1fr (798) / 220 / 20, gap 32, py28, white top rule; final rule | Row 124 tall: time column 150 (14px mono), details at x170 (name 25/30, location 14/21), workout right-aligned on its own line; link centered below the list, no arrow | Row 166 tall, fully stacked (time, name 24/30, location, workout right-aligned); link centered below |
+| Hills | py128; 2-column grid 620 / 620, gap 64; h2 96/88 (−3.84); copy 18/27 medium, 474 wide; illustration aspect 1448:1086; rows py24 with black top rule: index (mono 16), name 64/60.8 semibold, neighborhood (16) right-aligned, ↗ 20 | Heading 54/54 and copy in a 310 column; illustration 314 × 236 at right; rows 96: index mono 13, name 32/36, neighborhood below 13/20; no arrows | Single column; heading 48/48; illustration 345 × 259; rows 100 with the index indented 8px; name 28/36 |
+| Just show up | py144; h2 144/129.6 (−6.48); copy pt32 630 wide 18/27; CTAs pt40 h56 | 430 tall; h2 80/80; copy 550 wide 16/24; CTAs h52 | 460 tall; h2 56/56 (wraps to 2 lines); copy 16/24; CTAs h52 |
+| Flat | 710 tall; three lines 144/129.6 (−6.48), centered | 514; 110/108 | 398; 70/70 |
+
+## Design analysis: discrepancies and ambiguities
+
+Evidence first; the recommended handling follows. Items marked **D#** need an
+Owner decision. Items marked **Rec** are planned unless the Owner objects at
+review.
+
+1. **Hero photo resolution (E). Blocks desktop fidelity (D3).** Every hero
+   fill is a 768 × 1024 portrait raster. On desktop it fills a 1732 × 968
+   landscape frame, so it is upscaled at least 2.25× (about 4.5× on 2× displays)
+   and appears stretched. A sharp desktop hero needs the original photograph.
+2. **Authored mesh-gradient shader (E) (D2).** Hero (20% opacity) and Just
+   show up (50%) carry the same Figma "Mesh gradient" `ShaderFill`: static
+   (`isAnimated: false`), 4 × 4 Catmull-Rom color mesh, WebGPU. Figma's
+   tooling expects its WebGPU runtime to be shipped.
+3. **Tablet and mobile frames are absolutely positioned and less detailed
+   than desktop (E).** They omit the card's radius and icons, the run-row
+   clock/pin/↗ icons, the hill-row arrows, the "See the full schedule" arrow,
+   and the "Explore all hills" link. Desktop is fully auto-laid-out. (D4)
+4. **Absolute letter-spacing is not scaled (E).** "JUST SHOW UP." and "FLAT
+   IS…" use −6.48px at 144, 110, 80, 70, and 56px. On mobile, "JUSTSHOW"
+   visibly collides in the Figma render. "Get high…" (−3.84) and hill names
+   (−1.92) behave the same way. (D4, recommend em-based tracking from the
+   desktop ratio.)
+5. **Desktop off-grid offsets (E).** Hero CTAs sit 19px inside the container
+   edge; the card's right edge is 27px inside; the community block starts 9px
+   left of the container edge, and its 1053px text overflows its 1024px
+   parent. Tablet and mobile align these to the container. (D4, recommend
+   aligning to the container.)
+6. **Mt. Trashmore row highlight (E; meaning is I).** The fifth hill row has a
+   `#ececec` fill at all breakpoints and matches the illustrated hill. The
+   most coherent reading is "featured hill whose profile is shown", not a
+   frozen hover state. (D4, recommend: featured state; the same fill is the
+   hover state for other rows.)
+7. **Club totals surface (E).** Section 1:243 has a cream (`#f4f1e8`) fill
+   fully covered by a white child, and its stat columns have 1px white top
+   rules, invisible on white. The approved render is white with no visible
+   rules. **Rec:** implement as rendered and log it for design cleanup.
+8. **Unbound values (E).** `get_variable_defs` on the whole page returns only
+   the newsletter instances' variables. Every body color, type style, and
+   spacing value is raw. All colors still resolve to existing tokens by value
+   (see Design-to-code mapping).
+9. **Empty frame next to "2026 club totals." (E: node 1:254, 144 × 24, no
+   children).** It is probably a placeholder for an "as of" note or link.
+   **Rec:** render nothing and ask the designer.
+10. **Content truth (E for text; I for status) (D1).** Runs (Cricket Mtn
+    Repeats TUE 5:30 AM, Horner Hell Repeats FRI 5:30 AM, Schiller Quad Killer
+    SAT 5:00 AM, with workouts and durations), five named hills with
+    neighborhoods, club totals, and the illustration's labeled figures (summit
+    669 ft, base 604 ft, rise 65 ft, prominence 85 ft) are real-world claims.
+    Prominence exceeding the stated rise needs a factual check.
+11. **Weekday-only schedule (E) versus the date-based Run model (D5).** The
+    homepage shows "TUE · 5:30 AM", not dates; the IA's Run model has `date`
+    as a required V1 field and a recurring flag as optional.
+12. **Contrast on photography (I, to be measured) (D6).** At risk: h1 white at
+    60% over a pale sky; the "Become a Mtn Runner" outline label over sky on
+    tablet and mobile; Just show up copy at 75% white. The MWDS focus ring is
+    black, which is invisible on the black runs section, the black card, and
+    dark photography.
+13. **"Shirts n' Stuff" / "Apparel" nav item** and the footer's legal and
+    social links: already decided (foundation decisions 1, 2, 4). Not
+    reopened.
+
+## Proposed component architecture
+
+Three layers, following the repository's existing conventions (flat
+`src/components`, MWDS primitives in `src/components/ui`, data in `src/lib`).
+
+**MWDS primitives:** none added. No homepage element is an MWDS instance;
+the MWDS component library is not expanded in this increment.
+
+**CMR shared components** (`src/components/`). Each is reused within the
+homepage and is a likely candidate for later pages; none duplicates existing
+functionality.
+
+| Component | Purpose | Why shared |
+|---|---|---|
+| `Container` | `mx-auto max-w-[1400px] px-6 md:px-12`, the container already used inline by Header and Footer | Every section. Header and Footer are not migrated in this increment (no changes to merged components); adopting it there is a follow-up. |
+| `CtaLink` | Link styled as the CMR photo CTA: `variant` = `solid-inverse` (white fill, black text) or `outline-inverse` (2px white border, white text); 6px radius (`rounded-md`); size from the section | Hero and Just show up; expected on Join and About. Not an MWDS Button variant (white-on-photo has no MWDS equivalent), mirroring how the header's Join Us CTA was handled (foundation discrepancy 6). |
+| `ArrowLink` | Medium text link with a trailing 16px arrow; inherits color | "See the full schedule", "Explore all hills", "Run details" |
+| `icons.tsx` | `ClockIcon`, `MapPinIcon`, `ArrowRightIcon`, `ArrowUpRightIcon`: the Figma-exported SVG paths verbatim (Lucide geometry; stroke 1.1667 at 16px, 1.25 at 20px), with `stroke="currentColor"` and `aria-hidden` | Four icons used 15 times. No `lucide-react` dependency; revisit if the icon count grows. |
+| `PhotoBackdrop` | Full-bleed `next/image` photo, plus the baked mesh-gradient overlay at a given opacity, behind section content; sets the on-dark focus variables (see Interaction specification) | Hero and Just show up; the brand's photography-plus-gradient treatment |
+
+**Homepage-specific components** (`src/components/home/`), one per section,
+composed by `src/app/page.tsx`:
+
+```
+src/app/page.tsx                    Server Component; metadata; revalidate (D5)
+└─ components/home/
+   ├─ HomeHero.tsx                  PhotoBackdrop, h1, CtaLink ×2, NextRunCard
+   │  └─ NextRunCard.tsx            eyebrow, title, <time>, location, ArrowLink
+   ├─ CommunityIntro.tsx            mark (next/image, CSS-rotated) + statement
+   ├─ ClubTotals.tsx                <dl> of stats from lib/club-totals
+   ├─ UpcomingRuns.tsx              eyebrow, h2, <ol> of UpcomingRunRow, ArrowLink
+   │  └─ UpcomingRunRow.tsx         stretched-link row
+   ├─ ChicagoHills.tsx              h2, copy, ArrowLink, <figure> illustration, <ol> of HillRow
+   │  └─ HillRow.tsx                stretched-link row, featured state
+   ├─ JustShowUp.tsx                PhotoBackdrop, h2, copy, CtaLink ×2
+   └─ FlatStateOfMind.tsx           topo pattern + statement
+```
+
+Run and hill rows stay homepage-specific until the Calendar and Hills index
+pages are designed. The schedule, sort, and format logic goes in `src/lib` so
+those pages can reuse it without reusing markup.
+
+**Data** (`src/lib/`; no CMS, database, API, or new integration):
+
+- `runs.ts`: extend `Run` (D5) with `schedule` (`{ kind: "weekly", weekday,
+  time }` or `{ kind: "once", date, time }`), optional `workoutSummary`
+  ("Hill repeats"), and optional `durationLabel` ("~60 min"). The latter two
+  map to the IA's optional "expected duration" and the workout field. Add pure
+  functions `nextOccurrence(run, now)`, `getUpcomingRuns(now, limit)`
+  (chronological from now, per IA decision 4), `getNextRun(now)`, and
+  `formatRunSlot()` ("TUE · 5:30 AM"), all in `America/Chicago`.
+- `hills.ts`: keep `neighborhood` as the display string ("Montrose Beach ·
+  Uptown"); add optional `profileIllustration` (src, alt, width, height).
+  Array order is display order (01–05).
+- `club-totals.ts` (new): `{ year, asOf, items: [{ value, unit?, label }] }`
+  as display strings, maintained by hand (no Strava API). The section renders
+  only when the Owner supplies values (D1).
+- Homepage copy stays in the section components; it is fixed brand copy from
+  Figma, not structured content.
+
+**Styles:** `src/styles/cmr.css` (new, imported after the generated MWDS
+files): a CMR app-layer stylesheet, explicitly not MWDS, holding (a) a
+`fluid-type` utility that interpolates font size, line height, and tracking
+piecewise-linearly between the Figma anchors (393 → 768 → 1400), and
+(b) `display` defaults (Geist Black, `ss08`). Values stay at each call site
+next to its Figma node ID, following the foundation's "off-scale values
+reproduced and commented" precedent. They become candidates for Figma and
+MWDS variables later. No generated token file or mapping is edited.
+
+## Design-to-code mapping
+
+| Figma value | Code | MWDS status |
+|---|---|---|
+| `#000000` text, fills, rules | `foreground`, `primary`, `border-foreground` | token (by value; unbound in Figma) |
+| `#ffffff` surface, text on dark | `background`, `primary-foreground` | token |
+| `#ececec` featured/hover row fill | `bg-border` (`general/border` = `cmr/divider` `#ececec`) | token value; semantic stretch, logged |
+| `#f4f1e8` (hidden) | not rendered | `secondary` |
+| White at 75% (JSU copy) | `text-primary-foreground/75` | token + opacity |
+| Black at 40% (Flat top rule) | `border-foreground/40` | token + opacity |
+| h1 at 60% opacity | `opacity-60` on the heading | raw opacity |
+| Eyebrow 14/21, +1.5px, uppercase | `text-caption uppercase` | exact MWDS caption |
+| Card title 30/30 −1 semibold | `text-h2 font-semibold` | exact MWDS h2 (desktop) |
+| Run name 24/28.8 −1 semibold | `text-h3` | exact MWDS h3 (desktop) |
+| Body 16/24, 18/27 medium, 14/20 medium | `text-p`, `text-p-lg font-medium`, `text-p-sm font-medium` | exact |
+| Geist Mono 16/24 (times, index) | `font-mono text-p` | MWDS monospaced |
+| Display: 209, 144, 110, 98, 96, 80, 70, 64, 56, 54, 48, 44, 42, 32, 28, 27, 26, 25px; Geist Black 900 + `ss08`; tracking −1.92 to −6.48 | `fluid-type` per call site | **not in MWDS** (MWDS h1 is 48 semibold) |
+| 13px labels and index (tablet, mobile) | `text-[13px]` | **not in MWDS** (same precedent as the mobile nav) |
+| Radius 8 (card), 6 (CTAs) | `rounded-lg`, `rounded-md` | token |
+| Card shadow `0 24px 30px rgba(65,65,65,.55)` | arbitrary `shadow-[…]` | **not in MWDS** (closest is `shadow-2xl`, a different value) |
+| Spacing 6, 12, 20, 24, 28, 32, 40, 48, 56, 64, 96, 128, 144 | numeric scale (`gap-1.5` … `py-36`) | all on the MWDS 4px absolute scale |
+| Container 1400 / padding 48 / 24 | `Container` | matches Header and Footer |
+| Mesh gradient | baked raster (D2) | **not in MWDS** (authored shader) |
+
+## Asset inventory
+
+None of these exist in the repository; all are Figma image fills or vectors.
+Nothing was exported to the repository during discovery (inspection copies
+were saved to the session scratchpad only).
+
+| Asset | Figma source | Native size (E) | Format and plan | Responsive | Dependency |
+|---|---|---|---|---|---|
+| Hero photograph (hill, lone runner) | fill on 1:377 / 78:279 / 78:397 | 768 × 1024 portrait (desktop file differs from tablet/mobile) | `next/image`, `preload`, `sizes="100vw"`, `object-cover`, anchored bottom; art direction via `getImageProps` if desktop and mobile crops differ | Yes | **D3: original at ≥3464px wide**, plus provenance and rights. Interim: the Figma raster, flagged as soft on desktop. |
+| "Just show up" photograph (trees on grass) | fill on 1:296 / 78:348 / 78:466 | 4096 × 3076 PNG, about 10 MB | Store a JPEG master (about 2880px wide, q≈90) rather than the 10 MB PNG; `next/image`, `object-cover`; desktop `object-position` ≈ 50% 6% (from Figma's crop), center elsewhere | Yes | Provenance and rights |
+| Mesh gradient | `ShaderFill` (same parameters in both sections) | procedural | D2: bake once by running the authored WGSL verbatim in local Chromium, save a small PNG, and stretch it with `object-fit: fill`. The mesh is defined in normalized coordinates, so stretching equals rendering at the target aspect. One asset serves both sections at 20% and 50%. | No (stretched) | D2 |
+| Community mark (hill silhouette) | fill on 23:103 / 78:292 / 78:410 | 4096 × 4096 PNG with alpha, mostly empty | Original file, drawn with `next/image` and a CSS crop and −90° rotation matching Figma. Do not trace or redraw. A vector original from the Owner would be preferable. | Size only | Provenance; vector if one exists |
+| Mt. Trashmore 3D profile (labeled) | fill on 31:16 / 78:327 / 78:445 | 1448 × 1086 PNG with alpha | `next/image` inside a `<figure>`; Figma's −8.96% vertical offset reproduced; alt text carries the labeled figures | Size only | Provenance; factual check of the figures (D1) |
+| Topographic pattern | fill on 1:376 / 78:355 / 78:473 | 1024 × 1024 PNG with alpha | Decorative CSS background or `aria-hidden` image at 20%, `object-cover` | No | Upscaled about 1.7× on desktop; an SVG or higher-resolution original preferred. Provenance. |
+| Icons (clock, map-pin, arrow-right, arrow-up-right) | vectors in 1:24, 1:118, 1:407 | 16 and 20 px SVG | `icons.tsx` (verbatim paths, `currentColor`) | No | none |
+| CMR wordmark | — | — | existing `CmrLogo` | — | none |
+
+Exporting production assets is a separate step taken at implementation time;
+each exported file's source node and export settings are recorded in
+`public/home/README.md`.
+
+## Interaction specification
+
+Figma draws no interaction states for the homepage body. The behavior below is
+designed to match MWDS and the merged shared UI; items marked (review) need
+design sign-off (D6).
+
+- **Links and destinations.** Hero "Find a Run" and Just show up "Find a Run"
+  go to `/calendar`; "Become a Mtn Runner" (I) and Just show up "Join Us" go
+  to `/join`; "Run details" and each run row go to `/calendar/[slug]`; "See
+  the full schedule" goes to `/calendar`; "Explore all hills" goes to
+  `/hills`; each hill row goes to `/hills/[slug]`. All internal, `next/link`.
+- **Rows** use a stretched link: the run or hill name is the only anchor, and
+  a `::after` overlay makes the whole row clickable. The accessible name stays
+  short, and there are no nested interactive elements.
+- **Hover (review).** Hill rows use `bg-border` (`#ececec`, the Figma
+  highlight). Run rows (on black) underline the name and nudge the ↗ by 2px.
+  `ArrowLink`s underline and nudge the arrow. `solid-inverse` CTAs use
+  `bg-secondary` (cream). `outline-inverse` CTAs invert to white fill with
+  black text. Transitions are color and transform only, 150ms, and disabled
+  under `prefers-reduced-motion`.
+- **Featured hill (D4).** The row whose hill has a profile illustration keeps
+  the `#ececec` fill and is associated with the figure through
+  `aria-describedby`. The illustration does not change on hover (only one
+  illustration exists).
+- **Focus (review).** The 3px ring plus 2px offset from foundation decision 5,
+  with color by surface. On white: `ring` (black). On black and on photos, the
+  section sets `--ring: var(--primary-foreground)` and `--focus-offset` to the
+  surface color. This is the same local-override pattern the footer uses for
+  `--focus-offset`, and it uses only tokens.
+- **Keyboard order** follows the DOM. On desktop, "See the full schedule"
+  appears visually top-right but sits in the DOM after the list (its
+  tablet/mobile position), so reading and tab order put it after the runs.
+  This is an intentional, minor visual/DOM divergence on desktop.
+- **Next-run card and list** are computed in `America/Chicago` and ordered
+  chronologically from "now" (IA decision 4). The page revalidates hourly
+  (`export const revalidate = 3600`, D5) so the card does not go stale between
+  deploys. Each slot renders `<time dateTime>` for its next occurrence.
+- **Empty and partial data.** With no runs, the card is omitted, and the runs
+  section shows "No runs on the calendar yet." with "See the full schedule".
+  With fewer than three runs, the list shows what exists. With no hills, the
+  list is omitted (heading, copy, and link remain). Without club totals, that
+  section is omitted.
+- **Motion:** none designed and none added.
+
+## Responsive strategy
+
+- **Three layouts, continuous type.** Mobile (<768), tablet (768–1023), and
+  desktop (≥1024) layouts match the header's existing `md` and `lg`
+  switches. Display type, stat values, and hero geometry interpolate between
+  the Figma anchors (393 → 768 → 1400) with `fluid-type`, so they hit Figma
+  values exactly at 393, 768, and ≥1400, and no intermediate width jumps or
+  overflows. The desktop design is the container-max state: from 1400px up,
+  layout is fixed and centered (the 1732px Figma frame and the 1440px test
+  viewport render the same content box).
+- **Pressure points between anchors**, each to be verified at 1024 and 1280:
+  the totals row (four 96px values in 208px columns at 1024 needs the fluid
+  scale), the hills 2-column grid (a 96px heading in a 432px column), the
+  desktop run grid (fixed 170/220/20 columns with a flexible title column),
+  and the hill-row name and right-aligned neighborhood.
+- **Images.** `object-cover` with Figma's anchor per breakpoint; hero
+  `preload`; all others lazy; explicit `sizes`. The desktop card overhangs the
+  hero by about 74px (negative bottom margin on the card, with matching top
+  padding in the community section); on tablet and mobile the card sits inside
+  the hero.
+- **Overflow.** No horizontal scroll from 320px up (asserted). Display lines
+  may wrap (for example "JUST SHOW UP." on mobile, as designed) but are never
+  clipped.
+- **Touch targets.** CTAs 48–56px tall; rows ≥96px; text links 24px high
+  (meets WCAG 2.5.8 at 24 × 24).
+
+## Implementation sequence
+
+Each slice ends with a working, tested section on `/` and a screenshot
+review against Figma at 393, 768, and 1440, plus 1732 for desktop pixel
+comparison. Work on branch `feat/cmr-homepage`.
+
+| Slice | Delivers | Needs |
+|---|---|---|
+| 1. Community intro + club totals | `Container`, `cmr.css` (`fluid-type`, display defaults), `CommunityIntro` (mark asset), `ClubTotals` + `lib/club-totals.ts` | D1 for real totals (otherwise the section ships hidden) |
+| 2. Upcoming runs | Run model extension + schedule logic (unit-tested across weekday, midnight, and DST boundaries), `icons.tsx`, `ArrowLink`, `UpcomingRuns`, on-dark focus treatment | D5; D1 for real runs (otherwise labeled fixtures) |
+| 3. Chicago hills | Hill model extension, `HillRow` with featured state, illustration `<figure>` | D1 (hills, illustration figures), D4 |
+| 4. Just show up + Flat | Mesh bake script + asset, `PhotoBackdrop`, `CtaLink`, JSU photo master, topo pattern | D2 |
+| 5. Hero + next-run card | `HomeHero`, `NextRunCard` (reuses slices 2 and 4), hero photo, `revalidate` | D3 (interim raster allowed, flagged) |
+| **Full-page preview** | First complete page. Owner browser review at 393, 768, 1024, 1440 against Figma, with the asset gaps listed. | — |
+| 6. Hardening | Section-rhythm tuning from the full-page review; metadata (title, description); intermediate-viewport sweep; full a11y and keyboard pass; `@visual` baselines; README and asset provenance; update this record | — |
+
+If D2 or D3 is unresolved when slice 4 or 5 starts, those slices proceed with
+the interim treatment and the gap is recorded. The rest of the plan is not
+blocked.
+
+## Testing and validation
+
+Deterministic checks are evidence, not Owner acceptance. Passing tests is not
+proof of visual fidelity.
+
+- **Unit and component (Vitest, jsdom).** Schedule math (`nextOccurrence`
+  across week wrap, the same day before and after the start time, DST
+  changeover, `America/Chicago` regardless of the host time zone);
+  `formatRunSlot`; chronological ordering; each section's headings
+  (exactly one h1, h2 per section), link names and hrefs, alt text, `<time>`
+  values, empty and partial data states; `CtaLink` and `ArrowLink` variants;
+  axe per section (contrast excluded in jsdom, as today).
+- **Browser (Playwright, Chromium; projects at 393, 768, 1440, plus a
+  review-only 1732 project).** Figma geometry per section at the three anchors
+  (container x, heading font size and line height, row heights, CTA and card
+  boxes, card overhang on desktop); computed token colors; fluid type equals
+  Figma at the anchors and is monotonic between them; no horizontal overflow
+  at 320, 600, 1024, 1180, and 1280; keyboard Tab order through the page;
+  visible focus on white, black, and photo surfaces (ring ≥3:1 against the
+  surface, checked like the foundation's footer test); `reducedMotion:
+  'reduce'` removes transitions; axe on `/` including contrast.
+- **Contrast on photography.** axe returns "incomplete" for text over images,
+  so a dedicated test samples the rendered pixels behind the h1, CTA labels,
+  and JSU copy and reports the ratio. Failures feed D6; they are not silently
+  accepted.
+- **Shared-UI regression.** Existing header and footer specs also run against
+  `/`; the footer and header `@visual` baselines must not change.
+- **Visual fidelity (human-reviewed).** Figma section screenshots at 393, 768,
+  and 1732 are captured into `tests/visual-reference/home/`. A local review
+  page shows each section side by side and as an overlay with the build at the
+  same width. Each slice records the reviewer's findings here. `@visual`
+  baselines (macOS) are added per section after review.
+- **Build.** `npm run lint`, `npx tsc --noEmit`, `npm run tokens:check`,
+  `npm test`, `npm run build` (`/` prerenders with revalidate), `npm run
+  test:e2e`, `npm run test:visual`. CI runs everything except `@visual`, as
+  today.
+
+## Risks and dependencies
+
+| Risk | Effect | Mitigation |
+|---|---|---|
+| Hero photo only 768px wide (E) | Soft or stretched desktop hero; fails the fidelity bar | D3; interim raster plus recorded gap |
+| Content is not real or not approved (D1) | Publishing invented facts; rework of data and illustration | D1; labeled fixtures until confirmed; totals hidden without values |
+| Tablet and mobile frames are less specified (E) | Rework if the design intends literal differences | D4 resolves it once |
+| Display type at intermediate widths | Overflow or awkward wraps at 1024–1280 | Fluid scaling plus viewport sweep tests |
+| Contrast over photos (D6) | WCAG 1.4.3 / 1.4.11 failures in hero and JSU | Measure in slice 4 and 5; design adjustment if needed |
+| Next-run staleness | Wrong "next run" between deploys | Hourly revalidate (D5); deployment itself remains separately authorized |
+| Asset weight (10 MB PNG) | Repository size, build time | JPEG master; `next/image` optimization |
+| Provenance unknown for all imagery | Publishing without rights | Owner confirms per asset before launch (not before implementation) |
+| `@visual` baselines are macOS-only | Visual regressions unseen in CI | Unchanged known limitation; run `test:visual` locally per slice |
+| Two Work Items remain untracked | Governing state exists in one working copy only | Recommendation below; not changed here |
+
+## Owner decisions requested
+
+1. **D1 — Content.** Are the Figma runs (three weekly runs with times,
+   locations, workouts, and durations), the five hills and neighborhoods, the
+   club totals (132K ft, 2.5K mi, 2 runners, 240 runs, year 2026), and the
+   Mt. Trashmore figures real and publishable? Recommended: confirm or correct
+   them; they become the first real records in `src/lib`. Unconfirmed
+   items render as labeled fixtures, and club totals stay hidden.
+2. **D2 — Mesh gradient.** Recommended: bake the static shader to a
+   committed raster (exact output, no WebGPU runtime, no client JS). The
+   alternative ships Figma's WebGPU `ShaderFill` runtime with a static
+   fallback for browsers without WebGPU.
+3. **D3 — Hero photograph.** Please supply the original image (≥3464px wide,
+   plus any separate mobile crop) and confirm rights for it, the Just show up
+   photo, the topographic pattern, the illustration, and the mark.
+4. **D4 — Breakpoint consistency (design sign-off).** Recommended: (a) carry
+   the desktop details (card radius and icons, row icons and arrows, schedule
+   arrow, "Explore all hills" link) to tablet and mobile; (b) use em-based
+   tracking from the desktop ratios; (c) align the desktop hero CTAs, card,
+   and community block to the container; (d) treat the Mt. Trashmore highlight
+   as "featured hill".
+5. **D5 — Run schedule model.** Recommended: weekly recurrence (weekday +
+   time) with optional dated one-off runs, computed in Chicago time, with
+   hourly revalidation of `/`. This changes the IA's required `date` field for
+   recurring runs, which is why it needs your decision.
+6. **D6 — Interaction and contrast sign-off.** Approve the hover and focus
+   treatments above (inverse white ring on dark and photo surfaces). If the
+   measured contrast of the hero h1, the "Become a Mtn Runner" label, or the
+   JSU copy fails, choose between a Figma-designed legibility treatment (for
+   example a scrim or a darker crop) and accepting it for the display h1 only.
+
+## Acceptance criteria
+
+- `/` renders sections 1–7 in Figma order between the existing Header and
+  Footer, and replaces the scaffold placeholder.
+- At 393, 768, and 1440 (and 1732 for desktop), each section matches Figma
+  geometry within the asserted tolerances, and a recorded side-by-side review
+  finds no unexplained differences. Every accepted difference is listed in the
+  discrepancy log with its decision.
+- No horizontal scroll and no clipped text from 320 to 1920px; display type
+  scales continuously and equals Figma at the anchors.
+- All links resolve to existing v1 routes; run and hill rows open the correct
+  detail pages; no link points to an out-of-scope or invented destination.
+- Content matches Figma copy exactly; data-driven parts come from `src/lib`;
+  unconfirmed data is visibly labeled or hidden per D1; nothing is fabricated.
+- The next-run card and list are chronological from the current Chicago time
+  and stay correct across revalidation.
+- Exactly one h1; a logical heading outline; informative images have alt text
+  and decorative ones are hidden; keyboard order is logical; focus is visible
+  (≥3:1) on every surface; axe reports no WCAG 2.2 AA violations; pixel-sampled
+  contrast passes or has an Owner-recorded exception (D6).
+- `prefers-reduced-motion` removes all transitions.
+- No new runtime dependency; no MWDS component or token-contract change;
+  Header, Footer, and NewsletterSignup unchanged, with their tests and visual
+  baselines passing.
+- Lint, typecheck, `tokens:check`, Vitest, build, Playwright, and
+  `test:visual` all pass; CI is green.
+- Every committed asset is a faithful Figma export or an Owner-supplied
+  original, with source and provenance recorded.
+
+## Scope and exclusions
+
+In scope: the homepage (`/`), its sections, assets, data-model extensions in
+`src/lib`, the CMR shared components listed above, `src/styles/cmr.css`,
+tests, and documentation.
+
+Out of scope: Calendar, Run detail, Hills, Hill detail, About, and Join page
+designs (they keep their current scaffolds and stay reachable); MWDS
+library expansion; Code Connect; Storybook; header or footer changes;
+newsletter provider selection; social handles; legal pages; accounts, RSVP,
+Strava API, commerce, and membership; deployment; any Figma edits.
+
+## Validation approach
+
+Deterministic: the test suite above. Judgment: per-slice screenshot review
+against Figma by the orchestrator, then Owner review at the full-page preview
+and at completion. Judgment results are recorded as review findings, not as
+pass/fail checks.
+
+## Proposed process improvements (not implemented)
+
+- **Commit the two untracked Work Items** (repeated from the foundation
+  record). This plan depends on both.
+- **Refresh stale state.** `profile.md` `bootstrap.next_governed_action` and
+  the foundation Work Item (`status: active`, `current_responsibility: owner`)
+  predate the PR #2 merge. Recommend the Owner close the foundation item and
+  point `next_governed_action` at this one.
+- **Close `explore-cmr-v1-visual-direction`.** Its recorded outcome (an
+  approved Figma direction) now exists in the CMR file.
+- **Design-side hygiene for Figma:** bind homepage colors and type to MWDS
+  variables; convert tablet and mobile frames to auto layout; draw hover and
+  focus states; resolve the club-totals surface and the empty 1:254 frame.
+
+## Authority requirement
+
+None structurally. Implementation is local, reversible, in-repo work within
+the approved v1 scope. The Owner has nonetheless gated implementation on review
+of this plan (`blocker_state: awaiting-owner-review`). Committing, pushing,
+opening a PR, merging, exporting production assets into the repository, and
+deployment each need explicit authorization when reached.
