@@ -19,7 +19,8 @@
  *                 anti-aliasing fringe.
  *
  * The element box is divided into square cells about half the font size
- * (clamped 12–64px). Each cell containing both text and background is scored
+ * (clamped 12–64px; doubled, up to twice, only if no cell has enough fully
+ * covered glyph pixels — thin light-on-dark text on Linux). Each cell containing both text and background is scored
  * conservatively: the median foreground luminance against the *worst 5%* of
  * that cell's background pixels (the 5th-percentile contrast). The element's
  * result is its worst cell — so a single region where letters cross a bright
@@ -134,24 +135,33 @@ export async function measureTextContrast(page, target) {
             }
         }
 
-      const cell = Math.min(64, Math.max(12, Math.round(fontSize / 2)));
-      const cells = [];
-      for (let cy = 0; cy < h; cy += cell)
-        for (let cx = 0; cx < w; cx += cell) {
-          const fg = [];
-          const bg = [];
-          for (let y = cy; y < Math.min(cy + cell, h); y++)
-            for (let x = cx; x < Math.min(cx + cell, w); x++) {
-              const p = y * w + x;
-              if (core[p]) fg.push(lum(N.d, p * 4));
-              else if (!fringe[p]) bg.push(lum(B.d, p * 4));
-            }
-          if (fg.length < 12 || bg.length < 12) continue;
-          fg.sort((a, b) => a - b);
-          const fgL = fg[Math.floor(fg.length / 2)];
-          const rs = bg.map((b) => ratio(fgL, b)).sort((a, b) => a - b);
-          cells.push({ x: cx, y: cy, ratio: rs[Math.floor(rs.length * 0.05)], fgL, bgL: bg.sort((a, b) => a - b)[Math.floor(bg.length * 0.95)] });
-        }
+      // Score cells of `size`; returns [] when no cell has enough glyph and background pixels.
+      const score = (size) => {
+        const out = [];
+        for (let cy = 0; cy < h; cy += size)
+          for (let cx = 0; cx < w; cx += size) {
+            const fg = [];
+            const bg = [];
+            for (let y = cy; y < Math.min(cy + size, h); y++)
+              for (let x = cx; x < Math.min(cx + size, w); x++) {
+                const p = y * w + x;
+                if (core[p]) fg.push(lum(N.d, p * 4));
+                else if (!fringe[p]) bg.push(lum(B.d, p * 4));
+              }
+            if (fg.length < 12 || bg.length < 12) continue;
+            fg.sort((a, b) => a - b);
+            const fgL = fg[Math.floor(fg.length / 2)];
+            const rs = bg.map((b) => ratio(fgL, b)).sort((a, b) => a - b);
+            out.push({ x: cx, y: cy, ratio: rs[Math.floor(rs.length * 0.05)], fgL, bgL: bg.sort((a, b) => a - b)[Math.floor(bg.length * 0.95)] });
+          }
+        return out;
+      };
+      // Small light-on-dark text can render so thin (Linux) that no half-font-size
+      // cell holds 12 fully covered glyph pixels. Then score coarser cells — same
+      // median-glyph vs worst-5%-background rule, just over a larger region.
+      let cell = Math.min(64, Math.max(12, Math.round(fontSize / 2)));
+      let cells = score(cell);
+      for (let k = 0; k < 2 && cells.length === 0; k++) cells = score((cell *= 2));
       cells.sort((a, b) => a.ratio - b.ratio);
       const r2 = (n) => Math.round(n * 100) / 100;
       return {

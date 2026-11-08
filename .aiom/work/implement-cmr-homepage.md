@@ -171,8 +171,13 @@ original at ≥ 3464px wide. Rights for the photograph remain unconfirmed.
   the sticky header re-expanded mid-capture; the helper now waits for the
   element's box to be stable and retakes the three captures if it moved;
   (2) the hills layout-shift check saw 0.5px when section and list were read in
-  separate calls — now read in one pass, allowing ≤ 1px (sub-pixel). Contrast
-  thresholds and exceptions unchanged.
+  separate calls — now read in one pass, allowing ≤ 1px (sub-pixel). The
+  second run showed (1) was not timing: Linux renders light-on-dark text thinner,
+  and the 320px CTA label (≈14.4px, white on the new black fill) had no
+  half-font-size cell with 12 fully covered glyph pixels. The helper now
+  re-scores with 2× (then 4×) cells only when no cell qualifies — same
+  median-glyph vs worst-5%-background rule. Contrast thresholds and exceptions
+  unchanged.
 
 ### Round 2 open Owner decisions
 
