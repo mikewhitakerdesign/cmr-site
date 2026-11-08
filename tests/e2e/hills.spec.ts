@@ -167,7 +167,11 @@ test.describe("hill detail pages", () => {
 
   test("the hero text is legible over the photograph", async ({ page }, info) => {
     await page.goto("/hills/cricket-hill");
-    await loadAll(page);
+    // Only the hero photo matters here (no full-page scroll: it hung once on the Linux runner).
+    const photo = page.locator("section[aria-labelledby=hill-heading] img");
+    await expect(photo).toHaveJSProperty("complete", true);
+    expect(await photo.evaluate((i: HTMLImageElement) => i.naturalWidth)).toBeGreaterThan(0);
+    await page.evaluate(() => document.fonts.ready);
     for (const [name, locate, need] of [
       ["hill name", page.locator("#hill-heading"), 3],
       ["eyebrow", page.locator("#hill-heading").locator("xpath=preceding-sibling::p"), 4.5],
