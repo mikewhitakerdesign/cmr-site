@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { HillProfile } from "@/components/HillProfile";
 import { ProvisionalBadge } from "@/components/ProvisionalBadge";
 import { getHill, hills } from "@/lib/hills";
 
@@ -28,6 +29,7 @@ export default async function HillPage({
         </p>
       )}
       <p className="text-muted-foreground">{hill.neighborhood}</p>
+      {hill.profile && <HillProfile name={hill.name} profile={hill.profile} className="mt-4 max-w-2xl" />}
       <dl className="grid grid-cols-2 gap-4 text-sm">
         <div>
           <dt className="text-muted-foreground">Elevation gain per repeat</dt>

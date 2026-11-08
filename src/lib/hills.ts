@@ -1,13 +1,6 @@
 import type { ContentStatus } from "@/lib/content-status";
-
-export interface HillIllustration {
-  src: string;
-  width: number;
-  height: number;
-  alt: string;
-  /** The labelled figures in the artwork are unverified until this is `verified`. */
-  status: ContentStatus;
-}
+import type { HillProfileData } from "@/lib/hill-profile";
+import { hillProfiles } from "@/lib/hill-profiles.generated";
 
 export interface Hill {
   slug: string;
@@ -18,7 +11,12 @@ export interface Hill {
   elevationGainFt?: number;
   repeatDistanceMi?: number;
   description: string;
-  profileIllustration?: HillIllustration;
+  /**
+   * Terrain illustration and approximate figures from USGS elevation data
+   * (Round 2; scripts/assets/terrain). Not Owner-verified measurements: the
+   * hill's own `status` still governs, and `elevationGainFt` stays unset.
+   */
+  profile?: HillProfileData;
   status: ContentStatus;
 }
 
@@ -29,8 +27,12 @@ export interface Hill {
  * - The five named hills and their park · neighborhood labels are the approved
  *   Figma homepage (Chicago hills 1:142), verbatim. They are `provisional`:
  *   CMR's use of them and every measurement are unconfirmed, so no elevation or
- *   distance is recorded. The Mt. Trashmore illustration is the approved Figma
- *   artwork; its printed figures are unverified.
+ *   distance is recorded.
+ * - Round 2 (2026-11-08): each listed hill has a terrain profile generated from
+ *   USGS 3DEP elevation data (Warren Hill's is interpretive — no hill could be
+ *   located in the data). It replaces the approved Mt. Trashmore raster, whose
+ *   printed figures (604 / 669 / 65 ft) the data broadly supports (≈ 605 / 670
+ *   / 60); its "prominence 85 ft" could not be checked and is no longer shown.
  */
 const PROVISIONAL_DESCRIPTION =
   "Hill listed in the approved homepage design. Elevation, repeat distance and surface have not been measured or confirmed yet.";
@@ -80,17 +82,13 @@ export const hills: Hill[] = [
     neighborhood: "Robert E. James Park · Evanston",
     description: PROVISIONAL_DESCRIPTION,
     status: "provisional",
-    profileIllustration: {
-      src: "/home/mt-trashmore-profile.png",
-      width: 1448,
-      height: 1086,
-      // Transcribes the artwork's labels; it asserts nothing beyond them.
-      alt:
-        "Illustrated 3D contour profile of Mt. Trashmore, labelled: base elevation 604 ft, summit elevation 669 ft, total height or rise 65 ft, prominence 85 ft. Gentler slopes with park loops on one side; a steep face popular for sledding and training on the other.",
-      status: "provisional",
-    },
   },
 ];
+
+for (const hill of hills) hill.profile ??= hillProfiles[hill.slug];
+
+/** The hill the homepage shows first (Owner direction, Round 2). */
+export const DEFAULT_PROFILE_SLUG = "mt-trashmore";
 
 export function getHill(slug: string): Hill | undefined {
   return hills.find((hill) => hill.slug === slug);
