@@ -359,16 +359,38 @@ test.describe("accessibility", () => {
    * are 15–18px semibold and the copy 16–18px medium, so neither counts as large.
    */
   const PHOTO_TEXT: [string, (p: Page) => Locator, number][] = [
-    ["hero headline", (p) => p.locator("#hero-heading"), 3],
     ["hero Find a Run", (p) => hero(p).locator("[data-slot=cta-link]").nth(0), 4.5],
     ["hero Become a Mtn Runner", (p) => hero(p).locator("[data-slot=cta-link]").nth(1), 4.5],
     ["Just show up heading", (p) => p.locator("#just-show-up-heading"), 3],
-    ["Just show up copy", (p) => p.locator("#just-show-up-heading + p"), 4.5],
     ["Just show up Find a Run", (p) => jsu(p).locator("[data-slot=cta-link]").nth(0), 4.5],
     ["Just show up Join Us", (p) => jsu(p).locator("[data-slot=cta-link]").nth(1), 4.5],
   ];
 
-  test("text over photography meets WCAG AA in its worst region", async ({ page }, info) => {
+  /**
+   * ACCEPTED ACCESSIBILITY EXCEPTIONS (Owner decision on PR #3, 2026-11-08).
+   * The Owner restored the approved ghosted hero headline (60% white with a soft
+   * halo) and the original Just show up treatment (30% shade, 90% white copy) and
+   * accepted their known contrast shortfall for this iteration. They do NOT meet
+   * WCAG AA 1.4.3 in their worst region and are not claimed to. They are measured
+   * and recorded on every run, but deliberately not asserted against a threshold
+   * (thresholds are not weakened; the two elements are simply outside the gate).
+   * Every other photo-text target above stays asserted. See the Work Item.
+   */
+  const ACCEPTED_EXCEPTIONS: [string, (p: Page) => Locator, number][] = [
+    ["hero headline", (p) => p.locator("#hero-heading"), 3],
+    ["Just show up copy", (p) => p.locator("#just-show-up-heading + p"), 4.5],
+  ];
+
+  test("accepted exceptions are still measured and recorded (not asserted)", async ({ page }, info) => {
+    await loadAll(page);
+    for (const [name, locate, need] of ACCEPTED_EXCEPTIONS) {
+      const r = await measureTextContrast(page, locate(page));
+      info.annotations.push({ type: `exception ${name}`, description: `worst ${r.worst} vs ${need} needed (p10 ${r.p10}, median ${r.median}) — below threshold by Owner decision` });
+      expect(r.cells, `${name}: measurable regions`).toBeGreaterThan(0);
+    }
+  });
+
+  test("text over photography meets WCAG AA in its worst region (excluding the accepted exceptions)", async ({ page }, info) => {
     await loadAll(page);
     for (const [name, locate, need] of PHOTO_TEXT) {
       const r = await measureTextContrast(page, locate(page));
@@ -378,7 +400,7 @@ test.describe("accessibility", () => {
     }
   });
 
-  test("photo text stays legible at intermediate widths, where the crop shifts", async ({ page }, info) => {
+  test("photo text outside the accepted exceptions stays legible at intermediate widths", async ({ page }, info) => {
     test.skip(info.project.name !== "desktop", "one sweep is enough; it sets its own widths");
     for (const width of [320, 600, 900, 1024, 1180, 1280, 1366, 1600, 1920]) {
       await page.setViewportSize({ width, height: 1000 });

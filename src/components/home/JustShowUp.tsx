@@ -18,11 +18,14 @@ import { cn } from "@/lib/utils";
  * Figma does — anchored ~6% from the top on desktop, centered elsewhere —
  * under the same baked mesh gradient as the hero at 50%.
  *
- * Deviation (accessibility): a 42% black legibility shade over the photo, and
- * copy at 100% white instead of 75%. Worst-region contrast must hold on every
- * platform the site is tested on: at 38% the copy measured ≥ 4.85:1 on macOS but
- * 4.47:1 at 1280px on Linux CI (text wraps differently over bright foliage), so
- * the shade carries headroom — tests/e2e/contrast.mjs.
+ * Legibility adjustment (not in Figma): a 30% black shade over the photo and copy
+ * at 90% white instead of 75%. The heading clears 3:1 in its worst region.
+ *
+ * ACCEPTED ACCESSIBILITY EXCEPTION (Owner decision, PR #3, 2026-11-08): the body
+ * copy measures about 3.6–4.0:1 in its worst region where lines cross bright
+ * foliage, below the 4.5:1 AA minimum. It is NOT WCAG AA compliant and is not
+ * claimed to be. A tested alternative (42% shade, full-white copy) reached
+ * ≥ 4.5:1 and is recorded in .aiom/work/implement-cmr-homepage.md.
  *
  * Tracking is −0.045em at every size (Figma: −6.48px everywhere, which is
  * −0.045em at 144px but makes letters collide at 56px — "JUSTSHOW" in the
@@ -61,11 +64,9 @@ export function JustShowUp() {
           />
         }
       >
-        {/* Legibility shade (not in Figma). The previous 30% shade with 90% copy passed a
-            background-only sample but failed the worst-region test (copy 3.56–4.04:1) where
-            lines cross bright foliage. With full-white copy, 35% is the macOS minimum and 38%
-            still failed on Linux CI (4.47:1 at 1280px); 42% passes on both. */}
-        <div data-slot="legibility-shade" className="absolute inset-0 bg-primary/42" />
+        {/* Legibility shade (not in Figma). Keeps the heading ≥ 3:1; the copy remains an
+            accepted exception below 4.5:1 (see the component comment). */}
+        <div data-slot="legibility-shade" className="absolute inset-0 bg-primary/30" />
       </PhotoBackdrop>
       <Container>
         <h2
@@ -81,7 +82,7 @@ export function JustShowUp() {
             FLUID_TYPE,
             // Tablet measure 540, not Figma's 550: Figma's text renders ~1% wider and breaks
             // before "ritual."; at 550 the browser fits it, which moves the CTAs up a line.
-            "mt-(--jsu-copy-mt-a) font-medium text-primary-foreground md:mt-(--jsu-copy-mt-b) md:max-w-[540px] lg:max-w-[630px]",
+            "mt-(--jsu-copy-mt-a) font-medium text-primary-foreground/90 md:mt-(--jsu-copy-mt-b) md:max-w-[540px] lg:max-w-[630px]",
           )}
         >
           No membership fee. No pace requirement. No complicated initiation ritual. Find a run, show up and climb the

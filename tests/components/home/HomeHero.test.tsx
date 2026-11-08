@@ -63,15 +63,6 @@ describe("HomeHero", () => {
     expect(container.querySelector("[data-slot=mesh-gradient]")).toHaveClass("opacity-20");
   });
 
-  it("keeps the ghosted headline legible: 75% letters over a shade confined to the headline band", () => {
-    const { container } = render(<HomeHero next={next} now={now} />);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveClass("opacity-75");
-    const shade = container.querySelector("[data-slot=headline-shade]") as HTMLElement;
-    expect(shade.closest("[aria-hidden]")).not.toBeNull();
-    expect(shade.style.backgroundImage).toMatch(/^linear-gradient\(to bottom, /);
-    expect(shade.style.backgroundImage).toContain("var(--foreground) 45%");
-  });
-
   it("has no axe violations", async () => {
     const { container } = render(<HomeHero next={next} now={now} />);
     expect(await axeViolations(container)).toEqual([]);
