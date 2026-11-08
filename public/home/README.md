@@ -10,8 +10,7 @@ artwork are unconfirmed and are release dependencies** (see
 
 | File | Source | Native → committed | Transformation | Status |
 |---|---|---|---|---|
-| `hero-desktop.jpg` | Image fill on Hero 1:377 (desktop) — kept unmodified at `scripts/assets/source/hero-desktop-figma.jpg` (768×1024) | → 1536×2048 JPEG q90 | **Round 2: restrained 2× Lanczos-3 upscale + light unsharp mask** (`scripts/assets/upscale-hero-desktop.mjs`). Nothing generated; fine texture stays as soft as the source. Served at optimizer quality 90 | **Provisional.** See "Original hero photograph" below. Needs a proper edit at full resolution and confirmed rights before launch. |
-| `hero.jpg` | Image fill on Hero 78:279 / 78:397 (tablet, mobile) | 768×1024 PNG → JPEG q90 | Re-encode only | Provisional; same photo, different frame. Rights unconfirmed. |
+| `hero.jpg` | **Round 2.1: the Owner's original photograph** (Cricket Hill, runner on the crest), supplied 2026-11-08 and kept at `scripts/assets/source/hero-original.jpg` (1920×2560). Used for every breakpoint | → 1920×1900 JPEG q84 (≈ 250 KB) | `scripts/assets/build-hero.mjs`: crop the top 1900 of 2560 rows (full width), then a light grade toward the approved look (saturation ×1.5, gamma 1.2). **No stretching, resampling, sharpening or generation.** Per-breakpoint crops are CSS `object-position` | **Provisional on rights only** (resolution is the best available: 1920 px, so ~0.75× on a 1440 screen, ~1.0× at 1920, soft only on 2× displays above ~960 CSS px). Rights unconfirmed. |
 | `just-show-up.jpg` | Image fill on Just show up 1:296 / 78:348 / 78:466 | 4096×3076 PNG (≈10 MB) → 2880×2163 JPEG q82 (≈1 MB) | Downscale + re-encode | Resolution sufficient. Rights unconfirmed. |
 | `mesh-gradient.png` | Authored "Mesh gradient" ShaderFill on 1:377 and 1:296 (same 16 control points) | Procedural → 256×256 PNG | Baked from the shader's own math by `scripts/assets/bake-mesh-gradient.mjs` | Final (Figma-authored). |
 | `community-mark.png` | Image fill on 23:103 / 78:292 / 78:410 ("CMR profile mark", 4096×4096) | → 373×1540 PNG with alpha | Cropped to the window Figma frames, rotated −90° as Figma does, downscaled | Rights/source vector unconfirmed. |
@@ -33,9 +32,11 @@ Trashmore artwork (kept as a style reference at
   "≈". Rise = summit minus the median ground elevation just outside the hill's
   foot. **Prominence is not computed and not shown.**
 - **Interpretation** (not measurement): the island outline and slab, the viewing
-  angle (steepest side turned to the right, as in the reference), easing the
-  ground to the base near the island edge, and vertical exaggeration (each
-  hill's rise is drawn the same height; factors 7–19×, recorded per hill).
+  angle (from the south, tilted, the same for every hill), easing the ground
+  to the base near the island edge, heavy smoothing (10% of the hill's width),
+  12 equal contour bands (no contour interval is claimed), and vertical
+  exaggeration (drawn rise = 55 + 75·√(rise/60) px: a gentle compression, factors
+  1.2–3.8×, recorded per hill).
 - **Warren Hill is interpretive**: no distinct hill could be located in the data
   around Warren Park, so its shape is illustrative and it shows no figures.
 
@@ -47,18 +48,28 @@ Trashmore artwork (kept as a style reference at
 | Schiller Hill | ≈ 645 ft | ≈ 630 ft | ≈ 15 ft | Steep mound beside the Schiller Woods pond; small at this resolution |
 | Mt. Trashmore | ≈ 670 ft | ≈ 605 ft | ≈ 60 ft | OSM "Mount Trashmore" peak. The approved art printed 669 / 604 / 65 ft (+ prominence 85 ft, not checkable here) |
 
-## Original hero photograph (Round 2 investigation)
+## Hero photograph (Round 2.1)
 
-The approved hero fill is the Cricket Hill photograph also found, larger, in the
-Owner's local files (`cricket-hill.jpg`: a 1673×964 photo inside a white mat;
-dated 2026-08-31). Same trees, runner and track. But the approved image is not
-just that photo scaled: the hill was reshaped into a steeper, peak-like crest
-(the "make your own mountains" joke), the track bends further down-left, the
-sky was extended upward and the color graded. Rebuilding the composition from
-the original would lose that edit, so Round 2 ships the restrained upscale above
-instead. Recommended: re-do the approved edit on the original at full
-resolution (≥ 3464 px wide for 2× displays), then replace `hero-desktop.jpg`
-and `hero.jpg`.
+The Owner supplied the original photograph (1920×2560, Cricket Hill, runner on
+the crest) on 2026-11-08; it is the hero source for every breakpoint.
+
+**What the approved Figma frame is** (corrects the Round 2 note, which guessed
+from a different, wider file): the same photograph with the hill **stretched
+vertically** (the crest and track read steeper), extra sky added above, and a
+more saturated grade. Runner, trees and track are identical. Rather than
+distorting the photo, the code **crops** it at its real proportions:
+
+- crop: top 1900 rows at full width (the crest is ≈ 74% down the file);
+- grade: saturation ×1.5 and gamma 1.2, chosen by eye against the approved frame
+  from three candidates (the approved sky is bluer, saturation ≈ 0.23 vs 0.14,
+  and its grass brighter and more saturated, ≈ 0.96 vs 0.65);
+- per-breakpoint framing by `object-position` (50% 0% below 1024 px, 50% 77%
+  from 1024 px, which puts the crest ≈ 72% down the hero on desktop, as in Figma).
+
+The hill is visibly **gentler** than in Figma, because the stretch was not
+reproduced. Resolution is limited by the file itself (1920 px wide). For sharper
+2× displays, a larger master is needed. The approved Figma raster is kept as a
+reference at `scripts/assets/source/hero-figma-approved.jpg`.
 
 Icons (clock, map pin, arrows) are inline SVG in `src/components/icons.tsx`,
 paths copied verbatim from the Figma exports.
@@ -66,7 +77,7 @@ paths copied verbatim from the Figma exports.
 ## Regenerating
 
 - Mesh gradient: `node scripts/assets/bake-mesh-gradient.mjs public/home/mesh-gradient.png 256`
-- Desktop hero: `node scripts/assets/upscale-hero-desktop.mjs`
+- Hero: `node scripts/assets/build-hero.mjs` (add `--plain` for the ungraded crop)
 - Topography: `node scripts/assets/vectorize-topo.mjs`
 - Hill profiles: `node scripts/assets/terrain/render-profiles.mjs` (offline, from
   the committed grids); `fetch-terrain.mjs` first to refresh the data

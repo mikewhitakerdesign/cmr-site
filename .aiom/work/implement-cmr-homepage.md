@@ -21,12 +21,13 @@ validation_state: passed
 blocker_state: awaiting-owner-review
 current_responsibility: owner
 created_at: '2026-11-07T23:52:00.000Z'
-updated_at: '2026-11-08T18:00:00.000Z'
+updated_at: '2026-11-08T20:00:00.000Z'
 ---
 ## Status
 
-**Round 2 refinement (2026-11-08) implemented and validated on PR #3; awaiting
-one coordinated Owner/GPT review.** See "Round 2 refinement" directly below.
+**Round 2.1 final visual refinements (2026-11-08) implemented and validated on PR #3,
+on top of Round 2; awaiting Owner/GPT review.** See "Round 2.1" and then "Round 2
+refinement" below.
 PR #3 stays open; not merged; no production deployment (Vercel Preview only).
 Verified implementation head **`c2da050`**: GitHub CI `validate` and `browser`
 pass (run 42505978575); Vercel deployment `B93L7N5SZUR24LPV31YAGNqyeKpJ` Ready as
@@ -46,6 +47,89 @@ iteration. Those two elements are **not WCAG AA compliant and are not claimed
 to be**. A contrast refinement (headline band; 42% shade) was built, measured
 and then reverted at the Owner's direction; it is kept in the record below as
 the tested alternative should the decision be revisited.
+
+## Round 2.1 final visual refinements (2026-11-08)
+
+### Authorization and scope
+
+A small follow-up on PR #3 (same branch, no new discovery): replace the hero
+image with the **original photograph the Owner attached**; give the header CTA a
+1px border; flip every CMR button to its opposite on hover; refine the hill
+graphics (wider, simpler, more coherent, less peaked; no "steepest side" tag;
+keep "Vertical scale exaggerated."); remove the topo liquid cursor effect, keeping
+the static vector background and adding nothing animated in its place. Not merged,
+not deployed; the two accepted contrast exceptions are unchanged; the two
+untracked work items are untouched.
+
+### As built
+
+| # | Direction | As built |
+|---|---|---|
+| 2.1-1 | Hero from the attached original, good quality, composition preserved, light treatment only | `scripts/assets/build-hero.mjs`: crop the top 1900 of 2560 rows at full width, light grade (saturation ×1.5, gamma 1.2). No stretch, resample, sharpen or generation. **One** image (`public/home/hero.jpg`, 1920×1900) for every breakpoint, framed by `object-position` (50% 0% below 1024px, 50% 77% from 1024px, crest ≈ 72% down on desktop as in Figma). `<picture>` art direction, `hero-desktop.jpg`, the upscale script and `next.config.ts` qualities are gone |
+| 2.1-2 | Header CTA 1px border | `CtaLink` gained an `outline` variant (1px black border, transparent) that the header CTA now uses instead of its own classes; 36px height and 110/128/150 widths unchanged |
+| 2.1-3 | Hover flips: black → white, white → black, transparent → black | `CtaLink` variants: `primary` (black → white), `secondary` (white → black), `outline` (transparent → black). All carry a 1px border (the fill's own color at rest; the label's opposite after the flip) so a flipped button keeps its edge on any surface. Active, focus ring (3px + 2px gap in the surface color), disabled, 1px press nudge and reduced-motion handling unchanged. Padding trimmed 1px so widths match Figma's |
+| 2.1-4 | Hills: wider, simpler, coherent, grounded; no "steepest side"; keep the exaggeration sentence | `render-profiles.mjs` rewritten around one recipe: 1000×540 canvas, island 910px wide at a flatter tilt, hill fills the island; smoothing at 10% of each hill's width; fuller dome curve (relief^0.8); 12 equal contour bands (every 4th heavier; no contour interval claimed); 2-line slab; darker low bands to lighter summit bands; same viewpoint for all. Drawn rise = 55 + 75·√(rise/60) px (exaggeration 1.2–3.8×, was 7–19×; recorded per hill). Steepest-side chip, leader, anchor, rotation and data removed. Caption keeps "Vertical scale exaggerated." (also on Warren Hill's illustrative caption) |
+| 2.1-5 | Remove the liquid cursor effect, keep the static topo | `TopoField` (client) deleted; `TopoPattern` is a Server Component with the vector paths and nothing else: no filter, mask, pointer handling or client JavaScript |
+
+### Hero photograph: correction to the Round 2 note
+
+Round 2 guessed (from a different, wider file) that the approved image was an edit
+with a reshaped crest. With the attached original the relationship is clear: the
+approved frame is **this photograph with the hill stretched vertically** (crest and
+track read steeper), extra sky above, and a more saturated grade. Runner, trees and
+track are identical. Round 2.1 reproduces the composition and grade by cropping
+and a light grade, **not** the stretch, so the hill is visibly **gentler** than in
+Figma. If the steeper hill is wanted, it is an explicit editing decision (below).
+Resolution is the file's own 1920px: ≈0.75× on a 1440px screen, sharp at 1×
+displays up to 1920px, soft only on 2× displays wider than ~960px. Rights remain
+unconfirmed. The approved raster is kept as `scripts/assets/source/hero-figma-approved.jpg`.
+
+### A product bug found and fixed on the way
+
+The repeated sticky-header test exposed that clicking the logo on the homepage
+could park the page ~18–27px short of the top (≈15% under CPU load; invisible
+when run alone). Cause: the header resized *in the page flow*, so Chrome's scroll
+anchoring moved the scroll position as it re-expanded mid-smooth-scroll. First fix
+(suspend anchoring during the scroll) was incomplete. Final fix: **the header's
+layout box never changes**: it keeps its expanded height (`min-h` 137.13 / 100 / 123px)
+and is click-through, and only the visible bar inside it
+(`[data-slot=header-bar]`) shrinks. Nothing below ever shifts, so there is no
+anchoring to fight. Verified 75/75 (25 repeats × 3 projects) under load, with a test
+that the document does not move when the header turns compact.
+
+### Contrast (method and thresholds unchanged; macOS Chromium)
+
+- Hero CTAs and Just show up CTAs: ≈19–21:1 (solid fills, unchanged).
+- Just show up heading: 3.54 / 3.80 / 3.67:1 at 393 / 768 / 1440 (≥ 3, asserted).
+- **Accepted exceptions, unchanged and not claimed compliant.** Hero headline re-measured
+  on the new photograph: **1.39 / 1.33 / 1.22:1** (Round 2: 1.32 / 1.23 / 1.24); Just
+  show up copy 3.74 / 3.72 / 3.56:1.
+- Hover states are solid black on white or white on black (21:1) and not photo-dependent.
+
+### Validation (2026-11-08, macOS, Chromium)
+
+- `npm run lint`, `tsc --noEmit`, `npm run tokens:check`: pass. `npm run build`: pass.
+- Vitest: **220 tests, 16 files, pass** (new `CtaLink` test; updated hero, hills, topo and header tests).
+- Playwright (393 / 768 / 1440): **130 pass, 8 visual skipped**, run twice with no flake;
+  visual **12 pass** after regenerating the affected macOS baselines (homepage ×3, header ×3,
+  footer ×5 — the footer changed only by a subpixel offset from the header's whole-pixel box).
+- New and changed browser checks: hero is one image at its real resolution (never upscaled
+  past the file) with per-breakpoint `object-position`; every CTA at rest and on hover
+  (1px border, flips); header CTA border, hover and focus ring; sticky header does not
+  shift the page; topo is static and unaffected by the pointer.
+- Formspree is still never contacted by tests (requests aborted unless mocked).
+
+### Round 2.1 notes and open decisions
+
+1. **Hero:** the hill is gentler than in Figma (no stretch). Decide whether the approved
+   steeper look should be recreated (an explicit edit of the original, ideally from a
+   larger master) or whether the true shape is preferred. A ≥ 3840px master would also
+   make 2× displays sharp.
+2. **Hero headline** sits at 1.22–1.39:1 on this photo (accepted exception; not claimed AA).
+3. **Hills:** Mt. Trashmore's real terracing leaves two lobes in the outer bands; the other
+   four are near-concentric. Say if it should be smoothed further for a tighter family.
+   Exaggeration is now modest (1.2–3.8×) and stated in every caption.
+4. "Join Us" (footer, Just show up) vs the header's "Join the club" — still open from Round 2.
 
 ## Round 2 refinement (2026-11-08)
 
@@ -67,13 +151,13 @@ Questions feature and asked for the official `@formspree/react` package.
 | R1 | Sticky nav; shrink logo and height on scroll; 1px black rule, no shadow | `HeaderShell` (client) sets `data-compact` past 96px of scroll, clears it below 16px (hysteresis vs. scroll anchoring); logo 188→112 / 128→96 / 100→72; 1px bottom border transparent → black; transitions only around the toggle (`data-animating`), none on resize; instant under reduced motion. `scroll-padding-top: 6rem` keeps focused content clear (WCAG 2.4.11) |
 | R2 | Links right, beside the CTA, consistent spacing; CTA "Join the club" | One gap between every item and the CTA (24 tablet, 36 desktop); mobile keeps a second row, right-aligned under the CTA. Footer link and Just show up CTA still say "Join Us" (not in the direction) |
 | R3 | Logo → home, and to top on the homepage | `HomeLink`: on `/`, a plain click scrolls to top (smooth unless reduced motion) and clears a hash; modified clicks unchanged |
-| R4 | Hero image: prefer the original; else a restrained upscale | **Original found but not usable as-is** (see "Hero photograph" below); shipped a 2× Lanczos-3 upscale of the approved fill, served at optimizer quality 90 (`next.config.ts` `images.qualities: [75, 90]`) |
+| R4 | **(Superseded in Round 2.1: original photograph used.)** Hero image: prefer the original; else a restrained upscale | **Original found but not usable as-is** (see "Hero photograph" below); shipped a 2× Lanczos-3 upscale of the approved fill, served at optimizer quality 90 (`next.config.ts` `images.qualities: [75, 90]`) |
 | R5 | CTAs: primary solid black / secondary solid white, hero and Just show up | `CtaLink` variants `primary` / `secondary` (replacing `solid` / `outline`): hover neutral 800 / cream, active 80% / border grey, 1px press nudge (motion-safe), focus ring unchanged. The outline CTA's 50% black fill (D6) is gone with the outline |
 | R6 | Community: name black, description lighter gray, strike kept, smaller superscript ™ | Description in `muted-foreground` (#737373, 4.7:1 — AA at any size); TM 0.645em → 0.3em on the cap line, positioned without stretching the line box |
 | R7 | Club metrics: no badge, centered heading, four equal pale tie-dye circles, smaller centered figures, odometer roll once | `ClubTotals` + `Odometer` (no dependency): figures 96→80 desktop, 48→40 below; circles ≤280 / 150 / 162; `cmr-tie-dye` utility (blooms, faint rings, conic swirl, blurred, clipped). Roll: CSS transforms only, one turn per digit, 1.1–1.6s staggered, once per mount; static when already visible at load, under reduced motion, and without JS; final values as text for assistive tech |
 | R8 | Runs: Cricket SAT 5:30 ~2 hrs; Horner WED 5:30 ~60 min; drop Schiller; no badges; approachable descriptions | Data updated in `src/lib/runs.ts` (Schiller Quad Killer removed from the data; its detail route no longer exists). Status stays `provisional`. Upcoming list = next occurrence **per run** (`getNextOccurrencePerRun`), so the list is the two-run schedule. Descriptions are inclusive, invent no paces or protocol, and end "…to be confirmed" |
-| R9 | Hills: interactive profiles, five-hill illustration family, pastel labels, prominent rise legend, reusable | `HillsExplorer` + `HillProfile` + generated vector art (below). Mt. Trashmore by default; mouse/pen hover and keyboard focus preview; click/tap navigates; phones and coarse pointers get "Preview a hill profile" toggle buttons; all five drawings stacked and loaded together (no flicker, no shift), 200ms cross-fade (instant under reduced motion); hidden profiles `inert` + aria-hidden. `HillProfile` is used on `/hills/[slug]` too |
-| R10 | Flat is a state of mind: vector topo + restrained liquid cursor | `topo.svg` traced from the approved fill; `TopoField`: SVG turbulence displacement inside a soft lens that follows the pointer with a lag, strength from pointer speed, filter confined to the lens box, frame loop stops at rest. Only with `(hover: hover) and (pointer: fine)` and no reduced-motion preference; static otherwise. Text never moves |
+| R9 | **(Illustrations refined and "Steepest side" removed in Round 2.1.)** Hills: interactive profiles, five-hill illustration family, pastel labels, prominent rise legend, reusable | `HillsExplorer` + `HillProfile` + generated vector art (below). Mt. Trashmore by default; mouse/pen hover and keyboard focus preview; click/tap navigates; phones and coarse pointers get "Preview a hill profile" toggle buttons; all five drawings stacked and loaded together (no flicker, no shift), 200ms cross-fade (instant under reduced motion); hidden profiles `inert` + aria-hidden. `HillProfile` is used on `/hills/[slug]` too |
+| R10 | **(Liquid cursor removed in Round 2.1; static vector topo remains.)** Flat is a state of mind: vector topo + restrained liquid cursor | `topo.svg` traced from the approved fill; `TopoField`: SVG turbulence displacement inside a soft lens that follows the pointer with a lag, strength from pointer speed, filter confined to the lens box, frame loop stops at rest. Only with `(hover: hover) and (pointer: fine)` and no reduced-motion preference; static otherwise. Text never moves |
 | R11 | Footer: very light gray, more padding, tone-on-tone logo, darker gray ink and inputs | `Footer`: MWDS `muted` (#f5f5f5); ink = neutrals 700 (#404040, 9.4:1); input border neutrals 500 (4.4:1, ≥ 3:1 for UI); `CmrLogo tone="current"` (same masks over a solid fill); padding 80/96/128 top; links + legal under a hairline. Newsletter behavior unchanged (`inputClassName` prop added) |
 | R12 | Floating Questions feature via Formspree `useForm` | `QuestionsWidget` in the root layout (every page): mint pill → non-modal dialog; question + email required, name optional; client validation mirrored by Formspree's; field and form errors linked to fields; "Sending…" + disabled; success only after Formspree confirms; Esc/close return focus; draft survives close/reopen; `_gotcha` honeypot. No storage, no CMR email API, no recipient address in the repo |
 
@@ -96,7 +180,7 @@ Questions feature and asked for the official `@formspree/react` package.
 - **Homepage-only:** `ClubTotals`, `UpcomingRuns`, `CommunityIntro`,
   `HillsExplorer`, `TopoField`, `FlatStateOfMind`, `HomeHero`, `JustShowUp`.
 
-### Hero photograph (R4 investigation)
+### Hero photograph (R4 investigation) — superseded; see "Round 2.1" above
 
 The approved hero fill (768×1024) is the Owner's Cricket Hill photograph, also
 present locally at 1673×964 (inside a white mat) in `~/Downloads/cricket-hill.jpg`

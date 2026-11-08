@@ -138,8 +138,28 @@ test.describe("structure and content", () => {
     const profiles = hills(page).locator("figure img");
     await expect(profiles).toHaveCount(5);
     for (const img of await profiles.all()) await expect(img).toHaveAttribute("loading", "lazy");
-    // The desktop source is the provisional 2× upscale, served at quality 90.
-    expect(await hero(page).locator("picture source").getAttribute("srcset")).toContain("q=90");
+  });
+
+  test("hero is the Owner's original photograph, sharp at this width and cropped per breakpoint (Round 2.1)", async ({ page }, info) => {
+    const img = hero(page).locator("img");
+    await expect(hero(page).locator("picture")).toHaveCount(0); // one source, not two art-directed rasters
+    await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth)).toBeGreaterThan(0);
+    const { natural, shown, src, fit, position } = await img.evaluate((i: HTMLImageElement) => ({
+      natural: i.naturalWidth,
+      shown: i.getBoundingClientRect().width,
+      src: i.currentSrc,
+      fit: getComputedStyle(i).objectFit,
+      position: getComputedStyle(i).objectPosition,
+    }));
+    expect(decodeURIComponent(src)).toContain("/home/hero.jpg");
+    expect(natural, "never upscaled past the file's own pixels").toBeGreaterThanOrEqual(Math.min(shown, 1920));
+    expect(fit).toBe("cover");
+    // Tablet/mobile top-aligned; desktop 77% down, so the crest sits ~72% down the hero.
+    expect(position).toBe(info.project.name === "desktop" ? "50% 77%" : "50% 0%");
+    // The runner on the crest stays clear of the headline: the photo starts below the nav and fills the hero.
+    const [h, i] = [await box(hero(page)), await box(img)];
+    expect(Math.round(i.width)).toBe(Math.round(h.width));
+    expect(Math.round(i.height)).toBe(Math.round(h.height));
   });
 });
 
@@ -332,13 +352,26 @@ test.describe("navigation and interaction", () => {
     const before = await css(row, "background-color");
     await row.hover();
     await expect.poll(() => css(row, "background-color")).not.toBe(before);
-    // Round 2 secondary (white) CTA: hover is the MWDS secondary cream.
-    const secondary = jsu(page).getByRole("link", { name: "Join Us" });
-    await secondary.hover();
-    await expect.poll(() => css(secondary, "background-color")).toBe("rgb(244, 241, 232)");
-    const primary = jsu(page).getByRole("link", { name: "Find a Run" });
-    await primary.hover();
-    await expect.poll(() => css(primary, "background-color")).toBe("rgb(38, 38, 38)");
+    // Round 2.1: every CTA flips to its opposite on hover, with a 1px border throughout.
+    for (const scope of [hero(page), jsu(page)]) {
+      const primary = scope.locator("[data-slot=cta-link]").nth(0); // black → white
+      const secondary = scope.locator("[data-slot=cta-link]").nth(1); // white → black
+      await primary.scrollIntoViewIfNeeded();
+      await page.mouse.move(2, 2); // park the pointer away so resting states are read at rest
+      expect(await css(primary, "background-color")).toBe("rgb(0, 0, 0)");
+      expect(await css(primary, "border-top-width")).toBe("1px");
+      await primary.hover();
+      await expect.poll(() => css(primary, "background-color")).toBe("rgb(255, 255, 255)");
+      expect(await css(primary, "color")).toBe("rgb(0, 0, 0)");
+      expect(await css(primary, "border-top-color")).toBe("rgb(0, 0, 0)");
+
+      await page.mouse.move(2, 2);
+      await expect.poll(() => css(secondary, "background-color")).toBe("rgb(255, 255, 255)");
+      expect(await css(secondary, "border-top-width")).toBe("1px");
+      await secondary.hover();
+      await expect.poll(() => css(secondary, "background-color")).toBe("rgb(0, 0, 0)");
+      expect(await css(secondary, "color")).toBe("rgb(255, 255, 255)");
+    }
   });
 
   test("reduced motion removes transitions; otherwise they are short", async ({ page, browser }) => {
@@ -427,20 +460,28 @@ test.describe("accessibility", () => {
 const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "POST, OPTIONS" };
 
 test.describe("Round 2 interactions", () => {
-  test("sticky header turns compact with a 1px black rule, and the logo returns to the top", async ({ page }) => {
+  test("sticky header turns compact with a 1px black rule, without shifting the page, and the logo returns to the top", async ({ page }) => {
     const header = page.locator("body > header");
-    const tall = (await box(header)).height;
+    const bar = header.locator("[data-slot=header-bar]");
+    const tall = (await box(bar)).height;
+    const docTop = () => page.evaluate(() => document.querySelector("main")!.getBoundingClientRect().top + window.scrollY);
+    const before = await docTop();
     await page.evaluate(() => window.scrollTo(0, 1200));
     await expect(header).toHaveAttribute("data-compact", "");
-    await expect.poll(async () => (await box(header)).height).toBeLessThan(tall - 20);
+    await expect.poll(async () => (await box(bar)).height).toBeLessThan(tall - 20); // the visible bar shrinks…
+    expect(await docTop()).toBe(before); // …but the layout never moves (no scroll-anchoring side effects)
+    expect(Math.round((await box(header)).height)).toBe(Math.round(tall)); // header box keeps its expanded height
+    expect(await css(header, "pointer-events")).toBe("none"); // …and is click-through
+    expect(await css(bar, "pointer-events")).toBe("auto");
     expect((await box(header)).y).toBe(0); // still pinned to the top
-    await expect.poll(() => css(header, "border-bottom-color")).toBe("rgb(0, 0, 0)");
-    expect(await css(header, "border-bottom-width")).toBe("1px");
-    expect(await css(header, "box-shadow")).toBe("none");
+    await expect.poll(() => css(bar, "border-bottom-color")).toBe("rgb(0, 0, 0)");
+    expect(await css(bar, "border-bottom-width")).toBe("1px");
+    expect(await css(bar, "box-shadow")).toBe("none");
     await page.getByRole("link", { name: "Chicago Mountain Runners" }).click();
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
     await expect(page).toHaveURL(/\/$/);
     await expect(header).not.toHaveAttribute("data-compact");
+    expect(await docTop()).toBe(before);
   });
 
   test("club figures roll once into their final values, which assistive tech reads directly", async ({ page }) => {
@@ -475,7 +516,7 @@ test.describe("Round 2 interactions", () => {
     await reduced.goto("/");
     await reduced.locator("section[aria-labelledby=club-totals-heading]").scrollIntoViewIfNeeded();
     for (const o of await reduced.locator("[data-odometer]").all()) await expect(o).toHaveAttribute("data-odometer", "settled");
-    await expect(reduced.locator("[data-slot=topo-field]")).not.toHaveAttribute("data-live");
+    await expect(reduced.locator("[data-slot=topo-pattern]")).toBeVisible();
     await reduced.close();
   });
 
@@ -524,25 +565,20 @@ test.describe("Round 2 interactions", () => {
     await expect(fig).not.toContainText("≈");
   });
 
-  test("the liquid topography runs only on fine pointers, and goes idle when the pointer rests", async ({ page }, info) => {
-    const field = flat(page).locator("[data-slot=topo-field]");
+  test("the topography is a static vector background: the pointer does nothing to it (Round 2.1)", async ({ page }) => {
+    const pattern = flat(page).locator("[data-slot=topo-pattern]");
     await flat(page).scrollIntoViewIfNeeded();
-    if (info.project.name !== "desktop") return; // Desktop Chrome emulation in every project; the sweep is enough once
-    await expect(field).toHaveAttribute("data-live");
+    await expect(pattern.locator("use")).toHaveCount(1);
+    await expect(pattern.locator("filter, mask, feTurbulence, feDisplacementMap")).toHaveCount(0);
+    const snapshot = () => pattern.evaluate((el) => el.outerHTML);
+    const before = await snapshot();
     const b = await box(flat(page));
     await page.mouse.move(b.x + 100, b.y + b.height / 2);
     for (let i = 1; i <= 12; i++) await page.mouse.move(b.x + 100 + i * 40, b.y + b.height / 2 + (i % 2) * 20);
-    const scale = () => field.locator("feDisplacementMap").getAttribute("scale").then(Number);
-    expect(await scale()).toBeGreaterThan(0);
-    // The statement never moves (measured against its section in one read).
-    const textOffset = () =>
-      flat(page).locator("p").evaluate((el) => {
-        const a = el.getBoundingClientRect(), b = el.closest("section")!.getBoundingClientRect();
-        return [a.x - b.x, a.y - b.y, a.width, a.height];
-      });
-    const text = await textOffset();
-    await expect.poll(scale, { timeout: 4000 }).toBe(0);
-    expect(await textOffset()).toEqual(text);
+    await page.waitForTimeout(300);
+    expect(await snapshot()).toBe(before);
+    // Crisp: constant 1.5px strokes at any size, drawn by the browser from vector paths.
+    expect(await pattern.locator("g").first().evaluate((g) => getComputedStyle(g).strokeWidth)).toBe("1.5px");
   });
 
   test("the Questions panel validates, sends through Formspree (mocked) and confirms", async ({ page }) => {

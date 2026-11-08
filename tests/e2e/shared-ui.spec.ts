@@ -83,6 +83,10 @@ test.describe("header", () => {
     const cta = await box(page.getByRole("banner").getByRole("link", { name: "Join the club" }));
     expect(Math.round(cta.width)).toBe(s.cta[2]);
     expect(Math.round(cta.height)).toBe(36);
+    // Round 2.1: 1px border, matching the bar's 1px bottom rule.
+    const ctaLink = page.getByRole("banner").getByRole("link", { name: "Join the club" });
+    expect(await css(ctaLink, "border-top-width")).toBe("1px");
+    expect(await css(ctaLink, "border-top-color")).toBe("rgb(0, 0, 0)");
     // Desktop: 1440 viewport → 1400 container + 48px padding puts the CTA's
     // right edge at 1372 (Figma: 48px inside the container edge).
     expect(Math.round(cta.x)).toBe(s.cta[0]);
@@ -103,6 +107,23 @@ test.describe("header", () => {
       expect(Math.round((await box(b)).x - ((await box(a)).x + (await box(a)).width))).toBe(s.linkGap);
       expect(links.x).toBeGreaterThan(logo.x + logo.width + 100);
     }
+  });
+
+  test("the Join the club CTA flips to black on hover and keeps a visible focus ring", async ({ page }, info) => {
+    const cta = page.getByRole("banner").getByRole("link", { name: "Join the club" });
+    expect(await css(cta, "background-color")).toBe("rgba(0, 0, 0, 0)");
+    if (info.project.name === "desktop") {
+      await cta.hover();
+      await expect.poll(() => css(cta, "background-color")).toBe("rgb(0, 0, 0)");
+      expect(await css(cta, "color")).toBe("rgb(255, 255, 255)");
+      await page.mouse.move(5, 300);
+    }
+    await cta.focus();
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Tab");
+    await expect(cta).toBeFocused();
+    const shadow = await css(cta, "box-shadow");
+    expect(rings(shadow).map((r) => r.spread)).toEqual([2, 5]); // 2px gap + 3px ring
   });
 
   test("desktop links are 80% opacity except the current page", async ({ page }, info) => {

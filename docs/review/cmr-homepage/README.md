@@ -1,6 +1,6 @@
 # CMR homepage — review evidence
 
-Captured 2026-11-08 after **Round 2** (Owner/GPT-approved visual refinement)
+Captured 2026-11-08 after **Round 2** and **Round 2.1** (Owner/GPT-approved visual refinements)
 from the production build (`npm run build && next start`) on branch
 `feat/cmr-homepage`, Chromium, 1× device pixel ratio, after scrolling the page
 so lazy images and the one-time figure animation have run. Figma references are
@@ -17,8 +17,16 @@ read-only renders of the CMR file (`hLEeAchFtgd1WFtboIChil`): Home / Desktop
 | `round-2/totals-rolling-1440.jpg`, `totals-settled-1440.jpg` | Club totals mid-roll (≈ 0.4s after entering view) and settled |
 | `round-2/hills-default-1440.jpg`, `hills-hover-horner-1440.jpg` | Hills section with Mt. Trashmore (default) and while hovering Horner Hill |
 | `round-2/hill-profiles-family.jpg` | All five hill profiles with their annotations |
-| `round-2/topo-liquid-1440.jpg`, `topo-static-1440.jpg` | The topography while the pointer moves across it, and at rest |
+| `round-2/topo-static-1440.jpg` | The topography at rest (Round 2; the liquid cursor effect it once accompanied was removed in Round 2.1) |
+| `round-2-1/before-hero-*.jpg` / `after-hero-*.jpg` | **Round 2.1.** The hero (header to the Next run card) at 393 / 768 / 1440 before and after the original photograph |
+| `round-2-1/buttons-rest-hover.jpg` | Every CTA at rest and on hover: header outline, hero pair, Just show up pair (black → white, white → black, outline → black; 1px borders) |
+| `round-2-1/before-hill-profiles-family.jpg`, `hill-profiles-family.jpg` | The five hill profiles before and after the refinement |
+| `round-2-1/before-hills-default-1440.jpg`, `hills-default-1440.jpg`, `hills-hover-horner-1440.jpg` | The Hills section before and after, and the hover preview |
+| `round-2-1/topo-static-1440.jpg`, `topo-pointer-moving-1440.jpg`, `before-topo-liquid-1440.jpg` | The static topography at rest and with the pointer moving across it (identical), and the removed liquid effect |
 | `round-2/questions-open-1440.jpg`, `questions-open-393.jpg`, `questions-validation.jpg` | Questions panel open (desktop, mobile) and with validation errors |
+
+`build-*.jpg` and `figma-vs-build-*.jpg` show the current page (Round 2.1). Other
+`round-2/` captures are historic: the hero and Hills images there predate Round 2.1.
 
 Interaction captures hide the sticky header where Playwright would otherwise
 stitch it into an element screenshot.
