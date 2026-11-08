@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ProvisionalBadge } from "@/components/ProvisionalBadge";
 import { getRun, runs, workoutLabel } from "@/lib/runs";
-import { getHill } from "@/lib/hills";
+import { hillsWithPages } from "@/lib/hills";
 import { describeSchedule } from "@/lib/schedule";
 
 export function generateStaticParams() {
@@ -19,7 +19,8 @@ export default async function RunPage({
   const run = getRun(slug);
   if (!run) notFound();
 
-  const hill = getHill(run.hillSlug);
+  // Only hills with a page are linked (the scaffold placeholder hill has none).
+  const hill = hillsWithPages().find((h) => h.slug === run.hillSlug);
   const workout = workoutLabel(run);
 
   return (
