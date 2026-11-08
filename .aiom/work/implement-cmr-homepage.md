@@ -26,8 +26,9 @@ updated_at: '2026-11-08T03:40:00.000Z'
 ## Status
 
 **All six slices implemented and validated; awaiting Owner review of the
-complete homepage.** Branch `feat/cmr-homepage` (from `main` at `e610c25`), one
-PR, not merged, not deployed. `validation_state: passed` covers the
+complete homepage.** Branch `feat/cmr-homepage` (from `main` at `e610c25`),
+PR #3 (https://github.com/mikewhitakerdesign/cmr-site/pull/3), not merged, not
+deployed. CI on the PR: `validate` and `browser` both pass (Linux). `validation_state: passed` covers the
 deterministic checks only. Owner acceptance, the open decisions, and the
 release dependencies below are still outstanding. The planning record from
 discovery follows the implementation record as history.
@@ -257,7 +258,7 @@ not a claim of pixel-perfect fidelity; the differences are listed above.
 | Pixel-sampled contrast passes or has an Owner-recorded exception | **Not met for the hero h1**: open decision 1 |
 | Reduced motion removes transitions | Met |
 | No new runtime dependency; no MWDS change; shared UI unchanged with tests and baselines passing | Met |
-| Lint, typecheck, tokens, Vitest, build, Playwright, visual pass | Met locally; CI on the PR |
+| Lint, typecheck, tokens, Vitest, build, Playwright, visual pass | Met locally; CI green on PR #3 |
 | Assets are faithful Figma exports with provenance recorded | Met (rights pending) |
 
 ## Planning record (discovery, 2026-11-07)
