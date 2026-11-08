@@ -16,6 +16,14 @@ describe("CommunityIntro", () => {
     expect(within(p).getByText("TM").tagName).toBe("SUP");
   });
 
+  it("keeps the name in black and sets the description in the muted gray (Round 2)", () => {
+    const { container } = render(<CommunityIntro />);
+    const desc = container.querySelector("p .text-muted-foreground")!;
+    expect(desc.textContent).toMatch(/^is a running community for finding elevation/);
+    expect(desc.textContent).not.toMatch(/Chicago Mountain Runners/);
+    expect(within(desc as HTMLElement).getByText("sanity").tagName).toBe("S");
+  });
+
   it("keeps the hill mark decorative", () => {
     const { container } = render(<CommunityIntro />);
     const img = container.querySelector("img")!;
@@ -35,15 +43,34 @@ describe("ClubTotals", () => {
     render(<ClubTotals totals={clubTotals} />);
     expect(screen.getByRole("heading", { level: 2, name: "2026 club totals." })).toBeInTheDocument();
     const terms = screen.getAllByRole("term").map((t) => t.textContent);
-    const values = screen.getAllByRole("definition").map((d) => d.textContent);
+    // Assistive tech gets the final value as text; the rolling digits are aria-hidden.
+    const values = screen.getAllByRole("definition").map((d) => d.querySelector(".sr-only")?.textContent);
     expect(terms).toEqual(["Vertical climbed", "Total miles", "Runners on the hills", "Number of runs"]);
-    expect(values).toEqual(["132Kft", "2.5K", "2", "240"]);
+    expect(values).toEqual(["132K ft", "2.5K", "2", "240"]);
+    for (const d of screen.getAllByRole("definition"))
+      for (const el of d.querySelectorAll("[aria-hidden]")) expect(el.closest(".sr-only")).toBeNull();
   });
 
-  it("marks unverified figures visibly (never published as fact)", () => {
+  it("puts each figure in its own pale tie-dye circle, mint → peach → lavender → blue", () => {
+    const { container } = render(<ClubTotals totals={clubTotals} />);
+    const circles = [...container.querySelectorAll<HTMLElement>("[data-slot=total]")];
+    expect(circles.map((c) => c.style.getPropertyValue("--tie-wash"))).toEqual([
+      "var(--cmr-tint-mint-wash)",
+      "var(--cmr-tint-peach-wash)",
+      "var(--cmr-tint-lavender-wash)",
+      "var(--cmr-tint-blue-wash)",
+    ]);
+    for (const c of circles) {
+      expect(c).toHaveClass("rounded-full", "aspect-square");
+      expect(c.querySelector(".cmr-tie-dye")).toHaveAttribute("aria-hidden");
+    }
+  });
+
+  it("keeps the provisional status on the data, without a visible badge (Round 2)", () => {
     expect(clubTotals?.status).toBe("provisional");
-    render(<ClubTotals totals={clubTotals} />);
-    expect(screen.getByText("Provisional · unverified figures")).toBeInTheDocument();
+    const { container } = render(<ClubTotals totals={clubTotals} />);
+    expect(screen.queryByText(/unverified|provisional/i)).not.toBeInTheDocument();
+    expect(container.querySelector("section")).toHaveAttribute("data-status", "provisional");
   });
 
   it("shows verified figures without a marker", () => {
