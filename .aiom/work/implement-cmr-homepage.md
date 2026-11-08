@@ -65,6 +65,14 @@ graphics. Not merged, not deployed to production.
 | F2 | No borders on the filled buttons; keep the inverse hover | `CtaLink`: the `border` class moved from the base into the `outline` variant only. Primary (black ↔ white) and secondary (white ↔ black) have no border at rest or on hover; the header's outline CTA keeps its intentional 1px default border. Padding restored to the pre-border values (`px-5 md:px-7`, `px-7`), so button sizes are as before; heights are caller-set and unchanged. Focus ring (3px + 2px gap), active states, contrast (solid on solid, 21:1) and reduced motion unchanged |
 | F3 | Hills in black and white only; keep geometry, tags, legends, interactions, "Vertical scale exaggerated." | `render-profiles.mjs`: every fill is `#fff`, every line `#000` (SVGs contain only those two colors; before: eight grays plus near-black). Surface, bands and slab are white; contours and strata black, minor lines 0.5px and every fourth 1.15px. Geometry, anchors and data are byte-identical (same generator output); pastel tags, Total rise legend, hover/focus/touch behavior and the caption sentence untouched. The lower section's static topography is untouched |
 
+### Delivery status
+
+Verified implementation head **`161a274`**: GitHub CI `validate` and `browser` pass
+(run 42516204755); Vercel deployment `6nFQ2JmBQK85jqsZZgfW3bSDLvrv` Ready as a
+**Preview** at https://cmr-site-git-feat-cmr-homepage-mikewhitaker-projects.vercel.app
+(Vercel SSO-protected). PR #3 open, not merged; no production deployment. Commits
+after it only update this record.
+
 ### Validation (2026-11-08, macOS, Chromium)
 
 - `npm run lint`, `tsc --noEmit`, `npm run tokens:check`, `npm run build`: pass.
