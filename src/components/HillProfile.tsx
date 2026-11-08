@@ -12,7 +12,6 @@ import { cn } from "@/lib/utils";
  *
  *   mint       Summit ≈ N ft
  *   peach      Base ≈ N ft
- *   lavender   Steepest side
  *   blue       Total rise ≈ N ft — the legend, larger, top right
  *
  * Figures come from USGS 3DEP elevation data (see the generating script),
@@ -22,7 +21,8 @@ import { cn } from "@/lib/utils";
  *
  * Small containers (< 28rem, e.g. the tablet column) keep only the summit and
  * the rise legend so labels never crowd the drawing; container queries, so it
- * adapts to wherever the component is placed.
+ * adapts to wherever the component is placed. (Round 2.1 removed the
+ * "Steepest side" tag.)
  */
 export function HillProfile({
   name,
@@ -50,7 +50,6 @@ export function HillProfile({
           <Leader from={anchors.summit} dx={-150} dy={-70} W={W} H={H} />
           <g className="hidden @[28rem]:inline">
             <Leader from={anchors.base} dx={-170} dy={40} W={W} H={H} />
-            <Leader from={anchors.steep} dx={150} dy={20} W={W} H={H} />
           </g>
         </svg>
 
@@ -59,9 +58,6 @@ export function HillProfile({
         </Chip>
         <Chip at={anchors.base} dx={-170} dy={40} W={W} H={H} align="end" tone="peach" className="hidden @[28rem]:inline-flex">
           Base{figures && <b className="font-semibold"> {ft(figures.baseFt)}</b>}
-        </Chip>
-        <Chip at={anchors.steep} dx={150} dy={20} W={W} H={H} align="start" tone="lavender" className="hidden @[28rem]:inline-flex">
-          Steepest side
         </Chip>
 
         <div
@@ -77,7 +73,7 @@ export function HillProfile({
       {caption && (
         <figcaption className="mt-2 text-p-mini text-muted-foreground">
           {profile.interpretive
-            ? `Illustrative shape: ${name} hasn't been located in elevation data yet, so no figures are shown.`
+            ? `Illustrative shape: ${name} hasn't been located in elevation data yet, so no figures are shown. Vertical scale exaggerated.`
             : `${name}: shape and figures from USGS 3DEP elevation data, approximate. Vertical scale exaggerated.`}
         </figcaption>
       )}
@@ -88,8 +84,6 @@ export function HillProfile({
 const TONES = {
   mint: "bg-(color:--cmr-tint-mint-dye)",
   peach: "bg-(color:--cmr-tint-peach-dye)",
-  lavender: "bg-(color:--cmr-tint-lavender-dye)",
-  blue: "bg-(color:--cmr-tint-blue-dye)",
 } as const;
 
 /** Label positioned `dx`,`dy` (viewBox units) from an anchor; `align` = which side meets the leader. */

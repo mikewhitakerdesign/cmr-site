@@ -89,7 +89,9 @@ describe("ChicagoHills", () => {
     expect(fig.getByText("Total rise")).toBeInTheDocument();
     expect(fig.getByText(`≈ ${p.figures!.riseFt} ft`)).toBeInTheDocument();
     expect(fig.getByText(`≈ ${p.figures!.summitFt} ft`)).toBeInTheDocument();
-    expect(fig.getByText(/USGS 3DEP elevation data, approximate/)).toBeInTheDocument();
+    expect(fig.getByText(/USGS 3DEP elevation data, approximate\. Vertical scale exaggerated\./)).toBeInTheDocument();
+    // Round 2.1: no "Steepest side" tag, anywhere.
+    expect(document.body.textContent).not.toMatch(/steep/i);
     // Prominence was never computed, so it is never claimed.
     expect(document.body.textContent).not.toMatch(/prominence/i);
   });
@@ -100,7 +102,7 @@ describe("ChicagoHills", () => {
     expect(warren.querySelector("[data-hill-profile]")).toHaveAttribute("data-hill-profile", "interpretive");
     expect(within(warren).queryByText(/≈/)).not.toBeInTheDocument();
     expect(within(warren).getByText("Not measured yet")).toBeInTheDocument();
-    expect(within(warren).getByText(/Illustrative shape/)).toBeInTheDocument();
+    expect(within(warren).getByText(/Illustrative shape.*Vertical scale exaggerated\./)).toBeInTheDocument();
   });
 
   it("never shows the scaffold placeholder hill, and records no Owner-verified measurements", () => {

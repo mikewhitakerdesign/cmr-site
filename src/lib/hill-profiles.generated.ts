@@ -6,20 +6,16 @@ export const hillProfiles: Record<string, HillProfileData> = {
   "cricket-hill": {
     "src": "/hills/cricket-hill-profile.svg",
     "width": 1000,
-    "height": 720,
+    "height": 540,
     "interpretive": false,
     "anchors": {
       "summit": [
-        0.5,
-        0.3235
+        0.5144,
+        0.3492
       ],
       "base": [
-        0.4511,
-        0.874
-      ],
-      "steep": [
-        0.6628,
-        0.6024
+        0.5159,
+        0.8089
       ]
     },
     "figures": {
@@ -30,13 +26,12 @@ export const hillProfiles: Record<string, HillProfileData> = {
     "measured": {
       "summitFt": 620.2,
       "baseFt": 591.2,
-      "riseFt": 28.9,
-      "steepestSideBearingDeg": 300
+      "riseFt": 28.9
     },
     "drawing": {
-      "frameMeters": 345,
-      "contourStepFt": 2,
-      "verticalExaggeration": 19.1
+      "frameMeters": 309,
+      "contourBands": 12,
+      "verticalExaggeration": 3.8
     },
     "location": {
       "lat": 41.964281,
@@ -47,28 +42,24 @@ export const hillProfiles: Record<string, HillProfileData> = {
   "warren-hill": {
     "src": "/hills/warren-hill-profile.svg",
     "width": 1000,
-    "height": 720,
+    "height": 540,
     "interpretive": true,
     "anchors": {
       "summit": [
-        0.5,
-        0.3222
+        0.5071,
+        0.3609
       ],
       "base": [
-        0.5136,
-        0.8676
-      ],
-      "steep": [
-        0.6628,
-        0.607
+        0.5083,
+        0.8197
       ]
     },
     "figures": null,
     "measured": null,
     "drawing": {
-      "frameMeters": 176,
-      "contourStepFt": 1,
-      "verticalExaggeration": 11.1
+      "frameMeters": 208,
+      "contourBands": 12,
+      "verticalExaggeration": 2.9
     },
     "location": {
       "lat": 42.002875,
@@ -79,20 +70,16 @@ export const hillProfiles: Record<string, HillProfileData> = {
   "horner-hill": {
     "src": "/hills/horner-hill-profile.svg",
     "width": 1000,
-    "height": 720,
+    "height": 540,
     "interpretive": false,
     "anchors": {
       "summit": [
-        0.5,
-        0.3234
+        0.5087,
+        0.371
       ],
       "base": [
-        0.3344,
-        0.8439
-      ],
-      "steep": [
-        0.6628,
-        0.6028
+        0.4915,
+        0.8255
       ]
     },
     "figures": {
@@ -103,13 +90,12 @@ export const hillProfiles: Record<string, HillProfileData> = {
     "measured": {
       "summitFt": 612.9,
       "baseFt": 594.1,
-      "riseFt": 18.8,
-      "steepestSideBearingDeg": 50
+      "riseFt": 18.8
     },
     "drawing": {
-      "frameMeters": 190,
-      "contourStepFt": 1,
-      "verticalExaggeration": 16.2
+      "frameMeters": 170,
+      "contourBands": 12,
+      "verticalExaggeration": 2.9
     },
     "location": {
       "lat": 41.959392,
@@ -120,20 +106,16 @@ export const hillProfiles: Record<string, HillProfileData> = {
   "schiller-hill": {
     "src": "/hills/schiller-hill-profile.svg",
     "width": 1000,
-    "height": 720,
+    "height": 540,
     "interpretive": false,
     "anchors": {
       "summit": [
-        0.5,
-        0.329
+        0.4865,
+        0.3886
       ],
       "base": [
-        0.3802,
-        0.8533
-      ],
-      "steep": [
-        0.6147,
-        0.5661
+        0.4762,
+        0.8083
       ]
     },
     "figures": {
@@ -144,13 +126,12 @@ export const hillProfiles: Record<string, HillProfileData> = {
     "measured": {
       "summitFt": 645.5,
       "baseFt": 629.1,
-      "riseFt": 16.4,
-      "steepestSideBearingDeg": 160
+      "riseFt": 16.4
     },
     "drawing": {
       "frameMeters": 110,
-      "contourStepFt": 1,
-      "verticalExaggeration": 10.7
+      "contourBands": 12,
+      "verticalExaggeration": 2.1
     },
     "location": {
       "lat": 41.955922,
@@ -161,20 +142,16 @@ export const hillProfiles: Record<string, HillProfileData> = {
   "mt-trashmore": {
     "src": "/hills/mt-trashmore-profile.svg",
     "width": 1000,
-    "height": 720,
+    "height": 540,
     "interpretive": false,
     "anchors": {
       "summit": [
-        0.5,
-        0.3396
+        0.4876,
+        0.2824
       ],
       "base": [
-        0.5502,
-        0.8809
-      ],
-      "steep": [
-        0.6628,
-        0.5815
+        0.4531,
+        0.8035
       ]
     },
     "figures": {
@@ -185,13 +162,12 @@ export const hillProfiles: Record<string, HillProfileData> = {
     "measured": {
       "summitFt": 668.4,
       "baseFt": 607.2,
-      "riseFt": 61.3,
-      "steepestSideBearingDeg": 260
+      "riseFt": 61.3
     },
     "drawing": {
-      "frameMeters": 268,
-      "contourStepFt": 2.5,
-      "verticalExaggeration": 7
+      "frameMeters": 239,
+      "contourBands": 12,
+      "verticalExaggeration": 1.7
     },
     "location": {
       "lat": 42.0232,

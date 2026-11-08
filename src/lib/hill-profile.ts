@@ -16,13 +16,13 @@ export type HillProfileData = {
    * (no distinct hill could be located). Interpretive profiles show no figures.
    */
   interpretive: boolean;
-  anchors: { summit: Point; base: Point; steep: Point };
+  anchors: { summit: Point; base: Point };
   /** Display figures, rounded to 5 ft, from elevation data. Null when interpretive. */
   figures: { summitFt: number; baseFt: number; riseFt: number } | null;
   /** The unrounded values behind `figures`, for the record (not displayed). */
-  measured: { summitFt: number; baseFt: number; riseFt: number; steepestSideBearingDeg: number } | null;
+  measured: { summitFt: number; baseFt: number; riseFt: number } | null;
   /** Drawing choices (interpretation, not measurement). */
-  drawing: { frameMeters: number; contourStepFt: number; verticalExaggeration: number };
+  drawing: { frameMeters: number; contourBands: number; verticalExaggeration: number };
   location: { lat: number; lon: number };
   /** Provenance, in plain words. */
   source: string;
