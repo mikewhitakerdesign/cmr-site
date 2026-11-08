@@ -89,6 +89,9 @@ export function UpcomingRuns({ occurrences, now }: { occurrences: RunOccurrence[
 }
 
 /**
+ * Explicit `lg:leading-*` beside `lg:text-*`: an arbitrary `leading-[…]` sets
+ * --tw-leading, which would otherwise override the type style's line height.
+ *
  * One run. The name is the only link; a stretched ::after makes the whole row
  * clickable without nesting interactive content. Hover underlines the name and
  * nudges the ↗; keyboard focus rings the whole row in the on-dark ring color.
@@ -101,23 +104,23 @@ function UpcomingRunRow({ occurrence: o, now }: { occurrence: RunOccurrence; now
     <li
       className={cn(
         "group/run relative border-t border-primary-foreground",
-        // mobile: stacked
-        "pt-[17px] pb-[27px]",
-        // tablet: time column + details
-        "md:grid md:grid-cols-[150px_minmax(0,1fr)] md:gap-x-5 md:pt-[19px] md:pb-5",
+        // mobile: stacked; 166 tall including the 1px rule (Figma counts it inside)
+        "pt-[17px] pb-[26px]",
+        // tablet: time column + details; 124 tall including the rule
+        "md:grid md:grid-cols-[150px_minmax(0,1fr)] md:gap-x-5 md:pt-[19px] md:pb-[19px]",
         // desktop: four columns, vertically centered
         "lg:grid-cols-[170px_minmax(0,1fr)_220px_20px] lg:items-center lg:gap-x-8 lg:py-7",
       )}
     >
       {/* nowrap: the date form ("NOV 14 · 5:00 AM") is ~8px wider than Figma's 170px
           desktop column; it runs into the 32px gap rather than wrapping. */}
-      <p className="font-mono text-[14px] leading-[21px] whitespace-nowrap md:row-span-2 md:pt-1 lg:row-span-1 lg:flex lg:items-center lg:gap-2 lg:pt-0 lg:text-p">
+      <p className="font-mono text-[14px] leading-[21px] whitespace-nowrap md:row-span-2 md:pt-1 lg:row-span-1 lg:flex lg:items-center lg:gap-2 lg:pt-0 lg:text-p lg:leading-6">
         <ClockIcon className="hidden size-4 shrink-0 lg:block" />
         <time dateTime={toDateTimeAttr(o)}>{formatSlot(o, now)}</time>
       </p>
 
       <div className="mt-[13px] md:mt-0">
-        <h3 className="text-[24px] leading-[30px] font-semibold tracking-[-1px] md:text-[25px] lg:text-h3">
+        <h3 className="text-[24px] leading-[30px] font-semibold tracking-[-1px] md:text-[25px] lg:text-h3 lg:leading-(--text-h3--line-height)">
           <Link
             href={`/calendar/${o.run.slug}`}
             className={cn(
@@ -129,7 +132,7 @@ function UpcomingRunRow({ occurrence: o, now }: { occurrence: RunOccurrence; now
             {o.run.title}
           </Link>
         </h3>
-        <p className="mt-1.5 text-[14px] leading-[21px] lg:mt-1 lg:flex lg:items-center lg:gap-2 lg:text-p">
+        <p className="mt-1.5 text-[14px] leading-[21px] lg:mt-1 lg:flex lg:items-center lg:gap-2 lg:text-p lg:leading-6">
           <MapPinIcon className="hidden size-4 shrink-0 lg:block" />
           <span>{location}</span>
         </p>

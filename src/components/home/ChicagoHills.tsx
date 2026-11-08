@@ -125,7 +125,7 @@ function HillRow({ hill, index, featured }: { hill: Hill; index: number; feature
         "lg:flex lg:items-center lg:gap-8 lg:py-6",
       )}
     >
-      <span className="row-span-2 pt-2 pl-2 font-mono text-[13px] leading-5 md:pl-0 lg:pt-0 lg:text-p">
+      <span className="row-span-2 pt-2 pl-2 font-mono text-[13px] leading-5 md:pl-0 lg:pt-0 lg:text-p lg:leading-6">
         {String(index).padStart(2, "0")}
       </span>
       <h3 style={name} className={cn(FLUID_TYPE, "min-w-0 font-semibold tracking-[-0.03em] lg:flex-1")}>
@@ -140,7 +140,7 @@ function HillRow({ hill, index, featured }: { hill: Hill; index: number; feature
           {hill.name}
         </Link>
       </h3>
-      <p className="col-start-2 mt-2 text-[13px] leading-5 lg:mt-0 lg:shrink-0 lg:text-p">{hill.neighborhood}</p>
+      <p className="col-start-2 mt-2 text-[13px] leading-5 lg:mt-0 lg:shrink-0 lg:text-p lg:leading-6">{hill.neighborhood}</p>
       <ArrowUpRightIcon
         className={cn(
           "hidden size-5 shrink-0 lg:block",

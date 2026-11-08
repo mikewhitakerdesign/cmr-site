@@ -17,19 +17,20 @@ bundle_references:
   - web-ui-experience
   - content-publication
 authority_requirement: none
-validation_state: in-progress
-blocker_state: none
-current_responsibility: orchestrator
+validation_state: passed
+blocker_state: awaiting-owner-review
+current_responsibility: owner
 created_at: '2026-11-07T23:52:00.000Z'
-updated_at: '2026-11-08T00:55:00.000Z'
+updated_at: '2026-11-08T03:40:00.000Z'
 ---
 ## Status
 
-**Implementation authorized and in progress** on branch `feat/cmr-homepage`
-(from `main` at `e610c25`). The Owner reviewed this plan and authorized all six
-slices to run consecutively without intermediate reviews (2026-11-07, "CMR —
-Complete Homepage Implementation"). The completed homepage is reviewed as one
-experience. Merge and deployment are not authorized.
+**All six slices implemented and validated; awaiting Owner review of the
+complete homepage.** Branch `feat/cmr-homepage` (from `main` at `e610c25`), one
+PR, not merged, not deployed. `validation_state: passed` covers the
+deterministic checks only. Owner acceptance, the open decisions, and the
+release dependencies below are still outstanding. The planning record from
+discovery follows the implementation record as history.
 
 ## Owner authorization and approved decisions (2026-11-07)
 
@@ -67,6 +68,202 @@ These supersede "Owner decisions requested" (kept below for history).
   768, 1024, 1440, and 1732.
 - **Delivery:** commit cohesive increments, push the branch, open one PR, do
   not merge or deploy.
+
+## Implementation record (2026-11-08)
+
+### Slices and commits
+
+| Slice | Commit | Delivered |
+|---|---|---|
+| 1 Hero + next-run card | `e0376f8` | Hero (1:377 / 78:279 / 78:397), `NextRunCard`; shared foundations (`fluid`, `Container`, `CtaLink`, `ArrowLink`, `PhotoBackdrop`, `ProvisionalBadge`, `icons`, on-dark focus); full scheduling model; data status model; baked gradient; assets |
+| 2 Community + club totals | `4aaaf2d` | `CommunityIntro` (1:16 …), `ClubTotals` (1:243 …) |
+| 3 Upcoming runs | `6300c86` | `UpcomingRuns` (1:24 …) with exception and override tests |
+| 4 Chicago hills | `2433cc0` | `ChicagoHills` (1:118 …) with featured state and illustration |
+| 5 Closing sections | `79a85bc` | `JustShowUp` (1:296 …), `FlatStateOfMind` (1:376 …) |
+| 6 Refinement and hardening | commit with this record | Full-page review at 393/768/1024/1280/1440/1732 and a 20-width sweep; fixes (320px CTA overflow, desktop line heights, rule-inclusive row heights); `tests/e2e/home.spec.ts`; visual baselines; docs and evidence |
+
+Each slice was tested, rendered in Chromium, overlaid on the Figma frame at
+393/768/1732, corrected, and recorded before the next began.
+
+### Architecture as built
+
+The plan held, with three implementation-level changes: fluid values are a
+TypeScript helper writing `-a`/`-b` custom properties read by static Tailwind
+classes (`src/lib/fluid.ts`) instead of a CSS-only utility; `src/styles/cmr.css`
+holds only the `ss08` utility; and `src/lib/content-status.ts` and
+`src/lib/surfaces.ts` were added.
+
+- **MWDS primitives:** none added or changed.
+- **CMR shared** (`src/components/`): `Container`, `CtaLink` (solid / outline,
+  inverse), `ArrowLink`, `PhotoBackdrop`, `ProvisionalBadge`, `icons`.
+- **Homepage** (`src/components/home/`): `HomeHero`, `NextRunCard`,
+  `CommunityIntro`, `ClubTotals`, `UpcomingRuns` (+ row), `ChicagoHills`
+  (+ row), `JustShowUp`, `FlatStateOfMind`. All Server Components; the page adds
+  no client JavaScript.
+- **Data** (`src/lib/`): `schedule.ts` (pure scheduling), `runs.ts`, `hills.ts`,
+  `club-totals.ts`, `content-status.ts`. No CMS, database, API, or polling.
+- **Page:** `src/app/page.tsx`, `export const revalidate = 3600`.
+- **Scaffold pages touched minimally** (to compile against the new models, not
+  redesigned): `/calendar`, `/calendar/[slug]`, `/hills`, `/hills/[slug]` show
+  schedule descriptions, status markers, and "Not measured yet".
+- **Dependencies:** none added.
+
+### Scheduling model (Owner decision D5)
+
+Each run (route `/calendar/[slug]`, unchanged) has one `schedule`: `weekly`
+(weekday, time, optional `startsOn`/`endsOn`, `cancellations[]`,
+`overrides[]` of time / meeting point / note) or `once` (date, time,
+`special`, `cancelled`). A moved run is a cancellation plus a `once` run. All
+values are America/Chicago wall-clock; instants come from `Intl` time-zone
+data (no dependency). DST gap times resolve forward and fall-back times to
+the first occurrence. Upcoming occurrences are chronological from "now" and
+stay upcoming until their start. The slot label is "TUE · 5:30 AM" within six
+days, otherwise "NOV 14 · 5:00 AM". Covered by `tests/lib/schedule.test.ts`
+(recurrence, bounds, cancellations, overrides, once and special runs, DST in
+both directions, UTC-midnight edge, formatting, malformed input).
+
+### Content status (Owner decision D1)
+
+| Record | Status | Shown as |
+|---|---|---|
+| Three Figma weekly runs | provisional | "Sample · unconfirmed" on the card; "Sample schedule · unconfirmed" on the list |
+| Five Figma hills (names, park · neighborhood) | provisional | Listed; no measurements recorded; detail pages say "Not measured yet" |
+| Mt. Trashmore illustration figures | provisional | "Figures unverified" on the figure |
+| 2026 club totals | provisional | "Provisional · unverified figures"; section hidden if set to `null` |
+| Example Hill / Example Hill Repeats | placeholder | Never on the homepage; marked on scaffold pages |
+
+Markers disappear once a record is `verified`, restoring the design exactly.
+
+### Assets
+
+See `public/home/README.md` for the full provenance record: hero photos
+(Figma rasters, provisional), Just show up photo (2880px JPEG from the 4096px
+fill), baked mesh gradient, community mark (cropped and rotated as framed),
+Mt. Trashmore illustration and topo pattern (unaltered). No stock, generated,
+or redrawn imagery.
+
+### Design-to-code deviations (classified per Owner decision D4)
+
+Classes: **C** correction of an obvious inconsistency; **A** intentional
+responsive adaptation, followed as drawn; **I** incomplete design, completed;
+**L** legibility adjustment (D6); **R** needs design review.
+
+| # | Where | Figma | Code | Class |
+|---|---|---|---|---|
+| 1 | Hero photo, desktop | 768×1024 portrait stretched to 1732×968 (≈2.26× across, 0.95× down) | Same photo, uniform `cover` crop with the crest at the same height (~72%). The hill reads steeper than Figma's stretched version. | C, R (final photo, D3) |
+| 2 | Hero CTAs and card, desktop | 19px and 27px inside the container; aligned on tablet and mobile | Aligned to the container | C |
+| 3 | "OWN MTNS" tracking | +10px at every size (overspaced on mobile) | 0.048em (equal to Figma at desktop) | C |
+| 4 | Next-run card, tablet and mobile | Flattened text, no icons or arrow; no radius | Clock, pin, and arrow kept (they label time and place); radius stays desktop-only | I (icons), A (radius) |
+| 5 | Hero outline CTA | White outline, no fill; label measured 1.5–1.9:1 over sky | 50% black fill; ≥ 4.5:1 | L |
+| 6 | Hero h1 | 60% white over pale sky | Soft halo in the foreground token; still ≈1.3:1 (see Open decisions) | L, R |
+| 7 | Community block | Desktop starts 9px left of the container and text overflows its box; tablet mark 39px high | Aligned to the container; mark centered at every size | C |
+| 8 | Club totals surface | Cream fill hidden by a white child; white rules invisible | White, no rules, as rendered; empty slot 1:254 holds the provisional marker (below the figures on tablet and mobile) | C, R (Figma cleanup) |
+| 9 | Display tracking (JSU, Flat, hills h2, hill names, run heading, stat values) | Fixed px at every size; collides on mobile ("JUSTSHOW") | em from the desktop ratio; tablet/mobile slightly wider than Figma | C, R |
+| 10 | Run slots more than six days out | Not designed | "NOV 14 · 5:00 AM"; may run ~8px into the 32px gap on desktop | I |
+| 11 | Run rows, tablet and mobile | No icons, ↗, or closing rule; link centered without arrow | As drawn | A |
+| 12 | "Explore all hills", tablet and mobile | Absent (only path to `/hills` from the section) | Present, no arrow, in the space Figma leaves | I |
+| 13 | Mt. Trashmore grey row | Grey fill at every size | Read as "featured hill" (the illustrated one); same fill is hover elsewhere | R |
+| 14 | Just show up | Copy 75% white over photo + 50% gradient; copy 2.4–3.5:1, heading 2.6–2.8:1 | 30% black shade + copy at 90%; copy ≥ 4.5:1, heading ≥ 3:1 | L |
+| 15 | Just show up, tablet copy measure | 550 | 540 (Figma's text renders ~1% wider; keeps its line breaks) | C |
+| 16 | Topo pattern | 20% layer opacity | Already in the exported PNG; not re-applied (a first attempt applied it twice) | C |
+| 17 | Flat statement, desktop | Text box overhangs the container by 7px | Centered in the container | C |
+| 18 | Provisional markers | Not in Figma | Shown until content is verified; on tablet and mobile they add height (totals +54px, runs +26px) | I (D1) |
+| 19 | Hover, active, focus, disabled states | Not drawn | CTA: cream / inverted / grey; rows: grey fill (hills), underline + ↗ nudge (runs); focus: 3px ring, white with a black gap on black and photos, black on white; `aria-disabled` 50% | R (D6) |
+| 20 | Hill and run row heights, mobile/tablet | Row height includes the 1px rule | Padding reduced by 1px so rows equal Figma | C |
+| 21 | Navigation "Apparel", footer form | — | Unchanged foundation decisions 1 and discrepancy 1 | — |
+
+### Validation evidence (2026-11-08)
+
+Deterministic checks (evidence, not Owner acceptance):
+
+- `npm run lint`, `npx tsc --noEmit`, `npm run tokens:check`: pass.
+- `npm test`: **188/188** (was 120; +68: fluid 8, schedule 21, hero 8,
+  community + totals 8, runs 8, hills 8, closing sections 7).
+- `npm run build`: pass; `/` prerendered with 1h revalidation; every run and
+  hill route prerenders.
+- `npm run test:e2e` (Chromium 393/768/1440): **96 passed, 6 skipped**
+  (desktop-only sweep and hover tests on other projects, plus the foundation's
+  skips). Includes: Figma geometry (hero, card, CTAs, section heights ±2px, run
+  and hill row heights, display sizes at each frame), card overhang and
+  stacking, overflow and CTA/card collision sweep at 15 widths from 320 to
+  1920, CTA and row navigation (row clicks away from the link text), keyboard
+  order, focus ring colors per surface, hover states, reduced motion, axe WCAG
+  2.2 AA on the whole page including color contrast (0 violations), pixel-
+  sampled contrast over photographs, and no off-site requests.
+- `npm run test:visual`: **12/12** — the 9 foundation baselines unchanged, plus 3
+  new full-page homepage baselines (macOS), with the clock-dependent card and run
+  list masked.
+
+Measured contrast over photography (10th percentile of pixels behind the text):
+
+| Text | 393 | 768 | 1440 | Requirement |
+|---|---|---|---|---|
+| Hero "Become a Mtn Runner" (with fill) | 5.37 | 6.08 | 13.75 | 4.5 ✓ |
+| Just show up copy (90%, shade) | 5.20 | 4.74 | 4.51 | 4.5 ✓ |
+| Just show up heading (shade) | 4.08 | 4.35 | 4.10 | 3.0 ✓ |
+| Hero h1 (60%, halo) | 1.38 | 1.27 | 1.35 | 3.0 ✗ open |
+
+Judgment review: per-slice and full-page overlays on Figma at 393, 768, and
+1732, plus full pages at 1024, 1280, and 1440 (`docs/review/cmr-homepage/`). At
+1400px and wider, desktop section tops are within 1–5px of Figma (968 / 1557 /
+2049 / 2733 / 4004 / 4630 vs 967 / 1556 / 2048 / 2737 / 4009 / 4635). This is
+not a claim of pixel-perfect fidelity; the differences are listed above.
+
+### Known issues
+
+- Hero headline contrast (open decision 1).
+- The hero photo is visibly soft on desktop until the original is supplied.
+- Visual baselines are macOS-only (unchanged limitation); the time-dependent
+  run content is masked rather than snapshotted.
+- "Next run" freshness depends on hourly revalidation, which needs a host that
+  supports it (Vercel does; deployment is not authorized).
+- Pre-existing, unchanged: `CmrLogo` uses the deprecated `priority` prop.
+- The calendar and hill pages are still scaffolds (outside this increment).
+
+### Open Owner decisions
+
+1. **Hero headline contrast.** The approved ghosted h1 measures ≈1.3:1 against
+   the sky. Meeting 3:1 means a visual-direction change, for example a darker
+   sky crop, a scrim, or a higher-opacity headline. Alternatively, explicitly
+   accept the display headline as an exception. Not decided here.
+2. **D6 sign-off** on the legibility adjustments (deviations 5, 6, 14) and the
+   interaction states (19), all designed in code.
+3. **Design review** of items classed R: uniform hero crop (1), em-based
+   tracking (9), featured-hill reading (13), Figma cleanup of the totals surface
+   and the empty 1:254 frame (8).
+4. **Merge** of the PR.
+
+### Release dependencies (before launch, not before merge)
+
+- Verify or replace the runs, the hills CMR uses, the club totals, and the Mt.
+  Trashmore figures (prominence 85 ft exceeds rise 65 ft — check); set them
+  `verified`.
+- Original hero photograph (≥ 3464px wide) and rights for every photograph and
+  artwork (`public/home/README.md`).
+- Carried over from the foundation: newsletter provider, social URLs, legal
+  pages, deployment authorization.
+
+### Acceptance criteria status
+
+| Criterion | Status |
+|---|---|
+| Sections 1–7 in Figma order between Header and Footer | Met |
+| Geometry at 393 / 768 / 1440 (+1732) within asserted tolerances; differences logged | Met (tests + overlays; log above) |
+| No horizontal scroll or clipped text, 320–1920 | Met (sweep) |
+| Links resolve to existing v1 routes | Met |
+| Copy matches Figma; data from `src/lib`; unverified data marked; nothing fabricated | Met |
+| Next run chronological from Chicago now, fresh via revalidation | Met (hourly) |
+| One h1, heading outline, alt text, keyboard order, focus ≥ 3:1, axe clean | Met |
+| Pixel-sampled contrast passes or has an Owner-recorded exception | **Not met for the hero h1**: open decision 1 |
+| Reduced motion removes transitions | Met |
+| No new runtime dependency; no MWDS change; shared UI unchanged with tests and baselines passing | Met |
+| Lint, typecheck, tokens, Vitest, build, Playwright, visual pass | Met locally; CI on the PR |
+| Assets are faithful Figma exports with provenance recorded | Met (rights pending) |
+
+## Planning record (discovery, 2026-11-07)
+
+The sections below are the original plan, kept for history. Where they differ
+from the implementation record above, the implementation record governs.
 
 ## Inputs and evidence
 
@@ -462,7 +659,7 @@ proof of visual fidelity.
 | `@visual` baselines are macOS-only | Visual regressions unseen in CI | Unchanged known limitation; run `test:visual` locally per slice |
 | Two Work Items remain untracked | Governing state exists in one working copy only | Recommendation below; not changed here |
 
-## Owner decisions requested
+## Owner decisions requested (planning; superseded by the 2026-11-07 authorization above)
 
 1. **D1 — Content.** Are the Figma runs (three weekly runs with times,
    locations, workouts, and durations), the five hills and neighborhoods, the

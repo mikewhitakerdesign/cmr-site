@@ -95,14 +95,16 @@ export function HomeHero({ next, now }: { next: RunOccurrence | null; now: Date 
             style={cta}
             className={cn(
               FLUID_TYPE,
-              "grid grid-cols-[auto_1fr] gap-3 md:flex",
+              // Mobile: the pair fills the row (Figma 116 + 217 = 345); below ~360px the
+              // second CTA drops to its own full-width row instead of overflowing.
+              "flex flex-wrap gap-3 md:flex-nowrap",
               "*:h-(--hero-cta-h-a) md:*:h-(--hero-cta-h-b)",
             )}
           >
             <CtaLink href="/calendar" variant="solid" className="px-5 md:px-7">
               Find a Run
             </CtaLink>
-            <CtaLink href="/join" variant="outline" className="px-5 md:px-7">
+            <CtaLink href="/join" variant="outline" className="grow px-5 md:grow-0 md:px-7">
               Become a Mtn Runner
             </CtaLink>
           </div>
