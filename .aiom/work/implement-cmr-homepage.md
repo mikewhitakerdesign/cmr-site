@@ -21,11 +21,16 @@ validation_state: passed
 blocker_state: awaiting-owner-review
 current_responsibility: owner
 created_at: '2026-11-07T23:52:00.000Z'
-updated_at: '2026-11-08T10:00:00.000Z'
+updated_at: '2026-11-08T18:00:00.000Z'
 ---
 ## Status
 
-**All six slices implemented and validated; awaiting final Owner verification.**
+**Round 2 refinement (2026-11-08) implemented and validated on PR #3; awaiting
+one coordinated Owner/GPT review.** See "Round 2 refinement" directly below.
+PR #3 stays open; not merged; no production deployment (Vercel Preview only).
+
+Round 1 status (kept for the record): **all six slices implemented and
+validated; awaiting final Owner verification.**
 Branch `feat/cmr-homepage` (from `main` at `e610c25`), PR #3
 (https://github.com/mikewhitakerdesign/cmr-site/pull/3), not merged, not
 deployed. `validation_state: passed` covers the deterministic checks only.
@@ -37,6 +42,147 @@ iteration. Those two elements are **not WCAG AA compliant and are not claimed
 to be**. A contrast refinement (headline band; 42% shade) was built, measured
 and then reverted at the Owner's direction; it is kept in the record below as
 the tested alternative should the decision be revisited.
+
+## Round 2 refinement (2026-11-08)
+
+### Authorization and scope
+
+Owner/GPT reviewed the live preview and approved a second design and
+experience refinement as one coordinated increment ("CMR — Homepage Visual
+Refinement, Round 2"): plan and implement in slices without intermediate review;
+update PR #3 and the Vercel Preview; **do not merge or deploy to production**;
+do not modify MWDS Figma or implement Code Connect; preserve the two untracked
+work items; keep the two accepted contrast exceptions as they are (not
+reopened). The Owner also provided a Formspree form (`mwlljgld`) for the
+Questions feature and asked for the official `@formspree/react` package.
+
+### Decisions recorded (Owner direction → as built)
+
+| # | Direction | As built |
+|---|---|---|
+| R1 | Sticky nav; shrink logo and height on scroll; 1px black rule, no shadow | `HeaderShell` (client) sets `data-compact` past 96px of scroll, clears it below 16px (hysteresis vs. scroll anchoring); logo 188→112 / 128→96 / 100→72; 1px bottom border transparent → black; transitions only around the toggle (`data-animating`), none on resize; instant under reduced motion. `scroll-padding-top: 6rem` keeps focused content clear (WCAG 2.4.11) |
+| R2 | Links right, beside the CTA, consistent spacing; CTA "Join the club" | One gap between every item and the CTA (24 tablet, 36 desktop); mobile keeps a second row, right-aligned under the CTA. Footer link and Just show up CTA still say "Join Us" (not in the direction) |
+| R3 | Logo → home, and to top on the homepage | `HomeLink`: on `/`, a plain click scrolls to top (smooth unless reduced motion) and clears a hash; modified clicks unchanged |
+| R4 | Hero image: prefer the original; else a restrained upscale | **Original found but not usable as-is** (see "Hero photograph" below); shipped a 2× Lanczos-3 upscale of the approved fill, served at optimizer quality 90 (`next.config.ts` `images.qualities: [75, 90]`) |
+| R5 | CTAs: primary solid black / secondary solid white, hero and Just show up | `CtaLink` variants `primary` / `secondary` (replacing `solid` / `outline`): hover neutral 800 / cream, active 80% / border grey, 1px press nudge (motion-safe), focus ring unchanged. The outline CTA's 50% black fill (D6) is gone with the outline |
+| R6 | Community: name black, description lighter gray, strike kept, smaller superscript ™ | Description in `muted-foreground` (#737373, 4.7:1 — AA at any size); TM 0.645em → 0.3em on the cap line, positioned without stretching the line box |
+| R7 | Club metrics: no badge, centered heading, four equal pale tie-dye circles, smaller centered figures, odometer roll once | `ClubTotals` + `Odometer` (no dependency): figures 96→80 desktop, 48→40 below; circles ≤280 / 150 / 162; `cmr-tie-dye` utility (blooms, faint rings, conic swirl, blurred, clipped). Roll: CSS transforms only, one turn per digit, 1.1–1.6s staggered, once per mount; static when already visible at load, under reduced motion, and without JS; final values as text for assistive tech |
+| R8 | Runs: Cricket SAT 5:30 ~2 hrs; Horner WED 5:30 ~60 min; drop Schiller; no badges; approachable descriptions | Data updated in `src/lib/runs.ts` (Schiller Quad Killer removed from the data; its detail route no longer exists). Status stays `provisional`. Upcoming list = next occurrence **per run** (`getNextOccurrencePerRun`), so the list is the two-run schedule. Descriptions are inclusive, invent no paces or protocol, and end "…to be confirmed" |
+| R9 | Hills: interactive profiles, five-hill illustration family, pastel labels, prominent rise legend, reusable | `HillsExplorer` + `HillProfile` + generated vector art (below). Mt. Trashmore by default; mouse/pen hover and keyboard focus preview; click/tap navigates; phones and coarse pointers get "Preview a hill profile" toggle buttons; all five drawings stacked and loaded together (no flicker, no shift), 200ms cross-fade (instant under reduced motion); hidden profiles `inert` + aria-hidden. `HillProfile` is used on `/hills/[slug]` too |
+| R10 | Flat is a state of mind: vector topo + restrained liquid cursor | `topo.svg` traced from the approved fill; `TopoField`: SVG turbulence displacement inside a soft lens that follows the pointer with a lag, strength from pointer speed, filter confined to the lens box, frame loop stops at rest. Only with `(hover: hover) and (pointer: fine)` and no reduced-motion preference; static otherwise. Text never moves |
+| R11 | Footer: very light gray, more padding, tone-on-tone logo, darker gray ink and inputs | `Footer`: MWDS `muted` (#f5f5f5); ink = neutrals 700 (#404040, 9.4:1); input border neutrals 500 (4.4:1, ≥ 3:1 for UI); `CmrLogo tone="current"` (same masks over a solid fill); padding 80/96/128 top; links + legal under a hairline. Newsletter behavior unchanged (`inputClassName` prop added) |
+| R12 | Floating Questions feature via Formspree `useForm` | `QuestionsWidget` in the root layout (every page): mint pill → non-modal dialog; question + email required, name optional; client validation mirrored by Formspree's; field and form errors linked to fields; "Sending…" + disabled; success only after Formspree confirms; Esc/close return focus; draft survives close/reopen; `_gotcha` honeypot. No storage, no CMR email API, no recipient address in the repo |
+
+### Shared foundations changed (and what stayed homepage-only)
+
+- **Shared, site-wide:** `Header` (+ new `HeaderShell`, `HomeLink`), `Footer`,
+  `CmrLogo` (`tone` prop; deprecated `priority` → `loading="eager"`),
+  `CtaLink` (variants renamed), `NewsletterSignup` (`inputClassName`), root
+  layout (Questions panel; skip link above the sticky header), `cmr.css`
+  (scroll padding).
+- **New shared components:** `HillProfile` (homepage + hill pages), `Odometer`,
+  `QuestionsWidget`.
+- **CMR app-layer colors, not MWDS:** `--cmr-quiet-ink` / `--cmr-quiet-edge`
+  alias MWDS brand neutrals 700 / 500; the four pastel tints (`--cmr-tint-*`
+  wash + dye; mint reuses MWDS cmr/mint 50/100, peach/lavender/blue are new
+  raw values picked from the mesh gradient's hues) are a deliberately small,
+  decorative set read as `bg-(color:--…)` — not a Tailwind palette, so they
+  can't spread as a parallel system. Candidates for MWDS (Figma) if adopted
+  more widely. No MWDS token, component or generated file changed.
+- **Homepage-only:** `ClubTotals`, `UpcomingRuns`, `CommunityIntro`,
+  `HillsExplorer`, `TopoField`, `FlatStateOfMind`, `HomeHero`, `JustShowUp`.
+
+### Hero photograph (R4 investigation)
+
+The approved hero fill (768×1024) is the Owner's Cricket Hill photograph, also
+present locally at 1673×964 (inside a white mat) in `~/Downloads/cricket-hill.jpg`
+(2026-08-31; alongside warren-, horner- and schiller-hill photos, not used).
+Same trees, runner and track — but the approved image is an **edit**: the hill
+reshaped into a steeper crest, the track bent, sky extended, colors graded. A
+scripted rebuild from the original lost that edit (tested and discarded), so the
+original is not a drop-in replacement. Shipped: `scripts/assets/upscale-hero-desktop.mjs`
+(2× Lanczos-3 + light unsharp, nothing generated). Honest effect: crisper
+silhouette and horizon, less optimizer/bilinear smear; grass and runner remain
+as soft as the 768px source. **Recommended:** redo the approved edit on the
+original at ≥ 3464px wide. Rights for the photograph remain unconfirmed.
+
+### Terrain illustrations (R9): sources and limitations
+
+- Elevation: AWS Open Data Terrain Tiles (Terrarium z15, ≈3.5 m/px; USGS 3DEP
+  in the US). The USGS 3DEP ImageServer returned 504s on 2026-11-08. Locations:
+  OpenStreetMap / Nominatim (named features for Cricket Hill and Mount
+  Trashmore; parks otherwise, with the summit = local maximum of greatest
+  relief). Grids committed under `scripts/assets/source/terrain/`.
+- Figures (≈, 5 ft rounding): Cricket ≈ 620 / 590 / 30 ft; Horner ≈ 615 / 595 /
+  20; Schiller ≈ 645 / 630 / 15; Mt. Trashmore ≈ 670 / 605 / 60 (approved art:
+  669 / 604 / 65 — broadly consistent). **Prominence is not computed or shown**
+  (the old "85 ft" is gone). **Warren Hill: no distinct hill found** in the data
+  near Warren Park → interpretive shape, no figures, labelled as such.
+- Interpretation: island outline, slab, viewing angle (steepest side to the
+  right), edge easing to the base, vertical exaggeration 7–19× (each rise drawn
+  the same height). Captions say "approximate" and "vertical scale exaggerated".
+- Limits: ≈3.5 m tiles smooth small features (Schiller's mound is ≈ 60 m long);
+  "base" is a definition (median ground just outside the foot), so rise can
+  differ from a surveyed figure; locations for Horner and Schiller are inferred
+  from the terrain and need Owner confirmation.
+
+### Round 2 design-to-code deviations and notes
+
+| # | Item | Note |
+|---|---|---|
+| R-a | Header +1px tall when expanded (123 desktop) | The 1px rule is always present (transparent until compact) so turning compact never jumps by a pixel |
+| R-b | Mobile header 144 → 137 | Links row tightened to sit under the CTA |
+| R-c | Run rows taller than Figma (e.g. 210 desktop vs 113.8) | Descriptions, per direction; workout label left-aligned below the description on tablet/mobile (was right-aligned) |
+| R-d | Upcoming list shows 2 rows (was 3 occurrences) | One row per run (two-run schedule) |
+| R-e | Hills section height differs from Figma (desktop 1324 vs 1272) | Profile + caption + list spacing redesigned |
+| R-f | Totals section and figure sizes differ from Figma | Per direction (centered, circles, figures 80/40) |
+| R-g | Header CTA vs footer/Just show up labels | Header "Join the club"; others keep "Join Us" (not in the direction) — Owner may want them aligned |
+| R-h | `@formspree/react` adds ≈14 KB gzipped of Stripe *loader* code via its re-exports | Never executed on our pages (asserted: no off-site requests on load) |
+
+### Validation (2026-11-08, macOS, Chromium)
+
+- `npm run lint`, `tsc --noEmit`, `npm run tokens:check`: pass.
+- Vitest: **212 tests, 15 files, pass** (new: header sticky/compact/home link,
+  hills preview by hover/focus/touch, figures and interpretive profile, Odometer,
+  Questions validation/sending/success/field error/delivery error/honeypot/axe,
+  runs per-run list and descriptions, totals circles and status).
+- Playwright (393 / 768 / 1440): **124 pass, 8 visual skipped**; visual:
+  **12 pass** after regenerating the affected macOS baselines (homepage ×3,
+  header ×3, footer ×6). New browser checks: compact header (1px black rule, no
+  shadow, still pinned), logo → top, odometer roll and settle (circles still),
+  reduced motion static, hill preview without layout shift and with all five
+  drawings loaded, touch preview buttons, liquid topo active only on fine
+  pointers and idle at rest, Questions with mocked Formspree (success, failure,
+  axe), 320–1920 sweep.
+- Formspree is never contacted by tests: every page route to `formspree.io` is
+  aborted unless a test installs a mocked response. **No real submission has
+  been made**; a live delivery test needs Owner authorization.
+- Photo-text contrast (method unchanged; the helper now centers the target and
+  hides the sticky header and Questions button while capturing — measurement
+  setup only, thresholds unchanged): hero CTAs and Just show up CTAs ≈ 19–21:1
+  (solid fills); Just show up heading 3.54 / 3.80 / 3.67:1 (≥ 3, asserted).
+  **Accepted exceptions, unchanged and not claimed compliant:** hero headline
+  1.32 / 1.23 / 1.24:1; Just show up copy 3.74 / 3.81 / 3.56:1 (393 / 768 / 1440).
+- axe (WCAG 2.2 AA incl. contrast): clean on the homepage, header, footer and
+  the open Questions panel.
+
+### Round 2 open Owner decisions
+
+1. **Review the Round 2 increment as a whole** on the Vercel Preview.
+2. **Hero photograph:** commission the approved edit on the original (≥ 3464 px)
+   or accept the provisional upscale for now.
+3. **Warren Hill:** confirm where CMR runs at Warren Park (the data shows no
+   distinct hill); confirm the Horner and Schiller hill locations; decide
+   whether the approximate figures may be shown at launch.
+4. **Run details:** confirm Cricket (SAT 5:30, ~2 hrs) and Horner (WED 5:30,
+   ~60 min), the meeting points, and the descriptions; then set them `verified`.
+   Decide whether Schiller Quad Killer should return on the calendar.
+5. **Labels:** align "Join Us" (footer, Just show up) with the header's "Join the club"?
+6. **Formspree account settings:** allowed domains (production + preview),
+   spam/reCAPTCHA (off for AJAX), notification recipient — and authorize one
+   real test submission.
+7. **Pastel tints:** keep as a CMR app-layer set or add to MWDS (Figma).
+
 
 ## Owner authorization and approved decisions (2026-11-07)
 
@@ -336,7 +482,7 @@ not a claim of pixel-perfect fidelity; the differences are listed above.
   run content is masked rather than snapshotted.
 - "Next run" freshness depends on hourly revalidation, which needs a host that
   supports it (Vercel does; deployment is not authorized).
-- Pre-existing, unchanged: `CmrLogo` uses the deprecated `priority` prop.
+- ~~Pre-existing: `CmrLogo` uses the deprecated `priority` prop.~~ Fixed in Round 2 (`loading="eager"`).
 - The calendar and hill pages are still scaffolds (outside this increment).
 
 ### Open Owner decisions
@@ -356,11 +502,13 @@ tablet and mobile, hover/focus patterns, provisional markers.
 
 ### Release dependencies (before launch, not before merge)
 
-- Verify or replace the runs, the hills CMR uses, the club totals, and the Mt.
-  Trashmore figures (prominence 85 ft exceeds rise 65 ft — check); set them
-  `verified`.
-- Original hero photograph (≥ 3464px wide) and rights for every photograph and
-  artwork (`public/home/README.md`).
+- Verify or replace the runs, the hills CMR uses, the club totals, and the
+  approximate hill figures (Round 2: from USGS data; Warren Hill unlocated);
+  set them `verified`. Badges are no longer shown on the homepage (Round 2), so
+  this is now the only safeguard against publishing unconfirmed facts.
+- Original hero photograph edited as approved (≥ 3464px wide) and rights for
+  every photograph and artwork (`public/home/README.md`).
+- Formspree account configuration and one authorized real delivery test (Round 2).
 - Carried over from the foundation: newsletter provider, social URLs, legal
   pages, deployment authorization.
 
@@ -372,12 +520,12 @@ tablet and mobile, hover/focus patterns, provisional markers.
 | Geometry at 393 / 768 / 1440 (+1732) within asserted tolerances; differences logged | Met (tests + overlays; log above) |
 | No horizontal scroll or clipped text, 320–1920 | Met (sweep) |
 | Links resolve to existing v1 routes | Met |
-| Copy matches Figma; data from `src/lib`; unverified data marked; nothing fabricated | Met |
+| Copy matches Figma; data from `src/lib`; unverified data marked; nothing fabricated | Met in Round 1. Round 2: badges removed by Owner direction; status kept as data; nothing fabricated (hill figures sourced, approximate, marked ≈) |
 | Next run chronological from Chicago now, fresh via revalidation | Met (hourly) |
 | One h1, heading outline, alt text, keyboard order, focus ≥ 3:1, axe clean | Met |
 | Text over photography meets WCAG AA in its worst region | **Partially met**: CTAs and the Just show up heading meet it (asserted); the hero headline and Just show up copy do **not** and are Owner-accepted exceptions (not claimed compliant) |
 | Reduced motion removes transitions | Met |
-| No new runtime dependency; no MWDS change; shared UI unchanged with tests and baselines passing | Met |
+| No new runtime dependency; no MWDS change; shared UI unchanged with tests and baselines passing | Round 1: met. Round 2: `@formspree/react` added (Owner-directed); shared header/footer/CTA revised by direction with updated tests and baselines; no MWDS change |
 | Lint, typecheck, tokens, Vitest, build, Playwright, visual pass | Met locally; CI green on PR #3 |
 | Assets are faithful Figma exports with provenance recorded | Met (rights pending) |
 

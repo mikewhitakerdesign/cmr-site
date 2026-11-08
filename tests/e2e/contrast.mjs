@@ -25,6 +25,11 @@
  * result is its worst cell — so a single region where letters cross a bright
  * cloud fails the element, even if the text is legible elsewhere.
  *
+ * Overlays the visitor can scroll away from — the sticky header and the
+ * floating Questions button (`[data-overlay]`) — are hidden while capturing, and
+ * the target is centered in the viewport, so neither is measured as "text
+ * background" (Round 2). Nothing in the measured element itself changes.
+ *
  * Limitations (documented in the Work Item): one browser and one rendering of
  * each crop; photographs shift with viewport width, so results hold for the
  * widths measured; the 5th percentile tolerates isolated specks smaller than
@@ -35,13 +40,17 @@
 
 /** @param {import("@playwright/test").Page} page @param {import("@playwright/test").Locator} target */
 export async function measureTextContrast(page, target) {
-  await target.scrollIntoViewIfNeeded();
   await page.addStyleTag({
     content: `*, *::before, *::after { transition: none !important; animation: none !important; }
+      body > header, [data-overlay] { visibility: hidden !important; }
       [data-cmask], [data-cmask] * { color: #ff00ff !important; -webkit-text-fill-color: #ff00ff !important; text-shadow: none !important; }
       [data-cmask] { opacity: 1 !important; }
       [data-cbg], [data-cbg] * { color: transparent !important; -webkit-text-fill-color: transparent !important; }`,
   });
+  // Scroll only after transitions are off, then let the sticky header settle
+  // (it may turn compact, shifting content) before the element is located.
+  await target.evaluate((el) => el.scrollIntoView({ block: "center" }));
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   const box = await target.boundingBox();
   if (!box) throw new Error("element not visible");
   const clip = { x: Math.floor(box.x), y: Math.floor(box.y), width: Math.ceil(box.width), height: Math.ceil(box.height) };

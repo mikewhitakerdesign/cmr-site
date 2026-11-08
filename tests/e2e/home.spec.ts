@@ -15,9 +15,11 @@ const AXE_PATH = require.resolve("axe-core");
 
 type Frame = {
   hero: { h: number; h1Size: number; h1Top: number; ctaTop: number; ctaH: number; cardTop: number; cardW: number | "full" };
-  sections: Record<"community" | "jsu" | "flat" | "hills", number>;
+  sections: Record<"community" | "jsu" | "flat", number>;
+  /** Figma run-row height; Round 2 rows add a description, so this is now a minimum. */
   runRowH: number;
   hillRowH: number;
+  /** stat: Round 2 figure size (Figma 48/48/96, reduced slightly by Owner direction). */
   fluid: Record<"jsu" | "flat" | "hills" | "stat", number>;
 };
 
@@ -25,24 +27,24 @@ type Frame = {
 const FIGMA: Record<string, Frame> = {
   mobile: {
     hero: { h: 614, h1Size: 48, h1Top: 52, ctaTop: 230, ctaH: 48, cardTop: 326, cardW: "full" },
-    sections: { community: 390, jsu: 460, flat: 398, hills: 1196.75 },
+    sections: { community: 390, jsu: 460, flat: 398 },
     runRowH: 166,
     hillRowH: 100,
-    fluid: { jsu: 56, flat: 70, hills: 48, stat: 48 },
+    fluid: { jsu: 56, flat: 70, hills: 48, stat: 40 },
   },
   tablet: {
     hero: { h: 670, h1Size: 98, h1Top: 66, ctaTop: 304, ctaH: 56, cardTop: 400, cardW: 380 },
-    sections: { community: 442, jsu: 430, flat: 514, hills: 934 },
+    sections: { community: 442, jsu: 430, flat: 514 },
     runRowH: 124,
     hillRowH: 96,
-    fluid: { jsu: 80, flat: 110, hills: 54, stat: 48 },
+    fluid: { jsu: 80, flat: 110, hills: 54, stat: 40 },
   },
   desktop: {
     hero: { h: 846, h1Size: 209, h1Top: 115, ctaTop: 677, ctaH: 56, cardTop: 677, cardW: 542 },
-    sections: { community: 589, jsu: 626.6, flat: 709.8, hills: 1272 },
+    sections: { community: 589, jsu: 626.6, flat: 709.8 },
     runRowH: 113.8,
     hillRowH: 109.8,
-    fluid: { jsu: 144, flat: 144, hills: 96, stat: 96 },
+    fluid: { jsu: 144, flat: 144, hills: 96, stat: 80 },
   },
 };
 const frame = (name: string) => FIGMA[name];
@@ -78,6 +80,9 @@ async function loadAll(page: Page) {
 }
 
 test.beforeEach(async ({ page }) => {
+  // Never reach the live Formspree form from tests (Owner instruction). Tests that
+  // exercise the Questions panel install their own mocked response.
+  await page.route("https://formspree.io/**", (r) => r.abort());
   await page.goto("/");
   await page.evaluate(() => document.fonts.ready);
 });
@@ -95,20 +100,21 @@ test.describe("structure and content", () => {
     await expect(page.locator("footer")).toBeVisible();
   });
 
-  test("marks every unverified figure and schedule visibly", async ({ page }) => {
-    await expect(hero(page).getByText("Sample · unconfirmed")).toBeVisible();
-    await expect(runs(page).getByText("Sample schedule · unconfirmed")).toBeVisible();
-    await expect(page.getByText("Provisional · unverified figures")).toBeVisible();
-    await expect(hills(page).getByText("Figures unverified")).toBeVisible();
+  test("shows no sample badges (Round 2) but keeps content status in the markup", async ({ page }) => {
+    await expect(page.locator("main [data-provisional]")).toHaveCount(0);
+    await expect(page.locator("main").getByText(/Sample|unconfirmed|unverified/)).toHaveCount(0);
+    await expect(hero(page).getByRole("article")).toHaveAttribute("data-status", "provisional");
+    await expect(page.locator("section[aria-labelledby=club-totals-heading]")).toHaveAttribute("data-status", "provisional");
+    for (const li of await runs(page).locator("li").all()) await expect(li).toHaveAttribute("data-status", "provisional");
     await expect(page.getByText("Example Hill")).toHaveCount(0);
   });
 
-  test("lists three upcoming runs and five hills, each linking to its detail route", async ({ page }) => {
+  test("lists the two-run schedule and five hills, each linking to its detail route", async ({ page }) => {
     const runLinks = runs(page).locator("li h3 a");
-    await expect(runLinks).toHaveCount(3);
-    for (const href of await runLinks.evaluateAll((as) => as.map((a) => a.getAttribute("href")))) {
-      expect(href).toMatch(/^\/calendar\/(cricket-mtn-repeats|horner-hell-repeats|schiller-quad-killer)$/);
-    }
+    await expect(runLinks).toHaveCount(2);
+    const hrefs = await runLinks.evaluateAll((as) => as.map((a) => a.getAttribute("href")));
+    expect([...hrefs].sort()).toEqual(["/calendar/cricket-mtn-repeats", "/calendar/horner-hell-repeats"]);
+    await expect(runs(page).getByText("Schiller Quad Killer")).toHaveCount(0);
     await expect(hills(page).locator("li h3 a")).toHaveCount(5);
     await expect(runs(page).locator("time").first()).toHaveAttribute("datetime", /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}-0[56]:00$/);
   });
@@ -129,7 +135,11 @@ test.describe("structure and content", () => {
     await expect(heroImg).toHaveAttribute("fetchpriority", "high");
     await expect(heroImg).not.toHaveAttribute("loading", "lazy");
     await expect(jsu(page).locator("img")).toHaveAttribute("loading", "lazy");
-    await expect(hills(page).locator("figure img")).toHaveAttribute("loading", "lazy");
+    const profiles = hills(page).locator("figure img");
+    await expect(profiles).toHaveCount(5);
+    for (const img of await profiles.all()) await expect(img).toHaveAttribute("loading", "lazy");
+    // The desktop source is the provisional 2× upscale, served at quality 90.
+    expect(await hero(page).locator("picture source").getAttribute("srcset")).toContain("q=90");
   });
 });
 
@@ -188,13 +198,12 @@ test.describe("layout against Figma", () => {
     await near(community(page), f.community);
     await near(jsu(page), f.jsu);
     await near(flat(page), f.flat);
-    // Hills: the provisional caption sits inside the figure, so height is unaffected.
-    await near(hills(page), f.hills);
+    // Hills and club totals were redesigned in Round 2; their layout is checked below.
   });
 
-  test("run and hill rows match Figma row heights", async ({ page }, info) => {
+  test("hill rows match Figma; run rows grow from Figma to fit their descriptions", async ({ page }, info) => {
     const f = frame(info.project.name);
-    for (const li of await runs(page).locator("li").all()) expect((await box(li)).height).toBeCloseTo(f.runRowH, 0);
+    for (const li of await runs(page).locator("li").all()) expect((await box(li)).height).toBeGreaterThan(f.runRowH);
     for (const li of await hills(page).locator("li").all()) expect((await box(li)).height).toBeCloseTo(f.hillRowH, 0);
   });
 
@@ -263,7 +272,7 @@ test.describe("navigation and interaction", () => {
     await expect(page).toHaveURL(/\/join$/);
   });
 
-  test("keyboard order follows reading order through the homepage", async ({ page }) => {
+  test("keyboard order follows reading order through the homepage", async ({ page }, info) => {
     const order: string[] = [];
     await page.locator("body").focus();
     for (let i = 0; i < 40; i++) {
@@ -275,24 +284,20 @@ test.describe("navigation and interaction", () => {
       });
       if (label) order.push(label);
     }
+    const hillNames = ["Cricket Hill", "Warren Hill", "Horner Hill", "Schiller Hill", "Mt. Trashmore"];
     const expected = [
-      "Find a Run",
-      "Become a Mtn Runner",
-      "Run details",
-      // three run names (order depends on the build clock)
       "See the full schedule",
       "Explore all hills",
-      "Cricket Hill",
-      "Warren Hill",
-      "Horner Hill",
-      "Schiller Hill",
-      "Mt. Trashmore",
+      // phones: the touch preview buttons sit between the profile and the list
+      ...(info.project.name === "mobile" ? hillNames : []),
+      ...hillNames,
       "Find a Run",
       "Join Us",
     ];
-    expect(order.slice(0, 3)).toEqual(expected.slice(0, 3));
-    expect(order.slice(3, 6).sort()).toEqual(["Cricket Mtn Repeats", "Horner Hell Repeats", "Schiller Quad Killer"]);
-    expect(order.slice(6, 15)).toEqual(expected.slice(3));
+    expect(order.slice(0, 3)).toEqual(["Find a Run", "Become a Mtn Runner", "Run details"]);
+    // two run names (order depends on the build clock)
+    expect(order.slice(3, 5).sort()).toEqual(["Cricket Mtn Repeats", "Horner Hell Repeats"]);
+    expect(order.slice(5, 5 + expected.length)).toEqual(expected);
   });
 
   test("focus rings contrast with every surface (white on black and photos, black on white)", async ({ page }) => {
@@ -327,9 +332,13 @@ test.describe("navigation and interaction", () => {
     const before = await css(row, "background-color");
     await row.hover();
     await expect.poll(() => css(row, "background-color")).not.toBe(before);
-    const outline = jsu(page).getByRole("link", { name: "Join Us" });
-    await outline.hover();
-    await expect.poll(() => css(outline, "background-color")).toBe("rgb(255, 255, 255)");
+    // Round 2 secondary (white) CTA: hover is the MWDS secondary cream.
+    const secondary = jsu(page).getByRole("link", { name: "Join Us" });
+    await secondary.hover();
+    await expect.poll(() => css(secondary, "background-color")).toBe("rgb(244, 241, 232)");
+    const primary = jsu(page).getByRole("link", { name: "Find a Run" });
+    await primary.hover();
+    await expect.poll(() => css(primary, "background-color")).toBe("rgb(38, 38, 38)");
   });
 
   test("reduced motion removes transitions; otherwise they are short", async ({ page, browser }) => {
@@ -411,6 +420,178 @@ test.describe("accessibility", () => {
         expect.soft(r.worst, `${name} at ${width}px`).toBeGreaterThanOrEqual(need);
       }
     }
+  });
+});
+
+/** Mocked Formspree responses are cross-origin, like the real ones. */
+const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "POST, OPTIONS" };
+
+test.describe("Round 2 interactions", () => {
+  test("sticky header turns compact with a 1px black rule, and the logo returns to the top", async ({ page }) => {
+    const header = page.locator("body > header");
+    const tall = (await box(header)).height;
+    await page.evaluate(() => window.scrollTo(0, 1200));
+    await expect(header).toHaveAttribute("data-compact", "");
+    await expect.poll(async () => (await box(header)).height).toBeLessThan(tall - 20);
+    expect((await box(header)).y).toBe(0); // still pinned to the top
+    await expect.poll(() => css(header, "border-bottom-color")).toBe("rgb(0, 0, 0)");
+    expect(await css(header, "border-bottom-width")).toBe("1px");
+    expect(await css(header, "box-shadow")).toBe("none");
+    await page.getByRole("link", { name: "Chicago Mountain Runners" }).click();
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+    await expect(page).toHaveURL(/\/$/);
+    await expect(header).not.toHaveAttribute("data-compact");
+  });
+
+  test("club figures roll once into their final values, which assistive tech reads directly", async ({ page }) => {
+    const totals = page.locator("section[aria-labelledby=club-totals-heading]");
+    const odometers = totals.locator("[data-odometer]");
+    await expect(odometers.first()).toHaveAttribute("data-odometer", "armed"); // parked below the fold
+    await totals.scrollIntoViewIfNeeded();
+    await expect(odometers.first()).toHaveAttribute("data-odometer", "rolling");
+    expect(await totals.locator("dd .sr-only").allTextContents()).toEqual(["132K ft", "2.5K", "2", "240"]);
+    // Circles stay put (relative to their section) while digits move.
+    const circle = totals.locator("[data-slot=total]").first();
+    // Both boxes in one read, so a settling sticky header can't skew the difference.
+    const offset = () => circle.evaluate((el) => el.getBoundingClientRect().y - el.closest("section")!.getBoundingClientRect().y);
+    const before = await offset();
+    await page.waitForTimeout(2200);
+    expect(await offset()).toBeCloseTo(before, 1);
+    // Settled: every strip shows its final digit inside its clip.
+    const settled = await totals.locator("dd").evaluateAll((dds) =>
+      dds.map((dd) =>
+        [...dd.querySelectorAll<HTMLElement>("[style*=translateY]")].every((strip) => {
+          const clip = strip.parentElement!.getBoundingClientRect();
+          const last = strip.lastElementChild!.getBoundingClientRect();
+          return Math.abs(last.top - clip.top) < 1;
+        }),
+      ),
+    );
+    expect(settled).toEqual([true, true, true, true]);
+  });
+
+  test("reduced motion: figures and topography stay static", async ({ browser, page }) => {
+    const reduced = await browser.newPage({ reducedMotion: "reduce", viewport: page.viewportSize()! });
+    await reduced.goto("/");
+    await reduced.locator("section[aria-labelledby=club-totals-heading]").scrollIntoViewIfNeeded();
+    for (const o of await reduced.locator("[data-odometer]").all()) await expect(o).toHaveAttribute("data-odometer", "settled");
+    await expect(reduced.locator("[data-slot=topo-field]")).not.toHaveAttribute("data-live");
+    await reduced.close();
+  });
+
+  test("hill rows preview their profile on hover and focus, without moving the layout", async ({ page }, info) => {
+    const shown = () => hills(page).locator("[data-slot=hill-profiles] > [data-active]");
+    await expect(shown()).toHaveAttribute("data-hill", "mt-trashmore");
+    const section = await box(hills(page));
+    const list = await box(hills(page).locator("ol"));
+    // All five drawings are fetched together, so switching never waits on the network.
+    await hills(page).scrollIntoViewIfNeeded();
+    await expect
+      .poll(() => hills(page).locator("figure img").evaluateAll((imgs) => imgs.every((i) => (i as HTMLImageElement).complete && (i as HTMLImageElement).naturalWidth > 0)))
+      .toBe(true);
+    if (info.project.name === "desktop") {
+      await hills(page).locator("li").nth(2).hover();
+      await expect(shown()).toHaveAttribute("data-hill", "horner-hill");
+      await expect(hills(page).locator("li").nth(2)).toHaveAttribute("data-active");
+    }
+    await hills(page).getByRole("link", { name: "Cricket Hill" }).focus();
+    await expect(shown()).toHaveAttribute("data-hill", "cricket-hill");
+    expect((await box(hills(page))).height).toBeCloseTo(section.height, 0);
+    expect((await box(hills(page).locator("ol"))).y - (await box(hills(page))).y).toBeCloseTo(list.y - section.y, 0);
+  });
+
+  test("touch-sized screens get explicit preview buttons; rows still navigate", async ({ page }, info) => {
+    const group = hills(page).getByRole("group", { name: "Preview a hill profile" });
+    if (info.project.name !== "mobile") {
+      await expect(group).toBeHidden();
+      return;
+    }
+    await expect(group).toBeVisible();
+    const warren = group.getByRole("button", { name: "Warren Hill" });
+    await warren.click();
+    await expect(warren).toHaveAttribute("aria-pressed", "true");
+    await expect(hills(page).locator("[data-slot=hill-profiles] > [data-active]")).toHaveAttribute("data-hill", "warren-hill");
+    // Interpretive profile: no figures, and it says so.
+    const fig = hills(page).locator("[data-hill=warren-hill] figure");
+    await expect(fig).toContainText("Not measured yet");
+    await expect(fig).not.toContainText("≈");
+  });
+
+  test("the liquid topography runs only on fine pointers, and goes idle when the pointer rests", async ({ page }, info) => {
+    const field = flat(page).locator("[data-slot=topo-field]");
+    await flat(page).scrollIntoViewIfNeeded();
+    if (info.project.name !== "desktop") return; // Desktop Chrome emulation in every project; the sweep is enough once
+    await expect(field).toHaveAttribute("data-live");
+    const b = await box(flat(page));
+    await page.mouse.move(b.x + 100, b.y + b.height / 2);
+    for (let i = 1; i <= 12; i++) await page.mouse.move(b.x + 100 + i * 40, b.y + b.height / 2 + (i % 2) * 20);
+    const scale = () => field.locator("feDisplacementMap").getAttribute("scale").then(Number);
+    expect(await scale()).toBeGreaterThan(0);
+    // The statement never moves (measured against its section in one read).
+    const textOffset = () =>
+      flat(page).locator("p").evaluate((el) => {
+        const a = el.getBoundingClientRect(), b = el.closest("section")!.getBoundingClientRect();
+        return [a.x - b.x, a.y - b.y, a.width, a.height];
+      });
+    const text = await textOffset();
+    await expect.poll(scale, { timeout: 4000 }).toBe(0);
+    expect(await textOffset()).toEqual(text);
+  });
+
+  test("the Questions panel validates, sends through Formspree (mocked) and confirms", async ({ page }) => {
+    const posted: string[] = [];
+    await page.unroute("https://formspree.io/**");
+    await page.route("https://formspree.io/**", async (route) => {
+      if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers: CORS });
+      posted.push(route.request().url());
+      await route.fulfill({ status: 200, headers: CORS, contentType: "application/json", body: JSON.stringify({ ok: true, next: "https://formspree.io/thanks" }) });
+    });
+    const trigger = page.getByRole("button", { name: "Questions?" });
+    await expect(trigger).toBeVisible();
+    await trigger.click();
+    const dialog = page.getByRole("dialog", { name: "Questions about the club?" });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByLabel("Your question")).toBeFocused();
+    const panel = await box(dialog);
+    const vp = page.viewportSize()!;
+    expect(panel.x).toBeGreaterThanOrEqual(0);
+    expect(panel.x + panel.width).toBeLessThanOrEqual(vp.width);
+    expect(panel.y).toBeGreaterThanOrEqual(0);
+
+    await dialog.getByRole("button", { name: "Send question" }).click();
+    await expect(dialog.getByLabel("Your question")).toHaveAttribute("aria-invalid", "true");
+    expect(posted).toEqual([]);
+
+    await dialog.getByLabel("Your question").fill("Is there a pace group for beginners?");
+    await dialog.getByLabel("Email").fill("runner@example.com");
+    await dialog.getByRole("button", { name: "Send question" }).click();
+    await expect(dialog.getByRole("status")).toContainText("your question is on its way");
+    expect(posted).toEqual(["https://formspree.io/f/mwlljgld"]);
+
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    await expect(trigger).toBeFocused();
+  });
+
+  test("a failed delivery is reported and never confirmed", async ({ page }) => {
+    await page.unroute("https://formspree.io/**");
+    await page.route("https://formspree.io/**", (route) =>
+      route.request().method() === "OPTIONS"
+        ? route.fulfill({ status: 204, headers: CORS })
+        : route.fulfill({ status: 500, headers: CORS, contentType: "application/json", body: JSON.stringify({ errors: [{ message: "Server error." }] }) }),
+    );
+    await page.getByRole("button", { name: "Questions?" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Your question").fill("Hello?");
+    await dialog.getByLabel("Email").fill("runner@example.com");
+    await dialog.getByRole("button", { name: "Send question" }).click();
+    await expect(dialog.getByRole("alert")).toContainText("didn't send");
+    await expect(dialog.getByRole("status")).toHaveCount(0);
+  });
+
+  test("the open Questions panel has no axe violations", async ({ page }) => {
+    await page.getByRole("button", { name: "Questions?" }).click();
+    expect(await axe(page)).toEqual([]);
   });
 });
 
