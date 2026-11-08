@@ -12,7 +12,7 @@ Mobile `1:884`.
 | `build-1024.jpg`, `build-1280.jpg` | Full page at intermediate widths with no Figma frame (desktop layout, fluid type) |
 | `figma-vs-build-393.jpg`, `-768.jpg`, `-1732.jpg` | Three panels: **Figma** · **build** · 50% overlay (Figma under build). Downscaled for size |
 | `hero-before-after-1732.jpg`, `-768.jpg`, `-393.jpg` | Hero accessibility refinement: **Figma** · **before** (PR #3 at `8fcb524`: 60% headline, halo) · **after** (75% headline over a shade confined to the headline band) |
-| `jsu-before-after-1732.jpg`, `-768.jpg`, `-393.jpg` | Just show up: **Figma** · **before** (30% shade, 90% copy) · **after** (38% shade, 100% copy) |
+| `jsu-before-after-1732.jpg`, `-768.jpg`, `-393.jpg` | Just show up: **Figma** · **before** (30% shade, 90% copy) · **after** (42% shade, 100% copy) |
 
 The "before" panels are the current build with the previous CSS restored
 (headline 60% opacity with the 0.12em halo and no band; 30% shade with 90%
@@ -22,7 +22,7 @@ How to read the overlays:
 
 - **Accessibility-driven deviations** (contrast over photography, each measured
   with `tests/e2e/contrast.mjs`): the hero headline at 75% over a shade behind
-  the headline band, the outline CTAs' 50% black fill, and the Just show up 38%
+  the headline band, the outline CTAs' 50% black fill, and the Just show up 42%
   shade with full-white copy. These are the darker areas you will see compared
   with Figma.
 - **Design decisions accepted in review** (not accessibility): uniform photo

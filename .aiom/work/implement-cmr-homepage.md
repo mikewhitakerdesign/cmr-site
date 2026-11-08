@@ -197,20 +197,25 @@ cross bright foliage — the earlier background-only sample had passed it. CTAs
   eased stops 80 / 96 / 160px above and below (mobile / tablet / desktop,
   interpolated). The band is sized from the headline's own fluid values, so it
   tracks it at every width. The halo was removed: the band does the work.
-- Just show up: shade 30% → 38%, copy 90% → 100% white. 35% with full-white
-  copy is the minimum that passes (worst 4.52:1 at 1920); 38% gives headroom for
-  cross-platform rendering.
+- Just show up: shade 30% → 42%, copy 90% → 100% white. On macOS 35% with
+  full-white copy is the minimum that passes (worst 4.52:1 at 1920). A first
+  push at 38% passed on macOS (≥ 4.85:1) but **failed on Linux CI: copy 4.47:1
+  at 1280px** — Linux wraps and hints the text differently, so words land on a
+  brighter patch of foliage. That is a genuine failure on a tested platform, so
+  the shade was raised to 42% rather than the threshold lowered (macOS now
+  ≥ 5.38:1; the same −0.5 platform gap still clears 4.5).
 - Hero outline CTA: unchanged (50% black fill); re-measured, passes.
 
-**Results after** (worst cell; 11 widths measured, 320–1920):
+**Results after** (worst cell, macOS Chromium; 13 widths measured, 320–1920;
+Linux CI runs the same assertions at 393/768/1440 and the sweep):
 
 | Text | Needs | 393 | 768 | 1440 | 1732 | Range 320–1920 |
 |---|---|---|---|---|---|---|
 | Hero headline | 3.0 | 3.53 | 3.24 | 3.36 | 3.44 | 3.19 (1024) – 3.66 (320) |
 | Hero "Find a Run" (black on white) | 4.5 | 19.91 | 21 | 21 | 21 | ≥ 19.9 |
 | Hero "Become a Mtn Runner" | 4.5 | 5.27 | 7.11 | 13.21 | 13.87 | ≥ 5.27 |
-| Just show up heading | 3.0 | 4.42 | 4.65 | 4.52 | 4.56 | 4.42 – 4.78 |
-| Just show up copy | 4.5 | 5.67 | 5.19 | 5.00 | 5.16 | 4.85 – 5.67 |
+| Just show up heading | 3.0 | 4.90 | 5.20 | 5.02 | 5.08 | 4.90 – 5.36 |
+| Just show up copy | 4.5 | 6.25 | 5.73 | 5.53 | 5.77 | 5.38 – 6.25 |
 | Just show up "Find a Run" | 4.5 | 21 | 21 | 21 | 21 | 21 |
 | Just show up "Join Us" | 4.5 | 16.12 | 15.03 | 12.90 | 12.58 | ≥ 12.36 |
 
@@ -239,7 +244,7 @@ review; **✓** accepted in the Owner/GPT review of 2026-11-08.
 | 11 | Run rows, tablet and mobile | No icons, ↗, or closing rule; link centered without arrow | As drawn | A |
 | 12 | "Explore all hills", tablet and mobile | Absent (only path to `/hills` from the section) | Present, no arrow, in the space Figma leaves | I ✓ |
 | 13 | Mt. Trashmore grey row | Grey fill at every size | Read as "featured hill" (the illustrated one); same fill is hover elsewhere | ✓ |
-| 14 | Just show up | Copy 75% white over photo + 50% gradient; heading 2.6–2.8:1, copy below 3:1 | 38% black shade + copy at 100% (was 30% / 90%, which failed the worst-region test at 3.56–4.04:1); heading ≥ 4.42:1, copy ≥ 4.85:1 | L |
+| 14 | Just show up | Copy 75% white over photo + 50% gradient; heading 2.6–2.8:1, copy below 3:1 | 42% black shade + copy at 100% (was 30% / 90%, which failed the worst-region test at 3.56–4.04:1; 38% failed on Linux at 4.47:1); heading ≥ 4.90:1, copy ≥ 5.38:1 (macOS) | L |
 | 15 | Just show up, tablet copy measure | 550 | 540 (Figma's text renders ~1% wider; keeps its line breaks) | C |
 | 16 | Topo pattern | 20% layer opacity | Already in the exported PNG; not re-applied (a first attempt applied it twice) | C |
 | 17 | Flat statement, desktop | Text box overhangs the container by 7px | Centered in the container | C |
@@ -266,7 +271,8 @@ Deterministic checks (evidence, not Owner acceptance):
   order, focus ring colors per surface, hover states, reduced motion, axe WCAG
   2.2 AA on the whole page including color contrast (0 violations), worst-region
   contrast of all seven photo-text targets at each frame plus a sweep at 320,
-  600, 900, 1024, 1180, 1280 and 1920 (`contrast.mjs`), and no off-site requests.
+  600, 900, 1024, 1180, 1280, 1366, 1600 and 1920 (`contrast.mjs`), and no
+  off-site requests.
 - `npm run test:visual`: **12/12** — the 9 foundation baselines unchanged; the 3
   homepage baselines regenerated for the contrast refinement (macOS), with the
   clock-dependent card and run list masked.
@@ -282,8 +288,10 @@ not a claim of pixel-perfect fidelity; the differences are listed above.
 
 ### Known issues
 
-- Contrast margins are smallest for the hero headline at 1024px (3.19:1 vs 3)
-  and the Just show up copy at 1920px (4.85:1 vs 4.5). Changing the photo crop,
+- Contrast margins are smallest for the hero headline at 1024px (3.19:1 vs 3
+  on macOS). Linux renders photo text differently (−0.5:1 observed on the Just
+  show up copy), so CI on Linux is the authoritative gate; the sweep reports
+  every failing width rather than stopping at the first. Changing the photo crop,
   shade, or headline geometry must re-run `contrast.mjs`; a replacement hero
   photograph (D3) will need re-measuring.
 - The hero photo is visibly soft on desktop until the original is supplied.
@@ -297,7 +305,7 @@ not a claim of pixel-perfect fidelity; the differences are listed above.
 ### Open Owner decisions
 
 1. **Final review of the accessibility treatments** (deviations 5, 6, 14): the
-   headline band and 75% letters, and the Just show up 38% shade with full-white
+   headline band and 75% letters, and the Just show up 42% shade with full-white
    copy. Alternative on record: 60% letters with a 55% band (keeps Figma's letter
    opacity, greyer sky).
 2. **Figma cleanup** (design-side, not blocking): the totals surface and empty

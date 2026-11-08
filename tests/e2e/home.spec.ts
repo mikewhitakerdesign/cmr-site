@@ -374,18 +374,19 @@ test.describe("accessibility", () => {
       const r = await measureTextContrast(page, locate(page));
       info.annotations.push({ type: `contrast ${name}`, description: `worst ${r.worst} (p10 ${r.p10}, median ${r.median}) over ${r.cells} cells` });
       expect(r.cells, `${name}: measurable regions`).toBeGreaterThan(0);
-      expect(r.worst, `${name} worst-region contrast`).toBeGreaterThanOrEqual(need);
+      expect.soft(r.worst, `${name} worst-region contrast`).toBeGreaterThanOrEqual(need);
     }
   });
 
   test("photo text stays legible at intermediate widths, where the crop shifts", async ({ page }, info) => {
     test.skip(info.project.name !== "desktop", "one sweep is enough; it sets its own widths");
-    for (const width of [320, 600, 900, 1024, 1180, 1280, 1920]) {
+    for (const width of [320, 600, 900, 1024, 1180, 1280, 1366, 1600, 1920]) {
       await page.setViewportSize({ width, height: 1000 });
       await loadAll(page);
       for (const [name, locate, need] of PHOTO_TEXT) {
         const r = await measureTextContrast(page, locate(page));
-        expect(r.worst, `${name} at ${width}px`).toBeGreaterThanOrEqual(need);
+        // Soft: report every failing width and target, not just the first.
+        expect.soft(r.worst, `${name} at ${width}px`).toBeGreaterThanOrEqual(need);
       }
     }
   });

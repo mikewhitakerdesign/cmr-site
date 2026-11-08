@@ -18,10 +18,11 @@ import { cn } from "@/lib/utils";
  * Figma does — anchored ~6% from the top on desktop, centered elsewhere —
  * under the same baked mesh gradient as the hero at 50%.
  *
- * Deviation (accessibility): a 38% black legibility shade over the photo, and
- * copy at 100% white instead of 75%. Measured worst-region contrast with this
- * treatment, 320–1920px: heading 4.42–4.78:1 (needs 3), copy 4.85–5.67:1 (needs
- * 4.5) — tests/e2e/contrast.mjs.
+ * Deviation (accessibility): a 42% black legibility shade over the photo, and
+ * copy at 100% white instead of 75%. Worst-region contrast must hold on every
+ * platform the site is tested on: at 38% the copy measured ≥ 4.85:1 on macOS but
+ * 4.47:1 at 1280px on Linux CI (text wraps differently over bright foliage), so
+ * the shade carries headroom — tests/e2e/contrast.mjs.
  *
  * Tracking is −0.045em at every size (Figma: −6.48px everywhere, which is
  * −0.045em at 144px but makes letters collide at 56px — "JUSTSHOW" in the
@@ -62,9 +63,9 @@ export function JustShowUp() {
       >
         {/* Legibility shade (not in Figma). The previous 30% shade with 90% copy passed a
             background-only sample but failed the worst-region test (copy 3.56–4.04:1) where
-            lines cross bright foliage. 35% with full-white copy is the minimum that passes
-            (worst 4.52:1 at 1920); 38% keeps a margin for cross-platform rendering. */}
-        <div data-slot="legibility-shade" className="absolute inset-0 bg-primary/38" />
+            lines cross bright foliage. With full-white copy, 35% is the macOS minimum and 38%
+            still failed on Linux CI (4.47:1 at 1280px); 42% passes on both. */}
+        <div data-slot="legibility-shade" className="absolute inset-0 bg-primary/42" />
       </PhotoBackdrop>
       <Container>
         <h2
