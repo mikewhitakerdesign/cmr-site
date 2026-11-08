@@ -21,7 +21,7 @@ validation_state: passed
 blocker_state: awaiting-owner-review
 current_responsibility: owner
 created_at: '2026-11-07T23:52:00.000Z'
-updated_at: '2026-11-08T06:30:00.000Z'
+updated_at: '2026-11-08T08:00:00.000Z'
 ---
 ## Status
 
@@ -31,7 +31,7 @@ PR #3 (https://github.com/mikewhitakerdesign/cmr-site/pull/3), not merged, not
 deployed. Owner/GPT review (2026-11-08) accepted the architecture, composition,
 scheduling model, MWDS integration and responsive strategy, and asked for the
 hero headline contrast to be fixed and photographic contrast validation to be
-strengthened — done in "Photographic contrast" below. `validation_state: passed`
+strengthened — done in "Photographic contrast" below. Final head `41e9653`; CI (`validate`, `browser`, Linux) passes. `validation_state: passed`
 covers the deterministic checks only. Final Owner/GPT review, merge
 authorization, and the release dependencies below are outstanding. The planning record from
 discovery follows the implementation record as history.
