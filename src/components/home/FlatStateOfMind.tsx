@@ -1,7 +1,7 @@
 import { Container } from "@/components/Container";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
 import { cn } from "@/lib/utils";
-import { TopoField } from "@/components/home/TopoField";
+import { TopoPattern } from "@/components/home/TopoPattern";
 
 /**
  * "FLAT IS A STATE OF MIND." — Figma 1:376 (desktop), 78:355 (tablet),
@@ -9,9 +9,9 @@ import { TopoField } from "@/components/home/TopoField";
  * rule at 40% black.
  *
  * Round 2 (Owner direction, 2026-11-08): the pattern is now vector — the Figma
- * fill traced to paths (scripts/assets/vectorize-topo.mjs) — with a restrained
- * liquid cursor effect on fine-pointer devices (TopoField). Static for touch
- * and reduced motion; the statement itself never moves.
+ * fill traced to paths (scripts/assets/vectorize-topo.mjs). A liquid cursor
+ * effect added in Round 2 was removed in Round 2.1 (Owner direction); the
+ * background is static (TopoPattern).
  *
  *            height  lines                 vertical padding
  *   mobile   398     70/70 ×3              94
@@ -32,7 +32,7 @@ export function FlatStateOfMind() {
       className="relative isolate border-t border-foreground/40 bg-background text-foreground py-(--flat-py-a) md:py-(--flat-py-b)"
     >
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <TopoField />
+        <TopoPattern />
       </div>
       <Container>
         <p style={statement} className={cn(FLUID_TYPE, "text-center font-black tracking-[-0.045em]")}>

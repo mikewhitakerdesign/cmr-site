@@ -44,17 +44,17 @@ describe("FlatStateOfMind", () => {
     expect(screen.queryByRole("heading")).not.toBeInTheDocument();
   });
 
-  it("draws the vector topographic pattern decoratively, static until the client opts in", () => {
+  it("draws the vector topographic pattern decoratively and statically (no cursor effect)", () => {
     const { container } = render(<FlatStateOfMind />);
-    const svg = container.querySelector("[data-slot=topo-field]")!;
+    const svg = container.querySelector("[data-slot=topo-pattern]")!;
     expect(svg).toHaveAttribute("aria-hidden");
     expect(svg).toHaveAttribute("preserveAspectRatio", "xMidYMid slice");
     const uses = svg.querySelectorAll("use");
-    expect(uses[0].getAttribute("href")).toBe("/home/topo.svg#topo");
-    // jsdom has no fine pointer: the liquid layer and filter never mount.
-    expect(svg).not.toHaveAttribute("data-live");
     expect(uses).toHaveLength(1);
-    expect(svg.querySelector("filter")).toBeNull();
+    expect(uses[0].getAttribute("href")).toBe("/home/topo.svg#topo");
+    // Round 2.1: the liquid cursor effect is gone — no filters, masks or scripted state.
+    expect(svg.querySelector("filter, mask, defs, feTurbulence")).toBeNull();
+    expect(svg.getAttributeNames().filter((n) => n.startsWith("data-") && n !== "data-slot")).toEqual([]);
   });
 
   it("has no axe violations", async () => {
