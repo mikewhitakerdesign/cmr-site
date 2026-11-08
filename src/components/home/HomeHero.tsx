@@ -32,11 +32,13 @@ import { cn } from "@/lib/utils";
  *     matches line one's width on desktop).
  *
  * ACCEPTED ACCESSIBILITY EXCEPTION (Owner decision, PR #3, 2026-11-08): the
- * headline keeps Figma's ghosted 60% white, plus a soft halo. Its worst-region
- * contrast over the sky is about 1.2–1.3:1, below the 3:1 AA minimum for large
- * text. It is NOT WCAG AA compliant and is not claimed to be. A tested
- * alternative (75% over a headline band) reached ≥ 3.19:1 and is recorded in
- * .aiom/work/implement-cmr-homepage.md should the decision be revisited.
+ * headline is solid white (100%, like "JUST SHOW UP.") with no halo or shadow —
+ * Figma's ghosted 60% and the soft halo were removed in the final refinement. Its
+ * worst-region contrast over the pale sky is still below the 3:1 AA minimum for
+ * large text (see the Work Item for the measurements). It is NOT WCAG AA
+ * compliant and is not claimed to be. A tested alternative (75% over a headline
+ * band) reached ≥ 3.19:1 and is recorded in .aiom/work/implement-cmr-homepage.md
+ * should the decision be revisited.
  */
 export function HomeHero({ next, now }: { next: RunOccurrence | null; now: Date }) {
   const layout = fluidVars({
@@ -83,13 +85,7 @@ export function HomeHero({ next, now }: { next: RunOccurrence | null; now: Date 
         <h1
           id="hero-heading"
           style={heading}
-          className={cn(
-            FLUID_TYPE,
-            "text-center font-black opacity-60",
-            // Legibility halo (not in Figma): a soft shadow in the foreground token
-            // separates the ghosted 60% letters from pale sky. See Owner decision D6.
-            "[text-shadow:0_0_0.12em_color-mix(in_srgb,var(--foreground)_30%,transparent)]",
-          )}
+          className={cn(FLUID_TYPE, "text-center font-black")}
         >
           {/* The space keeps the accessible name "MAKE YOUR OWN MTNS" (blocks don't add one). */}
           <span className="block">MAKE YOUR</span>{" "}

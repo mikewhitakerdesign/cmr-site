@@ -41,7 +41,7 @@ How to read the overlays:
   vector hill profiles; vector topography; gray footer with a tone-on-tone logo;
   the floating Questions button; no visible sample/provisional badges.
 - **Accepted exceptions, not WCAG AA compliant (unchanged):** the hero headline
-  (60% with halo, ≈ 1.2–1.3:1) and the Just show up body copy (≈ 3.6–3.8:1) —
+  (solid white, no halo, ≈ 1.4–1.9:1) and the Just show up body copy (≈ 3.6–3.8:1) —
   Owner decision, 2026-11-08.
 - **Earlier reviewed deviations** are listed in `.aiom/work/implement-cmr-homepage.md`
   ("Design-to-code deviations").

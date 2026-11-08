@@ -15,6 +15,13 @@ describe("HomeHero", () => {
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
   });
 
+  it("sets the headline in solid white: no opacity and no halo or shadow", () => {
+    render(<HomeHero next={next} now={now} />);
+    const classes = screen.getByRole("heading", { level: 1 }).className.split(/\s+/);
+    expect(classes.filter((c) => /opacity|text-shadow|\[text-shadow/.test(c))).toEqual([]);
+    expect(classes).toEqual(expect.arrayContaining(["font-black", "text-center"])); // typography unchanged
+  });
+
   it("links the CTAs to the v1 routes", () => {
     render(<HomeHero next={next} now={now} />);
     expect(screen.getByRole("link", { name: "Find a Run" })).toHaveAttribute("href", "/calendar");

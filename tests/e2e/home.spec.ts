@@ -119,6 +119,18 @@ test.describe("structure and content", () => {
     await expect(runs(page).locator("time").first()).toHaveAttribute("datetime", /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}-0[56]:00$/);
   });
 
+  test("hero headline is solid white with no halo, like the Just show up heading", async ({ page }) => {
+    const style = (sel: string) =>
+      page.locator(sel).evaluate((el) => {
+        const c = getComputedStyle(el);
+        return { opacity: c.opacity, color: c.color, shadow: c.textShadow, weight: c.fontWeight };
+      });
+    const hero = await style("#hero-heading");
+    const jsu = await style("#just-show-up-heading");
+    expect(hero).toEqual({ opacity: "1", color: "rgb(255, 255, 255)", shadow: "none", weight: "900" });
+    expect(hero).toEqual(jsu);
+  });
+
   test("never requests Figma or other off-site assets", async ({ page }) => {
     const external: string[] = [];
     page.on("request", (r) => {
@@ -424,9 +436,10 @@ test.describe("accessibility", () => {
 
   /**
    * ACCEPTED ACCESSIBILITY EXCEPTIONS (Owner decision on PR #3, 2026-11-08).
-   * The Owner restored the approved ghosted hero headline (60% white with a soft
-   * halo) and the original Just show up treatment (30% shade, 90% white copy) and
-   * accepted their known contrast shortfall for this iteration. They do NOT meet
+   * The hero headline is solid white with no halo (final refinement, matching the
+   * "JUST SHOW UP." heading) over the pale sky, and Just show up keeps its original
+   * treatment (30% shade, 90% white copy). The Owner accepted their known contrast
+   * shortfall for this iteration. They do NOT meet
    * WCAG AA 1.4.3 in their worst region and are not claimed to. They are measured
    * and recorded on every run, but deliberately not asserted against a threshold
    * (thresholds are not weakened; the two elements are simply outside the gate).

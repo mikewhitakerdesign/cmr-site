@@ -21,12 +21,13 @@ validation_state: passed
 blocker_state: awaiting-owner-review
 current_responsibility: owner
 created_at: '2026-11-07T23:52:00.000Z'
-updated_at: '2026-11-08T22:00:00.000Z'
+updated_at: '2026-11-08T23:30:00.000Z'
 ---
 ## Status
 
-**Final targeted refinements (2026-11-08, after Round 2.1 was approved) implemented
-and validated on PR #3; awaiting Owner approval to merge.** See "Final refinements"
+**Final targeted refinements (2026-11-08, after Round 2.1 was approved, ending with
+the solid-white hero headline) implemented and validated on PR #3; awaiting Owner
+approval to merge.** See "Final refinements"
 first, then "Round 2.1" and "Round 2 refinement" below.
 PR #3 stays open; not merged; no production deployment (Vercel Preview only).
 Verified implementation head **`c2da050`**: GitHub CI `validate` and `browser`
@@ -54,8 +55,9 @@ the tested alternative should the decision be revisited.
 
 Round 2.1 was approved. A last targeted pass on PR #3, changing nothing else (the
 natural hero photograph, hill geometry, layout and interactions are preserved): one
-label for every Join CTA, no borders on the filled buttons, and black-and-white hill
-graphics. Not merged, not deployed to production.
+label for every Join CTA, no borders on the filled buttons, black-and-white hill
+graphics, and (last) a solid-white hero headline. Not merged, not deployed to
+production.
 
 ### As built
 
@@ -64,22 +66,28 @@ graphics. Not merged, not deployed to production.
 | F1 | All four Join CTAs read "Join the club" and go to `/join` | Header (already), hero ("Become a Mtn Runner" → "Join the club"), Just show up ("Join Us" → "Join the club"), footer link (`footerNav`, "Join Us" → "Join the club"). Unrelated labels untouched; `/join` page heading is unchanged. A unit test renders all four and checks label and `href`; a browser test checks them in the live page (header, hero, Just show up, footer, in that order) and that no "Join Us" / "Become a Mtn Runner" link remains |
 | F2 | No borders on the filled buttons; keep the inverse hover | `CtaLink`: the `border` class moved from the base into the `outline` variant only. Primary (black ↔ white) and secondary (white ↔ black) have no border at rest or on hover; the header's outline CTA keeps its intentional 1px default border. Padding restored to the pre-border values (`px-5 md:px-7`, `px-7`), so button sizes are as before; heights are caller-set and unchanged. Focus ring (3px + 2px gap), active states, contrast (solid on solid, 21:1) and reduced motion unchanged |
 | F3 | Hills in black and white only; keep geometry, tags, legends, interactions, "Vertical scale exaggerated." | `render-profiles.mjs`: every fill is `#fff`, every line `#000` (SVGs contain only those two colors; before: eight grays plus near-black). Surface, bands and slab are white; contours and strata black, minor lines 0.5px and every fourth 1.15px. Geometry, anchors and data are byte-identical (same generator output); pastel tags, Total rise legend, hover/focus/touch behavior and the caption sentence untouched. The lower section's static topography is untouched |
+| F4 | Hero headline from 60% white to solid white, no halo (as "JUST SHOW UP."); change nothing else | `HomeHero` h1: `opacity-60` and the `text-shadow` halo removed; classes are now `FLUID_TYPE text-center font-black`. Typography, position, responsive behavior, photograph and everything else untouched. A unit test asserts no opacity or shadow class; a browser test asserts the computed style (opacity 1, white, no shadow, weight 900) equals the Just show up heading's |
 
-### Delivery status
-
-Verified implementation head **`161a274`**: GitHub CI `validate` and `browser` pass
-(run 42516204755); Vercel deployment `6nFQ2JmBQK85jqsZZgfW3bSDLvrv` Ready as a
-**Preview** at https://cmr-site-git-feat-cmr-homepage-mikewhitaker-projects.vercel.app
-(Vercel SSO-protected). PR #3 open, not merged; no production deployment. Commits
-after it only update this record.
+**F4 contrast (method and thresholds unchanged; macOS Chromium).** Hero headline worst-region
+contrast over the pale sky, 320–1920px: 1.87 (320) · 1.73 (393) · 1.63 (600–900, incl. 768) · 1.45 (1024) ·
+1.40 (1180–1732, incl. 1440) · 1.37 (1920). Median 1.73–2.18. Solid white helps (was 1.19–1.39:1) but
+the sky is too pale for 3:1, so this remains an **accepted exception that does not meet WCAG AA 1.4.3
+and is not claimed to**. It is still measured and recorded on every run, not asserted. All other
+photo-text targets (CTAs ≈ 19–21:1, Just show up heading 3.54 / 3.80 / 3.67:1) are unchanged and asserted.
+The tested 75%-over-band alternative (≥ 3.19:1) remains in the record below.
 
 ### Validation (2026-11-08, macOS, Chromium)
 
 - `npm run lint`, `tsc --noEmit`, `npm run tokens:check`, `npm run build`: pass.
-- Vitest: **221 tests, 16 files, pass** (updated labels; filled buttons asserted border-free, outline asserted 1px; new four-CTA test).
-- Playwright (393 / 768 / 1440): **133 pass, 8 visual skipped**. Hero, header and Figma geometry checks unchanged and passing (button positions and heights). Visual: **12 pass** after regenerating the affected baselines (homepage ×3, footer ×4).
-- Contrast: CTAs ≈ 19–21:1; accepted exceptions unchanged and not claimed compliant. Hover states are solid black on white or white on black.
+- Vitest: **222 tests, 16 files, pass** (updated labels; filled buttons asserted border-free, outline asserted 1px; four-CTA test; solid-white headline).
+- Playwright (393 / 768 / 1440): **136 pass, 8 visual skipped**. Hero, header and Figma geometry checks unchanged and passing (button positions and heights). Visual: **12 pass** after regenerating the affected baselines (homepage ×3 for the headline, plus footer ×4 for the earlier label change).
+- Contrast: CTAs ≈ 19–21:1. Accepted exceptions not claimed compliant: hero headline now 1.37–1.87:1 (solid white; was 1.19–1.39:1), Just show up copy unchanged at 3.56–3.74:1. Hover states are solid black on white or white on black.
 - Formspree still never contacted by tests.
+
+### Delivery status
+
+(Recorded below once CI and the Vercel Preview have been verified for the final commit.)
+
 
 ## Round 2.1 final visual refinements (2026-11-08)
 
@@ -445,7 +453,7 @@ Shipped state and measured worst-region contrast (method below; macOS Chromium,
 
 | Text | Shipped treatment | Needs | Measured worst region | Status |
 |---|---|---|---|---|
-| **Hero headline "MAKE YOUR OWN MTNS"** | 60% white (as Figma) with the soft halo; no band | 3.0 (large text) | **1.19–1.36:1** (1.32 / 1.23 / 1.25 / 1.29 at 393 / 768 / 1440 / 1732) | **Exception. Does not meet WCAG AA 1.4.3.** |
+| **Hero headline "MAKE YOUR OWN MTNS"** | **Final refinement: solid white (100%), no halo or shadow, as "JUST SHOW UP."** (was 60% with a soft halo) | 3.0 (large text) | **1.37–1.87:1** across 320–1920px (1.73 / 1.63 / 1.40 / 1.40 at 393 / 768 / 1440 / 1732). Was 1.19–1.39:1 | **Exception. Still does not meet WCAG AA 1.4.3** (better, not compliant) |
 | **Just show up body copy** | 90% white over a 30% shade | 4.5 | **3.55–4.04:1** (4.04 / 3.66 / 3.56 / 3.76) | **Exception. Does not meet WCAG AA 1.4.3.** |
 | Just show up heading | 30% shade | 3.0 | 3.57–3.93:1 | Meets 3:1 (asserted) |
 | Hero and Just show up CTAs | existing treatments (hero outline on 50% black fill) | 4.5 | ≥ 5.27:1 (outline), ≥ 11.67:1 (others) | Meets (asserted) |
