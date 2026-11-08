@@ -89,11 +89,11 @@ export function JustShowUp() {
           same hill until it means something.
         </p>
         <div className="mt-(--jsu-cta-mt-a) flex flex-wrap gap-3 text-[18px] leading-[27px] md:mt-(--jsu-cta-mt-b) *:h-(--jsu-cta-h-a) md:*:h-(--jsu-cta-h-b)">
-          <CtaLink href="/calendar" variant="primary" className="px-[27px]">
+          <CtaLink href="/calendar" variant="primary" className="px-7">
             Find a Run
           </CtaLink>
-          <CtaLink href="/join" variant="secondary" className="px-[27px]">
-            Join Us
+          <CtaLink href="/join" variant="secondary" className="px-7">
+            Join the club
           </CtaLink>
         </div>
       </Container>

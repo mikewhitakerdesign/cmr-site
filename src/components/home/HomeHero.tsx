@@ -107,11 +107,11 @@ export function HomeHero({ next, now }: { next: RunOccurrence | null; now: Date 
               "*:h-(--hero-cta-h-a) md:*:h-(--hero-cta-h-b)",
             )}
           >
-            <CtaLink href="/calendar" variant="primary" className="px-[19px] md:px-[27px]">
+            <CtaLink href="/calendar" variant="primary" className="px-5 md:px-7">
               Find a Run
             </CtaLink>
-            <CtaLink href="/join" variant="secondary" className="grow px-[19px] md:grow-0 md:px-[27px]">
-              Become a Mtn Runner
+            <CtaLink href="/join" variant="secondary" className="grow px-5 md:grow-0 md:px-7">
+              Join the club
             </CtaLink>
           </div>
 

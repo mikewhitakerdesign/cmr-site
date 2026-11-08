@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
  * A hill's terrain illustration with its annotation system — homepage Round 2,
  * reusable on hill detail pages.
  *
- * The artwork is grayscale vector (public/hills/*.svg). Annotations are HTML
+ * The artwork is black-and-white vector (public/hills/*.svg: white fills, black lines, no grays). Annotations are HTML
  * on top, in restrained pastel chips joined to the artwork by hairline
  * leaders:
  *
