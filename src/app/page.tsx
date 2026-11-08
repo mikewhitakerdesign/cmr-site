@@ -7,7 +7,7 @@ import { JustShowUp } from "@/components/home/JustShowUp";
 import { UpcomingRuns } from "@/components/home/UpcomingRuns";
 import { clubTotals } from "@/lib/club-totals";
 import { listedHills } from "@/lib/hills";
-import { getUpcomingRuns } from "@/lib/runs";
+import { getNextOccurrencePerRun, getUpcomingRuns } from "@/lib/runs";
 
 /**
  * Homepage — Figma Home / Desktop 1:10, Tablet 1:451, Mobile 1:884.
@@ -21,11 +21,12 @@ export const revalidate = 3600;
 
 export default function Home() {
   const now = new Date();
-  const upcoming = getUpcomingRuns(now, 3);
+  const next = getUpcomingRuns(now, 1)[0] ?? null;
+  const upcoming = getNextOccurrencePerRun(now);
 
   return (
     <>
-      <HomeHero next={upcoming[0] ?? null} now={now} />
+      <HomeHero next={next} now={now} />
       <CommunityIntro />
       <ClubTotals totals={clubTotals} />
       <UpcomingRuns occurrences={upcoming} now={now} />

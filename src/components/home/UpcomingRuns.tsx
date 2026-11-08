@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowLink } from "@/components/ArrowLink";
 import { Container } from "@/components/Container";
 import { ArrowUpRightIcon, ClockIcon, MapPinIcon } from "@/components/icons";
-import { ProvisionalBadge } from "@/components/ProvisionalBadge";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
 import { workoutLabel, type RunOccurrence } from "@/lib/runs";
 import { formatSlot, toDateTimeAttr } from "@/lib/schedule";
@@ -23,6 +22,11 @@ import { cn } from "@/lib/utils";
  * and are treated as intentional adaptation (stacked rows drop the icon
  * column); they are not carried to tablet or mobile.
  *
+ * Round 2 (Owner direction, 2026-11-08): one row per run (the next
+ * occurrence of each, so the two-run schedule reads as two rows), a short
+ * workout description under each title, taller rows to fit it, and no visible
+ * "sample" badge (content status stays on each row as `data-status`).
+ *
  * The schedule link sits after the list in the DOM (its tablet/mobile place)
  * and is moved to the top right on desktop with grid placement, so reading
  * and tab order are runs first, then the link.
@@ -35,7 +39,6 @@ export function UpcomingRuns({ occurrences, now }: { occurrences: RunOccurrence[
     "--runs-list-mt": [53, 44, 56],
   });
   const heading = fluidType([36, 48, 64], [39, 50, 60.8]);
-  const provisional = occurrences.some((o) => o.run.status !== "verified");
 
   return (
     <section
@@ -49,10 +52,7 @@ export function UpcomingRuns({ occurrences, now }: { occurrences: RunOccurrence[
     >
       <Container className="grid lg:grid-cols-[1fr_auto]">
         <div className="lg:col-start-1 lg:row-start-1">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <p className="text-caption uppercase">Upcoming runs</p>
-            {provisional && <ProvisionalBadge>Sample schedule · unconfirmed</ProvisionalBadge>}
-          </div>
+          <p className="text-caption uppercase">Upcoming runs</p>
           <h2
             id="upcoming-runs-heading"
             style={heading}
@@ -102,19 +102,20 @@ function UpcomingRunRow({ occurrence: o, now }: { occurrence: RunOccurrence; now
 
   return (
     <li
+      data-status={o.run.status}
       className={cn(
         "group/run relative border-t border-primary-foreground",
-        // mobile: stacked; 166 tall including the 1px rule (Figma counts it inside)
-        "pt-[17px] pb-[26px]",
-        // tablet: time column + details; 124 tall including the rule
-        "md:grid md:grid-cols-[150px_minmax(0,1fr)] md:gap-x-5 md:pt-[19px] md:pb-[19px]",
-        // desktop: four columns, vertically centered
-        "lg:grid-cols-[170px_minmax(0,1fr)_220px_20px] lg:items-center lg:gap-x-8 lg:py-7",
+        // mobile: stacked
+        "pt-5 pb-7",
+        // tablet: time column + details
+        "md:grid md:grid-cols-[150px_minmax(0,1fr)] md:gap-x-5 md:pt-6 md:pb-7",
+        // desktop: four columns, aligned to the title line (the description runs below it)
+        "lg:grid-cols-[170px_minmax(0,1fr)_220px_20px] lg:items-start lg:gap-x-8 lg:py-8",
       )}
     >
       {/* nowrap: the date form ("NOV 14 · 5:00 AM") is ~8px wider than Figma's 170px
           desktop column; it runs into the 32px gap rather than wrapping. */}
-      <p className="font-mono text-[14px] leading-[21px] whitespace-nowrap md:row-span-2 md:pt-1 lg:row-span-1 lg:flex lg:items-center lg:gap-2 lg:pt-0 lg:text-p lg:leading-6">
+      <p className="font-mono text-[14px] leading-[21px] whitespace-nowrap md:row-span-2 md:pt-1 lg:row-span-1 lg:flex lg:items-center lg:gap-2 lg:pt-1.5 lg:text-p lg:leading-6">
         <ClockIcon className="hidden size-4 shrink-0 lg:block" />
         <time dateTime={toDateTimeAttr(o)}>{formatSlot(o, now)}</time>
       </p>
@@ -137,17 +138,19 @@ function UpcomingRunRow({ occurrence: o, now }: { occurrence: RunOccurrence; now
           <span>{location}</span>
         </p>
         {o.note && <p className="mt-1 text-p-sm">{o.note}</p>}
+        {/* 75% white on black is 11.6:1. */}
+        <p className="mt-3 max-w-[60ch] text-p-sm text-primary-foreground/75 md:text-p lg:mt-4">{o.run.description}</p>
       </div>
 
       {workout && (
-        <p className="mt-2.5 text-right text-[14px] leading-[21px] font-medium md:col-start-2 md:mt-[7px] lg:col-start-3 lg:row-start-1 lg:mt-0 lg:leading-5">
+        <p className="mt-4 text-[14px] leading-[21px] font-medium md:col-start-2 md:mt-3 lg:col-start-3 lg:row-start-1 lg:mt-0 lg:pt-2 lg:text-right lg:leading-5">
           {workout}
         </p>
       )}
 
       <ArrowUpRightIcon
         className={cn(
-          "hidden size-5 lg:col-start-4 lg:row-start-1 lg:block",
+          "hidden size-5 lg:col-start-4 lg:row-start-1 lg:mt-1.5 lg:block",
           "motion-safe:transition-transform motion-safe:duration-150 motion-safe:group-hover/run:translate-x-0.5 motion-safe:group-hover/run:-translate-y-0.5",
         )}
       />

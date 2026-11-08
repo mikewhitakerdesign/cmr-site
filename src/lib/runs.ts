@@ -23,15 +23,15 @@ export type RunOccurrence = Occurrence<Run>;
  *
  * - `example-hill-repeats` is the scaffold placeholder (kept identifiable;
  *   never shown on the homepage).
- * - The three weekly runs are the sample schedule drawn in the approved Figma
- *   homepage (Upcoming runs 1:24 and the Next run card 1:407): names, weekday,
- *   time, meeting point, workout and duration are Figma's text, verbatim. They
- *   are `provisional` and render with a visible "sample" marker until the
- *   Owner confirms them. Descriptions say so rather than inventing detail.
+ * - The two weekly runs follow the Owner's Round 2 direction (2026-11-08):
+ *   Cricket Mtn Repeats, Saturday 5:30 AM, ~2 hours; Horner Hell Repeats,
+ *   Wednesday 5:30 AM, ~60 minutes. Meeting points are the approved Figma
+ *   text. Schiller Quad Killer (a Figma sample) was removed at the same time.
+ *   They stay `provisional` until the Owner confirms them: the homepage no
+ *   longer shows a sample badge (Owner direction), but the status is kept and
+ *   the descriptions say the workout details are still to be confirmed rather
+ *   than inventing paces or a structure.
  */
-const PROVISIONAL_DESCRIPTION =
-  "Sample run from the approved homepage design. The schedule, meeting point and workout are not confirmed yet.";
-
 export const runs: Run[] = [
   {
     slug: "example-hill-repeats",
@@ -48,10 +48,11 @@ export const runs: Run[] = [
     title: "Cricket Mtn Repeats",
     hillSlug: "cricket-hill",
     meetupLocation: "Cricket Hill · Montrose Beach",
-    description: PROVISIONAL_DESCRIPTION,
-    workoutSummary: "Hill Repeats",
-    durationLabel: "~60 min",
-    schedule: { kind: "weekly", weekday: "TUE", time: "05:30" },
+    description:
+      "Laps up and down Cricket Hill by the lake, at whatever effort feels right. Do a few reps or stay the whole morning — every pace is welcome and nobody's keeping score. Exact workout to be confirmed.",
+    workoutSummary: "Hill repeats",
+    durationLabel: "~2 hrs",
+    schedule: { kind: "weekly", weekday: "SAT", time: "05:30" },
     status: "provisional",
   },
   {
@@ -59,21 +60,11 @@ export const runs: Run[] = [
     title: "Horner Hell Repeats",
     hillSlug: "horner-hill",
     meetupLocation: "Horner Park",
-    description: PROVISIONAL_DESCRIPTION,
+    description:
+      "A shorter midweek session on Horner Park's hill. Climb at your own pace, take the downhills easy, and be done in about an hour. Despite the name, beginners are welcome. Workout details to be confirmed.",
     workoutSummary: "Hill repeats",
     durationLabel: "~60 min",
-    schedule: { kind: "weekly", weekday: "FRI", time: "05:30" },
-    status: "provisional",
-  },
-  {
-    slug: "schiller-quad-killer",
-    title: "Schiller Quad Killer",
-    hillSlug: "schiller-hill",
-    meetupLocation: "Schiller Woods",
-    description: PROVISIONAL_DESCRIPTION,
-    workoutSummary: "XC miles + Hill repeats",
-    durationLabel: "~3 hrs",
-    schedule: { kind: "weekly", weekday: "SAT", time: "05:00" },
+    schedule: { kind: "weekly", weekday: "WED", time: "05:30" },
     status: "provisional",
   },
 ];
@@ -94,4 +85,22 @@ export const listedRuns = (all: readonly Run[] = runs) => all.filter((r) => r.st
 /** Upcoming occurrences (Chicago time) of listed runs, soonest first. */
 export function getUpcomingRuns(now: Date, limit?: number, all: readonly Run[] = runs): RunOccurrence[] {
   return upcomingOccurrences(listedRuns(all), now, { limit });
+}
+
+/**
+ * The next occurrence of each listed run, soonest first — the homepage's
+ * "Upcoming runs" list (one row per run, so a cancellation never makes the same
+ * run appear twice while hiding another).
+ */
+export function getNextOccurrencePerRun(now: Date, all: readonly Run[] = runs): RunOccurrence[] {
+  const seen = new Set<string>();
+  const out: RunOccurrence[] = [];
+  const listed = listedRuns(all);
+  for (const o of upcomingOccurrences(listed, now)) {
+    if (seen.has(o.run.slug)) continue;
+    seen.add(o.run.slug);
+    out.push(o);
+    if (out.length === listed.length) break;
+  }
+  return out;
 }

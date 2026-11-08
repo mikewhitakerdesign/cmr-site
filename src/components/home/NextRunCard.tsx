@@ -1,6 +1,5 @@
 import { ArrowLink } from "@/components/ArrowLink";
 import { ClockIcon, MapPinIcon } from "@/components/icons";
-import { ProvisionalBadge } from "@/components/ProvisionalBadge";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
 import type { RunOccurrence } from "@/lib/runs";
 import { formatSlot, toDateTimeAttr } from "@/lib/schedule";
@@ -23,6 +22,9 @@ import { cn } from "@/lib/utils";
  *
  * With no upcoming run it keeps its shape and points to the calendar instead
  * of inventing one.
+ *
+ * Round 2 (Owner direction, 2026-11-08): no visible "sample" badge. The run's
+ * content status stays in the data and on the card as `data-status`.
  */
 export function NextRunCard({ next, now, className }: { next: RunOccurrence | null; now: Date; className?: string }) {
   const title = fluidType([26, 30, 30], [32, 32, 30]);
@@ -32,11 +34,11 @@ export function NextRunCard({ next, now, className }: { next: RunOccurrence | nu
     "--card-place-mt": [10, 10, 4],
     "--card-link-mt": [29, 29, 24],
   });
-  const provisional = next !== null && next.run.status !== "verified";
 
   return (
     <article
       aria-labelledby="next-run-title"
+      data-status={next?.run.status}
       style={space}
       className={cn(
         "bg-primary p-6 pb-[30px] text-primary-foreground lg:rounded-lg lg:p-8",
@@ -44,10 +46,7 @@ export function NextRunCard({ next, now, className }: { next: RunOccurrence | nu
         className,
       )}
     >
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <p className="text-caption uppercase">Next run</p>
-        {provisional && <ProvisionalBadge>Sample · unconfirmed</ProvisionalBadge>}
-      </div>
+      <p className="text-caption uppercase">Next run</p>
 
       <h2
         id="next-run-title"
