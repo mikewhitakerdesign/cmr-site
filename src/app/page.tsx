@@ -1,6 +1,7 @@
 import { ClubTotals } from "@/components/home/ClubTotals";
 import { CommunityIntro } from "@/components/home/CommunityIntro";
 import { HomeHero } from "@/components/home/HomeHero";
+import { UpcomingRuns } from "@/components/home/UpcomingRuns";
 import { clubTotals } from "@/lib/club-totals";
 import { getUpcomingRuns } from "@/lib/runs";
 
@@ -23,6 +24,7 @@ export default function Home() {
       <HomeHero next={upcoming[0] ?? null} now={now} />
       <CommunityIntro />
       <ClubTotals totals={clubTotals} />
+      <UpcomingRuns occurrences={upcoming} now={now} />
     </>
   );
 }
