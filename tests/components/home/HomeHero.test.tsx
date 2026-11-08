@@ -56,16 +56,27 @@ describe("HomeHero", () => {
     expect(within(card).queryByRole("time")).not.toBeInTheDocument();
   });
 
-  it("art-directs two Figma rasters and keeps the photo decorative", () => {
+  it("uses the Owner's original photograph as one source and keeps it decorative", () => {
     const { container } = render(<HomeHero next={next} now={now} />);
-    const source = container.querySelector("picture source");
-    expect(source).toHaveAttribute("media", "(min-width: 1024px)");
-    expect(source?.getAttribute("srcset")).toContain("hero-desktop.jpg");
-    const img = container.querySelector("picture img")!;
+    // One image for every breakpoint (crops by object-position), not two art-directed rasters.
+    expect(container.querySelectorAll("picture")).toHaveLength(0);
+    const img = container.querySelector("img")!;
     expect(img.getAttribute("src")).toContain("hero.jpg");
     expect(img).toHaveAttribute("alt", "");
+    expect(img).toHaveAttribute("fetchpriority", "high");
+    expect(img).not.toHaveAttribute("loading", "lazy");
+    expect(img.className).toMatch(/object-\[50%_0%\]/);
+    expect(img.className).toMatch(/lg:object-\[50%_77%\]/);
     expect(img.closest("[aria-hidden]")).not.toBeNull();
     expect(container.querySelector("[data-slot=mesh-gradient]")).toHaveClass("opacity-20");
+  });
+
+  it("flips each CTA to its opposite treatment on hover", () => {
+    render(<HomeHero next={next} now={now} />);
+    const primary = screen.getByRole("link", { name: "Find a Run" });
+    expect(primary).toHaveClass("hover:bg-primary-foreground", "hover:text-primary", "border");
+    const secondary = screen.getByRole("link", { name: "Become a Mtn Runner" });
+    expect(secondary).toHaveClass("hover:bg-primary", "hover:text-primary-foreground", "border");
   });
 
   it("has no axe violations", async () => {

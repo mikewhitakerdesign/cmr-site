@@ -21,7 +21,7 @@ export function PhotoBackdrop({
   className,
   children,
 }: {
-  /** The photo, absolutely filling the backdrop (next/image `fill` or a <picture>). */
+  /** The photo, absolutely filling the backdrop (next/image `fill`). */
   image: ReactNode;
   /** Layer opacity from Figma: 20% on the hero, 50% on Just show up. */
   gradientOpacity: "20" | "50";

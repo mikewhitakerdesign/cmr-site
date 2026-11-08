@@ -1,4 +1,4 @@
-import { getImageProps } from "next/image";
+import Image from "next/image";
 import { Container } from "@/components/Container";
 import { CtaLink } from "@/components/CtaLink";
 import { PhotoBackdrop } from "@/components/PhotoBackdrop";
@@ -23,11 +23,11 @@ import { cn } from "@/lib/utils";
  * Deviations (logged in the Work Item):
  *   - Desktop CTAs and card are aligned to the container; Figma has them 19px
  *     and 27px inside it while tablet and mobile align (obvious inconsistency).
- *   - Figma's desktop fill is a 768×1024 portrait photo stretched non-uniformly
- *     (≈2.26× across, 0.95× down). The code crops the same photo uniformly and
- *     places the crest where Figma has it (≈72% down) instead of distorting it.
- *     Desktop uses a restrained 2× Lanczos upscale of that fill (Round 2); it
- *     is still soft until an edit of the original photograph is supplied (D3).
+ *   - Photo (Round 2.1): the Owner's original photograph (1920×2560, cropped
+ *     to its top 1900 rows and lightly graded; scripts/assets/build-hero.mjs),
+ *     used at its real proportions. Figma's fill is the same photo with the hill
+ *     stretched vertically (steeper) and extra sky; the code crops instead of
+ *     stretching, and one image replaces Figma's two rasters.
  *   - "OWN MTNS" tracking is 0.048em (Figma: +10px at every size, which only
  *     matches line one's width on desktop).
  *
@@ -50,21 +50,6 @@ export function HomeHero({ next, now }: { next: RunOccurrence | null; now: Date 
   const heading = fluidType([48, 98, 209], [52, 102, 204]);
   const cta = fluidType([15, 18, 18], [23, 27, 27]);
 
-  // Two Figma rasters: desktop (1:377) and tablet/mobile (78:279, 78:397) use
-  // different frames of the same scene. Art-directed with <picture>.
-  // The desktop file is a provisional 2× upscale of the Figma fill (Round 2,
-  // scripts/assets/upscale-hero-desktop.mjs), served at quality 90 so the
-  // optimizer doesn't add artifacts on top of an already-soft source.
-  const common = { alt: "", sizes: "100vw", fetchPriority: "high" as const };
-  const { props: desktopProps } = getImageProps({
-    ...common,
-    src: "/home/hero-desktop.jpg",
-    width: 1536,
-    height: 2048,
-    quality: 90,
-  });
-  const { props: imgProps } = getImageProps({ ...common, src: "/home/hero.jpg", width: 768, height: 1024, loading: "eager" });
-
   return (
     <section
       aria-labelledby="hero-heading"
@@ -78,15 +63,19 @@ export function HomeHero({ next, now }: { next: RunOccurrence | null; now: Date 
       <PhotoBackdrop
         gradientOpacity="20"
         image={
-          <picture>
-            <source media="(min-width: 1024px)" srcSet={desktopProps.srcSet} sizes={desktopProps.sizes} />
-            {/* Art direction via getImageProps (optimized srcset, plain <img>). */}
-            <img
-              {...imgProps}
-              alt=""
-              className="absolute inset-0 size-full object-cover object-center lg:object-[50%_72%]"
-            />
-          </picture>
+          // One source, three crops (object-position), all at the photograph's real
+          // proportions. The crest is ~74% down the file (row ~1410 of 1900) with the
+          // runner centered. Tablet/mobile top-aligned (crest ~76–84% down the hero);
+          // desktop 77% so the crest sits ~72% down, as in Figma, clear of the card.
+          <Image
+            src="/home/hero.jpg"
+            alt=""
+            fill
+            sizes="100vw"
+            loading="eager"
+            fetchPriority="high"
+            className="object-cover object-[50%_0%] lg:object-[50%_77%]"
+          />
         }
       />
 
@@ -118,10 +107,10 @@ export function HomeHero({ next, now }: { next: RunOccurrence | null; now: Date 
               "*:h-(--hero-cta-h-a) md:*:h-(--hero-cta-h-b)",
             )}
           >
-            <CtaLink href="/calendar" variant="primary" className="px-5 md:px-7">
+            <CtaLink href="/calendar" variant="primary" className="px-[19px] md:px-[27px]">
               Find a Run
             </CtaLink>
-            <CtaLink href="/join" variant="secondary" className="grow px-5 md:grow-0 md:px-7">
+            <CtaLink href="/join" variant="secondary" className="grow px-[19px] md:grow-0 md:px-[27px]">
               Become a Mtn Runner
             </CtaLink>
           </div>
