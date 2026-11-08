@@ -173,7 +173,7 @@ test.describe("layout against Figma", () => {
     expect(Math.round((await box(h1)).y - heroBox.y)).toBe(f.h1Top);
 
     const find = hero(page).getByRole("link", { name: "Find a Run" });
-    const become = hero(page).getByRole("link", { name: "Become a Mtn Runner" });
+    const become = hero(page).getByRole("link", { name: "Join the club" });
     const findBox = await box(find);
     expect(Math.round(findBox.y - heroBox.y)).toBe(f.ctaTop);
     expect(Math.round(findBox.height)).toBe(f.ctaH);
@@ -205,7 +205,7 @@ test.describe("layout against Figma", () => {
       const hit = await page.evaluate(([x, yy]) => document.elementFromPoint(x, yy)?.closest("article")?.tagName ?? null, [cardBox.x + 40, y]);
       expect(hit).toBe("ARTICLE");
       // CTAs and card never collide.
-      const become = await box(hero(page).getByRole("link", { name: "Become a Mtn Runner" }));
+      const become = await box(hero(page).getByRole("link", { name: "Join the club" }));
       expect(become.x + become.width).toBeLessThan(cardBox.x);
     } else {
       expect(overhang).toBeLessThan(0);
@@ -243,7 +243,7 @@ test.describe("layout against Figma", () => {
       const scroll = await page.evaluate(() => document.documentElement.scrollWidth);
       expect(scroll, `scrollWidth at ${width}`).toBeLessThanOrEqual(width);
       if (width >= 1024) {
-        const become = await box(hero(page).getByRole("link", { name: "Become a Mtn Runner" }));
+        const become = await box(hero(page).getByRole("link", { name: "Join the club" }));
         const card = await box(hero(page).getByRole("article"));
         expect(become.x + become.width, `CTA/card overlap at ${width}`).toBeLessThan(card.x);
       }
@@ -257,12 +257,25 @@ test.describe("layout against Figma", () => {
 });
 
 test.describe("navigation and interaction", () => {
+  test("all four Join CTAs say \"Join the club\" and go to /join", async ({ page }) => {
+    const joins = page.getByRole("link", { name: "Join the club" });
+    await expect(joins).toHaveCount(4);
+    const where = await joins.evaluateAll((as) => as.map((a) => [a.closest("header, footer, section")?.tagName + ":" + (a.closest("section")?.getAttribute("aria-labelledby") ?? ""), a.getAttribute("href")]));
+    expect(where).toEqual([
+      ["HEADER:", "/join"],
+      ["SECTION:hero-heading", "/join"],
+      ["SECTION:just-show-up-heading", "/join"],
+      ["FOOTER:", "/join"],
+    ]);
+    await expect(page.getByRole("link", { name: /^(Join Us|Become a Mtn Runner)$/ })).toHaveCount(0);
+  });
+
   test("CTAs and rows go to the v1 routes", async ({ page }) => {
     await hero(page).getByRole("link", { name: "Find a Run" }).click();
     await expect(page).toHaveURL(/\/calendar$/);
     await page.goBack();
 
-    await hero(page).getByRole("link", { name: "Become a Mtn Runner" }).click();
+    await hero(page).getByRole("link", { name: "Join the club" }).click();
     await expect(page).toHaveURL(/\/join$/);
     await page.goBack();
 
@@ -288,7 +301,7 @@ test.describe("navigation and interaction", () => {
     await expect(page).toHaveURL(/\/hills$/);
     await page.goBack();
 
-    await jsu(page).getByRole("link", { name: "Join Us" }).click();
+    await jsu(page).getByRole("link", { name: "Join the club" }).click();
     await expect(page).toHaveURL(/\/join$/);
   });
 
@@ -312,9 +325,9 @@ test.describe("navigation and interaction", () => {
       ...(info.project.name === "mobile" ? hillNames : []),
       ...hillNames,
       "Find a Run",
-      "Join Us",
+      "Join the club",
     ];
-    expect(order.slice(0, 3)).toEqual(["Find a Run", "Become a Mtn Runner", "Run details"]);
+    expect(order.slice(0, 3)).toEqual(["Find a Run", "Join the club", "Run details"]);
     // two run names (order depends on the build clock)
     expect(order.slice(3, 5).sort()).toEqual(["Cricket Mtn Repeats", "Horner Hell Repeats"]);
     expect(order.slice(5, 5 + expected.length)).toEqual(expected);
@@ -352,25 +365,26 @@ test.describe("navigation and interaction", () => {
     const before = await css(row, "background-color");
     await row.hover();
     await expect.poll(() => css(row, "background-color")).not.toBe(before);
-    // Round 2.1: every CTA flips to its opposite on hover, with a 1px border throughout.
+    // Every CTA flips to its opposite on hover; the filled buttons have no border at all.
     for (const scope of [hero(page), jsu(page)]) {
       const primary = scope.locator("[data-slot=cta-link]").nth(0); // black → white
       const secondary = scope.locator("[data-slot=cta-link]").nth(1); // white → black
       await primary.scrollIntoViewIfNeeded();
       await page.mouse.move(2, 2); // park the pointer away so resting states are read at rest
       expect(await css(primary, "background-color")).toBe("rgb(0, 0, 0)");
-      expect(await css(primary, "border-top-width")).toBe("1px");
+      expect(await css(primary, "border-top-width")).toBe("0px");
       await primary.hover();
       await expect.poll(() => css(primary, "background-color")).toBe("rgb(255, 255, 255)");
       expect(await css(primary, "color")).toBe("rgb(0, 0, 0)");
-      expect(await css(primary, "border-top-color")).toBe("rgb(0, 0, 0)");
+      expect(await css(primary, "border-top-width")).toBe("0px"); // no border on hover either
 
       await page.mouse.move(2, 2);
       await expect.poll(() => css(secondary, "background-color")).toBe("rgb(255, 255, 255)");
-      expect(await css(secondary, "border-top-width")).toBe("1px");
+      expect(await css(secondary, "border-top-width")).toBe("0px");
       await secondary.hover();
       await expect.poll(() => css(secondary, "background-color")).toBe("rgb(0, 0, 0)");
       expect(await css(secondary, "color")).toBe("rgb(255, 255, 255)");
+      expect(await css(secondary, "border-top-width")).toBe("0px");
     }
   });
 
@@ -402,10 +416,10 @@ test.describe("accessibility", () => {
    */
   const PHOTO_TEXT: [string, (p: Page) => Locator, number][] = [
     ["hero Find a Run", (p) => hero(p).locator("[data-slot=cta-link]").nth(0), 4.5],
-    ["hero Become a Mtn Runner", (p) => hero(p).locator("[data-slot=cta-link]").nth(1), 4.5],
+    ["hero Join the club", (p) => hero(p).locator("[data-slot=cta-link]").nth(1), 4.5],
     ["Just show up heading", (p) => p.locator("#just-show-up-heading"), 3],
     ["Just show up Find a Run", (p) => jsu(p).locator("[data-slot=cta-link]").nth(0), 4.5],
-    ["Just show up Join Us", (p) => jsu(p).locator("[data-slot=cta-link]").nth(1), 4.5],
+    ["Just show up Join the club", (p) => jsu(p).locator("[data-slot=cta-link]").nth(1), 4.5],
   ];
 
   /**

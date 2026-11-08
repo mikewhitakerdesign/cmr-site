@@ -18,7 +18,7 @@ artwork are unconfirmed and are release dependencies** (see
 
 ## Hill profiles (`public/hills/*-profile.svg`, Round 2)
 
-Five vector terrain illustrations in one style, modelled on the approved Mt.
+Five vector terrain illustrations in one style — **black and white only** (white fills, black lines, no grays; the pastel annotation tags supply the color) — modelled on the approved Mt.
 Trashmore artwork (kept as a style reference at
 `scripts/assets/source/mt-trashmore-profile-figma.png`; no longer shown).
 

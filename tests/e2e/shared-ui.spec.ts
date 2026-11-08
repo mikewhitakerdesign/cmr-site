@@ -281,7 +281,7 @@ test.describe("social links (none configured in this build)", () => {
 
   test("footer link row keeps its layout without social links", async ({ page }, info) => {
     const links = page.getByRole("navigation", { name: "Footer" }).getByRole("link");
-    await expect(links).toHaveText(["Find a Run", "About", "Join Us"]);
+    await expect(links).toHaveText(["Find a Run", "About", "Join the club"]);
     const first = await box(links.first());
     const last = await box(links.last());
     expect(Math.abs(first.y - last.y)).toBeLessThan(2); // still a single row

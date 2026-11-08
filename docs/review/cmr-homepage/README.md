@@ -23,10 +23,11 @@ read-only renders of the CMR file (`hLEeAchFtgd1WFtboIChil`): Home / Desktop
 | `round-2-1/before-hill-profiles-family.jpg`, `hill-profiles-family.jpg` | The five hill profiles before and after the refinement |
 | `round-2-1/before-hills-default-1440.jpg`, `hills-default-1440.jpg`, `hills-hover-horner-1440.jpg` | The Hills section before and after, and the hover preview |
 | `round-2-1/topo-static-1440.jpg`, `topo-pointer-moving-1440.jpg`, `before-topo-liquid-1440.jpg` | The static topography at rest and with the pointer moving across it (identical), and the removed liquid effect |
+| `round-2-2/before-*` / `after-hero-*.jpg`, `buttons-rest-hover.jpg`, `hill-profiles-family.jpg`, `hills-default-1440.jpg`, `footer-1440.jpg` | **Final refinement.** All Join CTAs read "Join the club"; filled buttons have no border, rest or hover (the header outline keeps its 1px); hill profiles in black and white only; the footer link |
 | `round-2/questions-open-1440.jpg`, `questions-open-393.jpg`, `questions-validation.jpg` | Questions panel open (desktop, mobile) and with validation errors |
 
 `build-*.jpg` and `figma-vs-build-*.jpg` show the current page (Round 2.1). Other
-`round-2/` captures are historic: the hero and Hills images there predate Round 2.1.
+`round-2/` and `round-2-1/` captures are historic: the hero labels, button borders and Hills images there predate the final refinement.
 
 Interaction captures hide the sticky header where Playwright would otherwise
 stitch it into an element screenshot.

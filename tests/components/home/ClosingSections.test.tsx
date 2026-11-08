@@ -14,7 +14,7 @@ describe("JustShowUp", () => {
       ),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Find a Run" })).toHaveAttribute("href", "/calendar");
-    expect(screen.getByRole("link", { name: "Join Us" })).toHaveAttribute("href", "/join");
+    expect(screen.getByRole("link", { name: "Join the club" })).toHaveAttribute("href", "/join");
   });
 
   it("uses the Figma photo decoratively under the 50% gradient and the legibility shade", () => {

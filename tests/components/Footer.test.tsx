@@ -8,7 +8,7 @@ describe("Footer", () => {
   it("renders only the internal links when no social destinations are configured", () => {
     render(<Footer year={2026} />);
     const nav = screen.getByRole("navigation", { name: "Footer" });
-    expect(within(nav).getAllByRole("link").map((l) => l.textContent)).toEqual(["Find a Run", "About", "Join Us"]);
+    expect(within(nav).getAllByRole("link").map((l) => l.textContent)).toEqual(["Find a Run", "About", "Join the club"]);
     expect(screen.queryByRole("link", { name: "Instagram" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Strava" })).not.toBeInTheDocument();
     expect(document.body.innerHTML).not.toMatch(/REPLACE_WITH/i);
@@ -22,7 +22,7 @@ describe("Footer", () => {
     render(<Footer year={2026} links={links} />);
     const nav = screen.getByRole("navigation", { name: "Footer" });
     const rendered = within(nav).getAllByRole("link");
-    expect(rendered.map((l) => l.textContent)).toEqual(["Find a Run", "About", "Join Us", "Instagram", "Strava"]);
+    expect(rendered.map((l) => l.textContent)).toEqual(["Find a Run", "About", "Join the club", "Instagram", "Strava"]);
     expect(rendered[3]).toHaveAttribute("href", "https://www.instagram.com/chicagomountainrunners");
     expect(rendered[4]).toHaveAttribute("href", "https://www.strava.com/clubs/cmr");
   });

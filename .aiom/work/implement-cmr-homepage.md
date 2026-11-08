@@ -21,13 +21,13 @@ validation_state: passed
 blocker_state: awaiting-owner-review
 current_responsibility: owner
 created_at: '2026-11-07T23:52:00.000Z'
-updated_at: '2026-11-08T20:00:00.000Z'
+updated_at: '2026-11-08T22:00:00.000Z'
 ---
 ## Status
 
-**Round 2.1 final visual refinements (2026-11-08) implemented and validated on PR #3,
-on top of Round 2; awaiting Owner/GPT review.** See "Round 2.1" and then "Round 2
-refinement" below.
+**Final targeted refinements (2026-11-08, after Round 2.1 was approved) implemented
+and validated on PR #3; awaiting Owner approval to merge.** See "Final refinements"
+first, then "Round 2.1" and "Round 2 refinement" below.
 PR #3 stays open; not merged; no production deployment (Vercel Preview only).
 Verified implementation head **`c2da050`**: GitHub CI `validate` and `browser`
 pass (run 42505978575); Vercel deployment `B93L7N5SZUR24LPV31YAGNqyeKpJ` Ready as
@@ -48,6 +48,31 @@ to be**. A contrast refinement (headline band; 42% shade) was built, measured
 and then reverted at the Owner's direction; it is kept in the record below as
 the tested alternative should the decision be revisited.
 
+## Final refinements (2026-11-08)
+
+### Authorization and scope
+
+Round 2.1 was approved. A last targeted pass on PR #3, changing nothing else (the
+natural hero photograph, hill geometry, layout and interactions are preserved): one
+label for every Join CTA, no borders on the filled buttons, and black-and-white hill
+graphics. Not merged, not deployed to production.
+
+### As built
+
+| # | Direction | As built |
+|---|---|---|
+| F1 | All four Join CTAs read "Join the club" and go to `/join` | Header (already), hero ("Become a Mtn Runner" → "Join the club"), Just show up ("Join Us" → "Join the club"), footer link (`footerNav`, "Join Us" → "Join the club"). Unrelated labels untouched; `/join` page heading is unchanged. A unit test renders all four and checks label and `href`; a browser test checks them in the live page (header, hero, Just show up, footer, in that order) and that no "Join Us" / "Become a Mtn Runner" link remains |
+| F2 | No borders on the filled buttons; keep the inverse hover | `CtaLink`: the `border` class moved from the base into the `outline` variant only. Primary (black ↔ white) and secondary (white ↔ black) have no border at rest or on hover; the header's outline CTA keeps its intentional 1px default border. Padding restored to the pre-border values (`px-5 md:px-7`, `px-7`), so button sizes are as before; heights are caller-set and unchanged. Focus ring (3px + 2px gap), active states, contrast (solid on solid, 21:1) and reduced motion unchanged |
+| F3 | Hills in black and white only; keep geometry, tags, legends, interactions, "Vertical scale exaggerated." | `render-profiles.mjs`: every fill is `#fff`, every line `#000` (SVGs contain only those two colors; before: eight grays plus near-black). Surface, bands and slab are white; contours and strata black, minor lines 0.5px and every fourth 1.15px. Geometry, anchors and data are byte-identical (same generator output); pastel tags, Total rise legend, hover/focus/touch behavior and the caption sentence untouched. The lower section's static topography is untouched |
+
+### Validation (2026-11-08, macOS, Chromium)
+
+- `npm run lint`, `tsc --noEmit`, `npm run tokens:check`, `npm run build`: pass.
+- Vitest: **221 tests, 16 files, pass** (updated labels; filled buttons asserted border-free, outline asserted 1px; new four-CTA test).
+- Playwright (393 / 768 / 1440): **133 pass, 8 visual skipped**. Hero, header and Figma geometry checks unchanged and passing (button positions and heights). Visual: **12 pass** after regenerating the affected baselines (homepage ×3, footer ×4).
+- Contrast: CTAs ≈ 19–21:1; accepted exceptions unchanged and not claimed compliant. Hover states are solid black on white or white on black.
+- Formspree still never contacted by tests.
+
 ## Round 2.1 final visual refinements (2026-11-08)
 
 ### Authorization and scope
@@ -67,7 +92,7 @@ untracked work items are untouched.
 |---|---|---|
 | 2.1-1 | Hero from the attached original, good quality, composition preserved, light treatment only | `scripts/assets/build-hero.mjs`: crop the top 1900 of 2560 rows at full width, light grade (saturation ×1.5, gamma 1.2). No stretch, resample, sharpen or generation. **One** image (`public/home/hero.jpg`, 1920×1900) for every breakpoint, framed by `object-position` (50% 0% below 1024px, 50% 77% from 1024px, crest ≈ 72% down on desktop as in Figma). `<picture>` art direction, `hero-desktop.jpg`, the upscale script and `next.config.ts` qualities are gone |
 | 2.1-2 | Header CTA 1px border | `CtaLink` gained an `outline` variant (1px black border, transparent) that the header CTA now uses instead of its own classes; 36px height and 110/128/150 widths unchanged |
-| 2.1-3 | Hover flips: black → white, white → black, transparent → black | `CtaLink` variants: `primary` (black → white), `secondary` (white → black), `outline` (transparent → black). All carry a 1px border (the fill's own color at rest; the label's opposite after the flip) so a flipped button keeps its edge on any surface. Active, focus ring (3px + 2px gap in the surface color), disabled, 1px press nudge and reduced-motion handling unchanged. Padding trimmed 1px so widths match Figma's |
+| 2.1-3 | Hover flips: black → white, white → black, transparent → black | **(Borders on the filled buttons removed in the final refinement; only `outline` keeps its 1px.)** `CtaLink` variants: `primary` (black → white), `secondary` (white → black), `outline` (transparent → black). All carried a 1px border (the fill's own color at rest; the label's opposite after the flip) so a flipped button keeps its edge on any surface. Active, focus ring (3px + 2px gap in the surface color), disabled, 1px press nudge and reduced-motion handling unchanged. Padding trimmed 1px so widths match Figma's |
 | 2.1-4 | Hills: wider, simpler, coherent, grounded; no "steepest side"; keep the exaggeration sentence | `render-profiles.mjs` rewritten around one recipe: 1000×540 canvas, island 910px wide at a flatter tilt, hill fills the island; smoothing at 10% of each hill's width; fuller dome curve (relief^0.8); 12 equal contour bands (every 4th heavier; no contour interval claimed); 2-line slab; darker low bands to lighter summit bands; same viewpoint for all. Drawn rise = 55 + 75·√(rise/60) px (exaggeration 1.2–3.8×, was 7–19×; recorded per hill). Steepest-side chip, leader, anchor, rotation and data removed. Caption keeps "Vertical scale exaggerated." (also on Warren Hill's illustrative caption) |
 | 2.1-5 | Remove the liquid cursor effect, keep the static topo | `TopoField` (client) deleted; `TopoPattern` is a Server Component with the vector paths and nothing else: no filter, mask, pointer handling or client JavaScript |
 

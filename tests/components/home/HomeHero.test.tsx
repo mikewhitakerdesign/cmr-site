@@ -18,7 +18,7 @@ describe("HomeHero", () => {
   it("links the CTAs to the v1 routes", () => {
     render(<HomeHero next={next} now={now} />);
     expect(screen.getByRole("link", { name: "Find a Run" })).toHaveAttribute("href", "/calendar");
-    expect(screen.getByRole("link", { name: "Become a Mtn Runner" })).toHaveAttribute("href", "/join");
+    expect(screen.getByRole("link", { name: "Join the club" })).toHaveAttribute("href", "/join");
   });
 
   it("shows the next run with its Chicago slot, place and detail link", () => {
@@ -46,7 +46,7 @@ describe("HomeHero", () => {
   it("pairs a solid black primary CTA with a solid white secondary (Round 2)", () => {
     render(<HomeHero next={next} now={now} />);
     expect(screen.getByRole("link", { name: "Find a Run" })).toHaveClass("bg-primary", "text-primary-foreground");
-    expect(screen.getByRole("link", { name: "Become a Mtn Runner" })).toHaveClass("bg-primary-foreground", "text-primary");
+    expect(screen.getByRole("link", { name: "Join the club" })).toHaveClass("bg-primary-foreground", "text-primary");
   });
 
   it("keeps the card's place with no upcoming run, pointing to the calendar instead of inventing one", () => {
@@ -71,12 +71,13 @@ describe("HomeHero", () => {
     expect(container.querySelector("[data-slot=mesh-gradient]")).toHaveClass("opacity-20");
   });
 
-  it("flips each CTA to its opposite treatment on hover", () => {
+  it("flips each CTA to its opposite on hover, with no border on either filled button", () => {
     render(<HomeHero next={next} now={now} />);
     const primary = screen.getByRole("link", { name: "Find a Run" });
-    expect(primary).toHaveClass("hover:bg-primary-foreground", "hover:text-primary", "border");
-    const secondary = screen.getByRole("link", { name: "Become a Mtn Runner" });
-    expect(secondary).toHaveClass("hover:bg-primary", "hover:text-primary-foreground", "border");
+    expect(primary).toHaveClass("hover:bg-primary-foreground", "hover:text-primary");
+    const secondary = screen.getByRole("link", { name: "Join the club" });
+    expect(secondary).toHaveClass("hover:bg-primary", "hover:text-primary-foreground");
+    for (const b of [primary, secondary]) expect(b.className.split(/\s+/).filter((c) => /(^|:)border/.test(c))).toEqual([]);
   });
 
   it("has no axe violations", async () => {
