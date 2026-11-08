@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { measureTextContrast } from "./contrast.mjs";
 
 /**
  * Homepage browser checks at the three Figma frame widths (projects: mobile
@@ -74,51 +75,6 @@ async function loadAll(page: Page) {
     await Promise.all([...document.images].map((i) => (i.complete ? null : new Promise((r) => { i.onload = i.onerror = r; }))));
     window.scrollTo(0, 0);
   });
-}
-
-/**
- * Contrast of light text over photography: hides the text (and, unless
- * `keepFill`, the element's own background), screenshots what is behind it,
- * and returns the 10th-percentile WCAG ratio for white text at `alpha`
- * against those pixels. `inset` trims rounded corners and borders.
- */
-async function photoContrast(page: Page, target: Locator, { alpha = 1, keepFill = false, inset = 0 } = {}) {
-  await target.scrollIntoViewIfNeeded();
-  await target.evaluate((n: HTMLElement, keep) => {
-    n.dataset.prev = n.getAttribute("style") ?? "";
-    n.style.transition = "none";
-    n.style.color = "transparent";
-    n.style.textShadow = "none";
-    n.style.borderColor = "transparent";
-    if (!keep) n.style.background = "transparent";
-  }, keepFill);
-  const b = await box(target);
-  const png = await page.screenshot({ clip: { x: b.x + inset, y: b.y + inset, width: b.width - 2 * inset, height: b.height - 2 * inset } });
-  await target.evaluate((n: HTMLElement) => n.setAttribute("style", n.dataset.prev ?? ""));
-  return page.evaluate(
-    async ([b64, a]) => {
-      const img = await new Promise<HTMLImageElement>((r) => { const i = new Image(); i.onload = () => r(i); i.src = `data:image/png;base64,${b64}`; });
-      const c = document.createElement("canvas");
-      c.width = img.width;
-      c.height = img.height;
-      const ctx = c.getContext("2d")!;
-      ctx.drawImage(img, 0, 0);
-      const d = ctx.getImageData(0, 0, c.width, c.height).data;
-      const lin = (v: number) => ((v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
-      const L = (r: number, g: number, bb: number) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(bb);
-      const ratios: number[] = [];
-      for (let i = 0; i < d.length; i += 4) {
-        const bg = [d[i], d[i + 1], d[i + 2]] as const;
-        const fg = bg.map((v) => a * 255 + (1 - a) * v) as unknown as [number, number, number];
-        const l1 = L(...fg);
-        const l2 = L(...bg);
-        ratios.push((Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05));
-      }
-      ratios.sort((x, y) => x - y);
-      return ratios[Math.floor(ratios.length * 0.1)];
-    },
-    [png.toString("base64"), alpha] as const,
-  );
 }
 
 test.beforeEach(async ({ page }) => {
@@ -396,25 +352,42 @@ test.describe("accessibility", () => {
     expect(await axe(page)).toEqual([]);
   });
 
-  test("text over photography meets contrast with the reviewed adjustments (D6)", async ({ page }) => {
+  /**
+   * Text over photography, measured worst region by worst region against the
+   * composited pixels (method and limitations: tests/e2e/contrast.mjs). WCAG AA:
+   * 3:1 for large text (the display headings), 4.5:1 otherwise — the CTA labels
+   * are 15–18px semibold and the copy 16–18px medium, so neither counts as large.
+   */
+  const PHOTO_TEXT: [string, (p: Page) => Locator, number][] = [
+    ["hero headline", (p) => p.locator("#hero-heading"), 3],
+    ["hero Find a Run", (p) => hero(p).locator("[data-slot=cta-link]").nth(0), 4.5],
+    ["hero Become a Mtn Runner", (p) => hero(p).locator("[data-slot=cta-link]").nth(1), 4.5],
+    ["Just show up heading", (p) => p.locator("#just-show-up-heading"), 3],
+    ["Just show up copy", (p) => p.locator("#just-show-up-heading + p"), 4.5],
+    ["Just show up Find a Run", (p) => jsu(p).locator("[data-slot=cta-link]").nth(0), 4.5],
+    ["Just show up Join Us", (p) => jsu(p).locator("[data-slot=cta-link]").nth(1), 4.5],
+  ];
+
+  test("text over photography meets WCAG AA in its worst region", async ({ page }, info) => {
     await loadAll(page);
-    // Outline CTA labels sit on their 50% black fill: ≥ 4.5:1 for 90% of pixels.
-    const become = hero(page).getByRole("link", { name: "Become a Mtn Runner" });
-    expect(await photoContrast(page, become, { keepFill: true, inset: 6 })).toBeGreaterThanOrEqual(4.5);
-    const join = jsu(page).getByRole("link", { name: "Join Us" });
-    expect(await photoContrast(page, join, { keepFill: true, inset: 6 })).toBeGreaterThanOrEqual(4.5);
-    // Just show up: copy at 90% white ≥ 4.5:1, heading (large text) ≥ 3:1, over the 30% shade.
-    expect(await photoContrast(page, jsu(page).locator("p"), { alpha: 0.9 })).toBeGreaterThanOrEqual(4.5);
-    expect(await photoContrast(page, jsu(page).getByRole("heading"), { alpha: 1 })).toBeGreaterThanOrEqual(3);
+    for (const [name, locate, need] of PHOTO_TEXT) {
+      const r = await measureTextContrast(page, locate(page));
+      info.annotations.push({ type: `contrast ${name}`, description: `worst ${r.worst} (p10 ${r.p10}, median ${r.median}) over ${r.cells} cells` });
+      expect(r.cells, `${name}: measurable regions`).toBeGreaterThan(0);
+      expect(r.worst, `${name} worst-region contrast`).toBeGreaterThanOrEqual(need);
+    }
   });
 
-  test("records the hero headline's measured contrast (open Owner decision, not asserted)", async ({ page }, info) => {
-    // The ghosted 60% white h1 over pale sky is approved art direction; it measures
-    // ~1.3–1.6:1 against the sky behind it even with the legibility halo. Raising it
-    // to 3:1 changes the visual direction, which is the Owner's call (Work Item, D6).
-    const ratio = await photoContrast(page, page.getByRole("heading", { level: 1 }), { alpha: 0.6 });
-    info.annotations.push({ type: "hero-h1-contrast-p10", description: ratio.toFixed(2) });
-    expect(ratio).toBeGreaterThan(1);
+  test("photo text stays legible at intermediate widths, where the crop shifts", async ({ page }, info) => {
+    test.skip(info.project.name !== "desktop", "one sweep is enough; it sets its own widths");
+    for (const width of [320, 600, 900, 1024, 1180, 1280, 1920]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await loadAll(page);
+      for (const [name, locate, need] of PHOTO_TEXT) {
+        const r = await measureTextContrast(page, locate(page));
+        expect(r.worst, `${name} at ${width}px`).toBeGreaterThanOrEqual(need);
+      }
+    }
   });
 });
 

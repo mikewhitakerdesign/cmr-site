@@ -18,8 +18,10 @@ import { cn } from "@/lib/utils";
  * Figma does — anchored ~6% from the top on desktop, centered elsewhere —
  * under the same baked mesh gradient as the hero at 50%.
  *
- * Deviation (D6): a 30% black legibility shade over the photo, and copy at 90%
- * white instead of 75%, after measured contrast failures.
+ * Deviation (accessibility): a 38% black legibility shade over the photo, and
+ * copy at 100% white instead of 75%. Measured worst-region contrast with this
+ * treatment, 320–1920px: heading 4.42–4.78:1 (needs 3), copy 4.85–5.67:1 (needs
+ * 4.5) — tests/e2e/contrast.mjs.
  *
  * Tracking is −0.045em at every size (Figma: −6.48px everywhere, which is
  * −0.045em at 144px but makes letters collide at 56px — "JUSTSHOW" in the
@@ -58,11 +60,11 @@ export function JustShowUp() {
           />
         }
       >
-        {/* Legibility shade (not in Figma): over this photo the copy measured 2.4–3.5:1 and
-            the heading 2.6–2.8:1. 30% black plus copy at 90% (Figma 75%) is the smallest
-            pairing found that keeps the copy ≥ 4.5:1 and the heading ≥ 3:1 at 393, 768
-            and 1440 (contrast test in tests/e2e/home.spec.ts). Owner decision D6. */}
-        <div data-slot="legibility-shade" className="absolute inset-0 bg-primary/30" />
+        {/* Legibility shade (not in Figma). The previous 30% shade with 90% copy passed a
+            background-only sample but failed the worst-region test (copy 3.56–4.04:1) where
+            lines cross bright foliage. 35% with full-white copy is the minimum that passes
+            (worst 4.52:1 at 1920); 38% keeps a margin for cross-platform rendering. */}
+        <div data-slot="legibility-shade" className="absolute inset-0 bg-primary/38" />
       </PhotoBackdrop>
       <Container>
         <h2
@@ -78,7 +80,7 @@ export function JustShowUp() {
             FLUID_TYPE,
             // Tablet measure 540, not Figma's 550: Figma's text renders ~1% wider and breaks
             // before "ritual."; at 550 the browser fits it, which moves the CTAs up a line.
-            "mt-(--jsu-copy-mt-a) font-medium text-primary-foreground/90 md:mt-(--jsu-copy-mt-b) md:max-w-[540px] lg:max-w-[630px]",
+            "mt-(--jsu-copy-mt-a) font-medium text-primary-foreground md:mt-(--jsu-copy-mt-b) md:max-w-[540px] lg:max-w-[630px]",
           )}
         >
           No membership fee. No pace requirement. No complicated initiation ritual. Find a run, show up and climb the

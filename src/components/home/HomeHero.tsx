@@ -9,6 +9,28 @@ import { onDarkSurface } from "@/lib/surfaces";
 import { cn } from "@/lib/utils";
 
 /**
+ * Headline legibility shade (accessibility deviation, Owner/GPT review of PR #3).
+ * A horizontal band of the foreground token behind the headline only: full
+ * strength across the headline's two line boxes, feathering out above and below
+ * with eased stops so it reads as deeper sky rather than a stripe. The sky above
+ * and the hill below keep their original brightness.
+ */
+const SHADE_ALPHA = 45; // % of --foreground at full strength
+const shadeAt = (k: number) => `color-mix(in srgb, var(--foreground) ${SHADE_ALPHA * k}%, transparent)`;
+const HEADLINE_SHADE = `linear-gradient(to bottom, ${[
+  `${shadeAt(0)} 0`,
+  `${shadeAt(0.1)} calc(var(--f) * 0.25)`,
+  `${shadeAt(0.5)} calc(var(--f) * 0.5)`,
+  `${shadeAt(0.9)} calc(var(--f) * 0.75)`,
+  `${shadeAt(1)} var(--f)`,
+  `${shadeAt(1)} calc(100% - var(--f))`,
+  `${shadeAt(0.9)} calc(100% - var(--f) * 0.75)`,
+  `${shadeAt(0.5)} calc(100% - var(--f) * 0.5)`,
+  `${shadeAt(0.1)} calc(100% - var(--f) * 0.25)`,
+  `${shadeAt(0)} 100%`,
+].join(", ")})`;
+
+/**
  * Hero "Make your own MTNS" — Figma 1:377 (desktop), 78:279 (tablet),
  * 78:397 (mobile). Measurements below are relative to the hero's visible area
  * (Figma's desktop hero starts under the 122px navigation).
@@ -29,17 +51,28 @@ import { cn } from "@/lib/utils";
  *     Both are soft at desktop size until the original photo is supplied (D3).
  *   - "OWN MTNS" tracking is 0.048em (Figma: +10px at every size, which only
  *     matches line one's width on desktop).
+ *   - Accessibility: headline at 75% white (Figma 60%) over a 45% shade confined
+ *     to the headline band. Figma's 60% over pale sky measured 1.23–1.32:1; this
+ *     measures ≥ 3.2:1 worst-case at every tested width (tests/e2e/contrast.mjs).
  */
 export function HomeHero({ next, now }: { next: RunOccurrence | null; now: Date }) {
+  // Headline shade geometry, derived from the headline's own values so it tracks
+  // it at every width: top = h1 top − feather; height = 2 lines + 2 feathers.
+  const pt = [52, 66, 115] as const;
+  const lineHeight = [52, 102, 204] as const;
+  const feather = [80, 96, 160] as const;
   const layout = fluidVars({
     "--hero-minh": [614, 670, 846],
-    "--hero-pt": [52, 66, 115],
+    "--hero-pt": pt,
+    "--hero-shade-top": [pt[0] - feather[0], pt[1] - feather[1], pt[2] - feather[2]],
+    "--hero-shade-h": [2 * lineHeight[0] + 2 * feather[0], 2 * lineHeight[1] + 2 * feather[1], 2 * lineHeight[2] + 2 * feather[2]],
+    "--hero-shade-f": feather,
     "--hero-actions-mt": [74, 34, 154],
     "--hero-card-mt": [48, 40, 40],
     "--hero-card-w": [345, 380, 542],
     "--hero-cta-h": [48, 56, 56],
   });
-  const heading = fluidType([48, 98, 209], [52, 102, 204]);
+  const heading = fluidType([48, 98, 209], lineHeight);
   const cta = fluidType([15, 18, 18], [23, 27, 27]);
 
   // Two Figma rasters: desktop (1:377) and tablet/mobile (78:279, 78:397) use
@@ -71,7 +104,17 @@ export function HomeHero({ next, now }: { next: RunOccurrence | null; now: Date 
             />
           </picture>
         }
-      />
+      >
+        <div
+          data-slot="headline-shade"
+          style={{ backgroundImage: HEADLINE_SHADE }}
+          className={cn(
+            "absolute inset-x-0",
+            "top-(--hero-shade-top-a) h-(--hero-shade-h-a) [--f:var(--hero-shade-f-a)]",
+            "md:top-(--hero-shade-top-b) md:h-(--hero-shade-h-b) md:[--f:var(--hero-shade-f-b)]",
+          )}
+        />
+      </PhotoBackdrop>
 
       <Container className="relative pt-(--hero-pt-a) md:pt-(--hero-pt-b)">
         <h1
@@ -79,10 +122,8 @@ export function HomeHero({ next, now }: { next: RunOccurrence | null; now: Date 
           style={heading}
           className={cn(
             FLUID_TYPE,
-            "text-center font-black opacity-60",
-            // Legibility halo (not in Figma): a soft shadow in the foreground token
-            // separates the ghosted 60% letters from pale sky. See Owner decision D6.
-            "[text-shadow:0_0_0.12em_color-mix(in_srgb,var(--foreground)_30%,transparent)]",
+            // 75% (Figma 60%): still ghosted, with the headline shade ≥ 3:1 (see above).
+            "text-center font-black opacity-75",
           )}
         >
           {/* The space keeps the accessible name "MAKE YOUR OWN MTNS" (blocks don't add one). */}

@@ -21,16 +21,19 @@ validation_state: passed
 blocker_state: awaiting-owner-review
 current_responsibility: owner
 created_at: '2026-11-07T23:52:00.000Z'
-updated_at: '2026-11-08T03:40:00.000Z'
+updated_at: '2026-11-08T06:30:00.000Z'
 ---
 ## Status
 
 **All six slices implemented and validated; awaiting Owner review of the
 complete homepage.** Branch `feat/cmr-homepage` (from `main` at `e610c25`),
 PR #3 (https://github.com/mikewhitakerdesign/cmr-site/pull/3), not merged, not
-deployed. CI on the PR: `validate` and `browser` both pass (Linux). `validation_state: passed` covers the
-deterministic checks only. Owner acceptance, the open decisions, and the
-release dependencies below are still outstanding. The planning record from
+deployed. Owner/GPT review (2026-11-08) accepted the architecture, composition,
+scheduling model, MWDS integration and responsive strategy, and asked for the
+hero headline contrast to be fixed and photographic contrast validation to be
+strengthened — done in "Photographic contrast" below. `validation_state: passed`
+covers the deterministic checks only. Final Owner/GPT review, merge
+authorization, and the release dependencies below are outstanding. The planning record from
 discovery follows the implementation record as history.
 
 ## Owner authorization and approved decisions (2026-11-07)
@@ -143,33 +146,105 @@ fill), baked mesh gradient, community mark (cropped and rotated as framed),
 Mt. Trashmore illustration and topo pattern (unaltered). No stock, generated,
 or redrawn imagery.
 
+### Photographic contrast: treatment, method, results (PR #3 review, 2026-11-08)
+
+**Review request.** Treat the hero headline as meaningful heading text (WCAG
+AA large text, 3:1); keep the photograph, size, placement, typography and
+two-line composition; keep the ghosted character where feasible; prefer the
+smallest localized change; strengthen the validation method.
+
+**Method (`tests/e2e/contrast.mjs`).** The previous check sampled only the
+background (10th percentile of pixels behind the text, with an assumed text
+color) — useful diagnostically, but it never measured the text as rendered and
+let bright regions average out. The new method captures three renders of each
+text element in Chromium at 1× — as shown; with the text forced to opaque
+magenta (exact glyph shapes for that crop); with the text transparent but every
+other layer kept (photo crop, gradient, shades, CTA fills, element opacity, any
+text-shadow halo). Foreground = the real composited pixels inside the glyph
+cores (so opacity and transparency are included as rendered). Background = the
+pixels outside the glyphs, less a 1px anti-aliasing fringe. The box is split
+into cells about half the font size (12–64px); each cell's score is its median
+foreground against its worst 5% of background pixels; the element's result is
+its **worst cell**. WCAG thresholds unchanged: 3:1 for the display headings,
+4.5:1 for the CTA labels (15–18px semibold, not "large") and the copy.
+
+**Limitations.** One engine (Chromium) at 1× DPR; results hold for the widths
+measured (11 widths, 320–1920, since the crop shifts with width); the 5%
+tolerance ignores specks smaller than 5% of a cell; WCAG's formula assumes solid
+colors, so applying it per region over a photograph is a conservative
+interpretation, not a certification. It supplements visual review — the
+before/after evidence was judged by eye as well.
+
+**Findings before the change.** Hero headline 1.23–1.32:1 (fail). The stricter
+method also exposed the Just show up copy at 3.56–4.04:1 (fail) where lines
+cross bright foliage — the earlier background-only sample had passed it. CTAs
+(5.3–21:1) and the Just show up heading (3.6–3.8:1) passed.
+
+**Options tried for the headline** (worst cell at 393 / 768 / 1440):
+
+| Treatment | Result | Verdict |
+|---|---|---|
+| Letters 100%, no shade | 1.62 / 1.42 / 1.48 | Fails; also loses the ghost |
+| Stronger halos (0.1em + 0.35em) at 60–75% | ≤ 1.45 | Fails: a halo darkens only a fringe; the cell around each letter stays bright |
+| Graduated top-down sky shade 30–55% × letters 60–100% | passing combos need 45–55% at 60–75% | Passes but darkens the whole sky, including above the text, into flat grey |
+| Band behind the headline with feathered edges inside the text box | 2.0–2.7 | Fails at the first and last lines |
+| **Band at full strength across the headline's two lines, feathered outside it: 45% shade, letters 75%** | **3.53 / 3.24 / 3.36** | **Chosen**: passes everywhere; letters stay translucent; sky above and hill below keep their brightness |
+| Same band at 55%, letters 60% | 3.56 / 3.36 / 3.40 | Passes; keeps Figma's opacity but makes the sky noticeably greyer |
+
+**Final treatment.**
+- Hero: headline 75% white (Figma 60%) over a `--foreground` band at 45%,
+  full strength from the headline's first line box to its last, feathered with
+  eased stops 80 / 96 / 160px above and below (mobile / tablet / desktop,
+  interpolated). The band is sized from the headline's own fluid values, so it
+  tracks it at every width. The halo was removed: the band does the work.
+- Just show up: shade 30% → 38%, copy 90% → 100% white. 35% with full-white
+  copy is the minimum that passes (worst 4.52:1 at 1920); 38% gives headroom for
+  cross-platform rendering.
+- Hero outline CTA: unchanged (50% black fill); re-measured, passes.
+
+**Results after** (worst cell; 11 widths measured, 320–1920):
+
+| Text | Needs | 393 | 768 | 1440 | 1732 | Range 320–1920 |
+|---|---|---|---|---|---|---|
+| Hero headline | 3.0 | 3.53 | 3.24 | 3.36 | 3.44 | 3.19 (1024) – 3.66 (320) |
+| Hero "Find a Run" (black on white) | 4.5 | 19.91 | 21 | 21 | 21 | ≥ 19.9 |
+| Hero "Become a Mtn Runner" | 4.5 | 5.27 | 7.11 | 13.21 | 13.87 | ≥ 5.27 |
+| Just show up heading | 3.0 | 4.42 | 4.65 | 4.52 | 4.56 | 4.42 – 4.78 |
+| Just show up copy | 4.5 | 5.67 | 5.19 | 5.00 | 5.16 | 4.85 – 5.67 |
+| Just show up "Find a Run" | 4.5 | 21 | 21 | 21 | 21 | 21 |
+| Just show up "Join Us" | 4.5 | 16.12 | 15.03 | 12.90 | 12.58 | ≥ 12.36 |
+
+Evidence: `docs/review/cmr-homepage/hero-before-after-{1732,768,393}.jpg` and
+`jsu-before-after-*.jpg` (Figma · before · after), regenerated full pages.
+
 ### Design-to-code deviations (classified per Owner decision D4)
 
 Classes: **C** correction of an obvious inconsistency; **A** intentional
 responsive adaptation, followed as drawn; **I** incomplete design, completed;
-**L** legibility adjustment (D6); **R** needs design review.
+**L** accessibility (legibility) adjustment — measured; **R** needs design
+review; **✓** accepted in the Owner/GPT review of 2026-11-08.
 
 | # | Where | Figma | Code | Class |
 |---|---|---|---|---|
-| 1 | Hero photo, desktop | 768×1024 portrait stretched to 1732×968 (≈2.26× across, 0.95× down) | Same photo, uniform `cover` crop with the crest at the same height (~72%). The hill reads steeper than Figma's stretched version. | C, R (final photo, D3) |
+| 1 | Hero photo, desktop | 768×1024 portrait stretched to 1732×968 (≈2.26× across, 0.95× down) | Same photo, uniform `cover` crop with the crest at the same height (~72%). The hill reads steeper than Figma's stretched version. | C ✓ (final photo still needed, D3) |
 | 2 | Hero CTAs and card, desktop | 19px and 27px inside the container; aligned on tablet and mobile | Aligned to the container | C |
 | 3 | "OWN MTNS" tracking | +10px at every size (overspaced on mobile) | 0.048em (equal to Figma at desktop) | C |
-| 4 | Next-run card, tablet and mobile | Flattened text, no icons or arrow; no radius | Clock, pin, and arrow kept (they label time and place); radius stays desktop-only | I (icons), A (radius) |
-| 5 | Hero outline CTA | White outline, no fill; label measured 1.5–1.9:1 over sky | 50% black fill; ≥ 4.5:1 | L |
-| 6 | Hero h1 | 60% white over pale sky | Soft halo in the foreground token; still ≈1.3:1 (see Open decisions) | L, R |
+| 4 | Next-run card, tablet and mobile | Flattened text, no icons or arrow; no radius | Clock, pin, and arrow kept (they label time and place); radius stays desktop-only | I ✓ (icons), A (radius) |
+| 5 | Hero outline CTA | White outline, no fill; label 1.5–1.9:1 over sky | 50% black fill; worst region ≥ 5.27:1 | L |
+| 6 | Hero h1 | 60% white over pale sky; 1.23–1.32:1 | 75% white over a 45% `--foreground` band confined to the headline (feathered); worst region 3.19–3.66:1 across 320–1920. Halo removed | L |
 | 7 | Community block | Desktop starts 9px left of the container and text overflows its box; tablet mark 39px high | Aligned to the container; mark centered at every size | C |
 | 8 | Club totals surface | Cream fill hidden by a white child; white rules invisible | White, no rules, as rendered; empty slot 1:254 holds the provisional marker (below the figures on tablet and mobile) | C, R (Figma cleanup) |
-| 9 | Display tracking (JSU, Flat, hills h2, hill names, run heading, stat values) | Fixed px at every size; collides on mobile ("JUSTSHOW") | em from the desktop ratio; tablet/mobile slightly wider than Figma | C, R |
+| 9 | Display tracking (JSU, Flat, hills h2, hill names, run heading, stat values) | Fixed px at every size; collides on mobile ("JUSTSHOW") | em from the desktop ratio; tablet/mobile slightly wider than Figma | C ✓ |
 | 10 | Run slots more than six days out | Not designed | "NOV 14 · 5:00 AM"; may run ~8px into the 32px gap on desktop | I |
 | 11 | Run rows, tablet and mobile | No icons, ↗, or closing rule; link centered without arrow | As drawn | A |
-| 12 | "Explore all hills", tablet and mobile | Absent (only path to `/hills` from the section) | Present, no arrow, in the space Figma leaves | I |
-| 13 | Mt. Trashmore grey row | Grey fill at every size | Read as "featured hill" (the illustrated one); same fill is hover elsewhere | R |
-| 14 | Just show up | Copy 75% white over photo + 50% gradient; copy 2.4–3.5:1, heading 2.6–2.8:1 | 30% black shade + copy at 90%; copy ≥ 4.5:1, heading ≥ 3:1 | L |
+| 12 | "Explore all hills", tablet and mobile | Absent (only path to `/hills` from the section) | Present, no arrow, in the space Figma leaves | I ✓ |
+| 13 | Mt. Trashmore grey row | Grey fill at every size | Read as "featured hill" (the illustrated one); same fill is hover elsewhere | ✓ |
+| 14 | Just show up | Copy 75% white over photo + 50% gradient; heading 2.6–2.8:1, copy below 3:1 | 38% black shade + copy at 100% (was 30% / 90%, which failed the worst-region test at 3.56–4.04:1); heading ≥ 4.42:1, copy ≥ 4.85:1 | L |
 | 15 | Just show up, tablet copy measure | 550 | 540 (Figma's text renders ~1% wider; keeps its line breaks) | C |
 | 16 | Topo pattern | 20% layer opacity | Already in the exported PNG; not re-applied (a first attempt applied it twice) | C |
 | 17 | Flat statement, desktop | Text box overhangs the container by 7px | Centered in the container | C |
-| 18 | Provisional markers | Not in Figma | Shown until content is verified; on tablet and mobile they add height (totals +54px, runs +26px) | I (D1) |
-| 19 | Hover, active, focus, disabled states | Not drawn | CTA: cream / inverted / grey; rows: grey fill (hills), underline + ↗ nudge (runs); focus: 3px ring, white with a black gap on black and photos, black on white; `aria-disabled` 50% | R (D6) |
+| 18 | Provisional markers | Not in Figma | Shown until content is verified; on tablet and mobile they add height (totals +54px, runs +26px) | I ✓ (D1) |
+| 19 | Hover, active, focus, disabled states | Not drawn | CTA: cream / inverted / grey; rows: grey fill (hills), underline + ↗ nudge (runs); focus: 3px ring, white with a black gap on black and photos, black on white; `aria-disabled` 50% | ✓ (subject to continued accessibility validation) |
 | 20 | Hill and run row heights, mobile/tablet | Row height includes the 1px rule | Padding reduced by 1px so rows equal Figma | C |
 | 21 | Navigation "Apparel", footer form | — | Unchanged foundation decisions 1 and discrepancy 1 | — |
 
@@ -178,31 +253,26 @@ responsive adaptation, followed as drawn; **I** incomplete design, completed;
 Deterministic checks (evidence, not Owner acceptance):
 
 - `npm run lint`, `npx tsc --noEmit`, `npm run tokens:check`: pass.
-- `npm test`: **188/188** (was 120; +68: fluid 8, schedule 21, hero 8,
+- `npm test`: **189/189** (was 120; +69: fluid 8, schedule 21, hero 9,
   community + totals 8, runs 8, hills 8, closing sections 7).
 - `npm run build`: pass; `/` prerendered with 1h revalidation; every run and
   hill route prerenders.
-- `npm run test:e2e` (Chromium 393/768/1440): **96 passed, 6 skipped**
-  (desktop-only sweep and hover tests on other projects, plus the foundation's
-  skips). Includes: Figma geometry (hero, card, CTAs, section heights ±2px, run
+- `npm run test:e2e` (Chromium 393/768/1440): **94 passed, 8 skipped**
+  (desktop-only sweeps and hover tests on other projects, plus the foundation's
+  skips; after the PR #3 refinement). Includes: Figma geometry (hero, card, CTAs, section heights ±2px, run
   and hill row heights, display sizes at each frame), card overhang and
   stacking, overflow and CTA/card collision sweep at 15 widths from 320 to
   1920, CTA and row navigation (row clicks away from the link text), keyboard
   order, focus ring colors per surface, hover states, reduced motion, axe WCAG
-  2.2 AA on the whole page including color contrast (0 violations), pixel-
-  sampled contrast over photographs, and no off-site requests.
-- `npm run test:visual`: **12/12** — the 9 foundation baselines unchanged, plus 3
-  new full-page homepage baselines (macOS), with the clock-dependent card and run
-  list masked.
+  2.2 AA on the whole page including color contrast (0 violations), worst-region
+  contrast of all seven photo-text targets at each frame plus a sweep at 320,
+  600, 900, 1024, 1180, 1280 and 1920 (`contrast.mjs`), and no off-site requests.
+- `npm run test:visual`: **12/12** — the 9 foundation baselines unchanged; the 3
+  homepage baselines regenerated for the contrast refinement (macOS), with the
+  clock-dependent card and run list masked.
 
-Measured contrast over photography (10th percentile of pixels behind the text):
-
-| Text | 393 | 768 | 1440 | Requirement |
-|---|---|---|---|---|
-| Hero "Become a Mtn Runner" (with fill) | 5.37 | 6.08 | 13.75 | 4.5 ✓ |
-| Just show up copy (90%, shade) | 5.20 | 4.74 | 4.51 | 4.5 ✓ |
-| Just show up heading (shade) | 4.08 | 4.35 | 4.10 | 3.0 ✓ |
-| Hero h1 (60%, halo) | 1.38 | 1.27 | 1.35 | 3.0 ✗ open |
+Photographic contrast results: see "Photographic contrast" above (the earlier
+10th-percentile figures are superseded).
 
 Judgment review: per-slice and full-page overlays on Figma at 393, 768, and
 1732, plus full pages at 1024, 1280, and 1440 (`docs/review/cmr-homepage/`). At
@@ -212,7 +282,10 @@ not a claim of pixel-perfect fidelity; the differences are listed above.
 
 ### Known issues
 
-- Hero headline contrast (open decision 1).
+- Contrast margins are smallest for the hero headline at 1024px (3.19:1 vs 3)
+  and the Just show up copy at 1920px (4.85:1 vs 4.5). Changing the photo crop,
+  shade, or headline geometry must re-run `contrast.mjs`; a replacement hero
+  photograph (D3) will need re-measuring.
 - The hero photo is visibly soft on desktop until the original is supplied.
 - Visual baselines are macOS-only (unchanged limitation); the time-dependent
   run content is masked rather than snapshotted.
@@ -223,16 +296,17 @@ not a claim of pixel-perfect fidelity; the differences are listed above.
 
 ### Open Owner decisions
 
-1. **Hero headline contrast.** The approved ghosted h1 measures ≈1.3:1 against
-   the sky. Meeting 3:1 means a visual-direction change, for example a darker
-   sky crop, a scrim, or a higher-opacity headline. Alternatively, explicitly
-   accept the display headline as an exception. Not decided here.
-2. **D6 sign-off** on the legibility adjustments (deviations 5, 6, 14) and the
-   interaction states (19), all designed in code.
-3. **Design review** of items classed R: uniform hero crop (1), em-based
-   tracking (9), featured-hill reading (13), Figma cleanup of the totals surface
-   and the empty 1:254 frame (8).
-4. **Merge** of the PR.
+1. **Final review of the accessibility treatments** (deviations 5, 6, 14): the
+   headline band and 75% letters, and the Just show up 38% shade with full-white
+   copy. Alternative on record: 60% letters with a 55% band (keeps Figma's letter
+   opacity, greyer sky).
+2. **Figma cleanup** (design-side, not blocking): the totals surface and empty
+   frame 1:254 (8); consider recording the contrast treatments in Figma.
+3. **Merge** of the PR.
+
+Resolved in the 2026-11-08 review: hero headline contrast (now ≥ 3:1), uniform
+crop, em tracking, featured Mt. Trashmore, Explore all hills and card icons on
+tablet and mobile, hover/focus patterns, provisional markers.
 
 ### Release dependencies (before launch, not before merge)
 
@@ -255,7 +329,7 @@ not a claim of pixel-perfect fidelity; the differences are listed above.
 | Copy matches Figma; data from `src/lib`; unverified data marked; nothing fabricated | Met |
 | Next run chronological from Chicago now, fresh via revalidation | Met (hourly) |
 | One h1, heading outline, alt text, keyboard order, focus ≥ 3:1, axe clean | Met |
-| Pixel-sampled contrast passes or has an Owner-recorded exception | **Not met for the hero h1**: open decision 1 |
+| Text over photography meets WCAG AA in its worst region (no exceptions) | Met — all seven targets, 11 widths |
 | Reduced motion removes transitions | Met |
 | No new runtime dependency; no MWDS change; shared UI unchanged with tests and baselines passing | Met |
 | Lint, typecheck, tokens, Vitest, build, Playwright, visual pass | Met locally; CI green on PR #3 |
