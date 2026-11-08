@@ -28,6 +28,10 @@ updated_at: '2026-11-08T18:00:00.000Z'
 **Round 2 refinement (2026-11-08) implemented and validated on PR #3; awaiting
 one coordinated Owner/GPT review.** See "Round 2 refinement" directly below.
 PR #3 stays open; not merged; no production deployment (Vercel Preview only).
+Verified implementation head **`c2da050`**: GitHub CI `validate` and `browser`
+pass (run 42505978575); Vercel deployment `B93L7N5SZUR24LPV31YAGNqyeKpJ` Ready as
+a **Preview** at https://cmr-site-git-feat-cmr-homepage-mikewhitaker-projects.vercel.app
+(Vercel SSO-protected). Commits after it only update this record.
 
 Round 1 status (kept for the record): **all six slices implemented and
 validated; awaiting final Owner verification.**
