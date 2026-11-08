@@ -11,9 +11,13 @@ import { cn } from "@/lib/utils";
  *   tablet 768    442     70         60.5 × 250     27.5  42/44, 584 wide
  *   desktop 1400  589     177        93 × 385       36    64/68, max 1053
  *
- * Geist Black with stylistic set 08; "™" at 0.645em raised to cap height;
- * "sanity" struck through and kept in the accessible text (foundation
- * precedent for struck-through jokes).
+ * Geist Black with stylistic set 08; "sanity" struck through and kept in the
+ * accessible text (foundation precedent for struck-through jokes).
+ *
+ * Round 2 (Owner direction, 2026-11-08): the name stays black; the description
+ * from "is a running community…" is `muted-foreground` (#737373, 4.7:1 on
+ * white — AA even at body size); the TM drops from 0.645em to 0.3em and sits as
+ * a superscript on the cap line.
  *
  * Deviations: the block is aligned to the container (Figma's desktop block
  * starts 9px left of it and its 1053px text overflows a 1024px parent), and the
@@ -48,8 +52,15 @@ export function CommunityIntro() {
           </div>
           <p style={statement} className={cn(FLUID_TYPE, "max-w-[1053px] font-black ss08")}>
             Chicago Mountain Runners
-            <sup className="text-[0.645em] leading-none align-[0.06em]">TM</sup> is a running community for
-            finding elevation, running it repeatedly and occasionally questioning our <s>sanity</s> decisions.
+            {/* A true superscript: ~30% of the type size, its top on the cap line, set
+                with `relative` so it never stretches the line box. */}
+            <sup className="relative -top-[1.6em] ml-[0.06em] align-baseline text-[0.3em] leading-none tracking-normal">
+              TM
+            </sup>{" "}
+            <span className="text-muted-foreground">
+              is a running community for finding elevation, running it repeatedly and occasionally questioning our{" "}
+              <s>sanity</s> decisions.
+            </span>
           </p>
         </div>
       </Container>

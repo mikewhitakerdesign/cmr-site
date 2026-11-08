@@ -23,25 +23,30 @@ describe("HomeHero", () => {
 
   it("shows the next run with its Chicago slot, place and detail link", () => {
     render(<HomeHero next={next} now={now} />);
-    const card = screen.getByRole("article", { name: "Cricket Mtn Repeats" });
+    // Saturday night: this morning's Cricket run has passed, so Wednesday's Horner run is next.
+    const card = screen.getByRole("article", { name: "Horner Hell Repeats" });
     expect(within(card).getByText("Next run")).toBeInTheDocument();
-    const time = within(card).getByText("TUE · 5:30 AM");
+    const time = within(card).getByText("WED · 5:30 AM");
     expect(time.tagName).toBe("TIME");
-    expect(time).toHaveAttribute("datetime", "2026-11-10T05:30-06:00");
-    expect(within(card).getByText("Cricket Hill · Montrose Beach")).toBeInTheDocument();
-    expect(within(card).getByRole("link", { name: "Run details" })).toHaveAttribute("href", "/calendar/cricket-mtn-repeats");
+    expect(time).toHaveAttribute("datetime", "2026-11-11T05:30-06:00");
+    expect(within(card).getByText("Horner Park")).toBeInTheDocument();
+    expect(within(card).getByRole("link", { name: "Run details" })).toHaveAttribute("href", "/calendar/horner-hell-repeats");
   });
 
-  it("marks a provisional run so it can't pass for a confirmed one", () => {
+  it("shows no visible sample badge, but keeps the run's status on the card (Round 2)", () => {
     render(<HomeHero next={next} now={now} />);
     expect(next.run.status).toBe("provisional");
-    expect(within(screen.getByRole("article")).getByText("Sample · unconfirmed")).toBeInTheDocument();
+    const card = screen.getByRole("article");
+    expect(card).toHaveAttribute("data-status", "provisional");
+    expect(within(card).queryByText(/Sample|unconfirmed/)).not.toBeInTheDocument();
+    const verified: Run = { ...runs[1], status: "verified" };
+    expect(getUpcomingRuns(now, 1, [verified])[0].run.status).toBe("verified");
   });
 
-  it("drops the marker for a verified run", () => {
-    const verified: Run = { ...runs[1], status: "verified" };
-    render(<HomeHero next={getUpcomingRuns(now, 1, [verified])[0]} now={now} />);
-    expect(screen.queryByText("Sample · unconfirmed")).not.toBeInTheDocument();
+  it("pairs a solid black primary CTA with a solid white secondary (Round 2)", () => {
+    render(<HomeHero next={next} now={now} />);
+    expect(screen.getByRole("link", { name: "Find a Run" })).toHaveClass("bg-primary", "text-primary-foreground");
+    expect(screen.getByRole("link", { name: "Become a Mtn Runner" })).toHaveClass("bg-primary-foreground", "text-primary");
   });
 
   it("keeps the card's place with no upcoming run, pointing to the calendar instead of inventing one", () => {
