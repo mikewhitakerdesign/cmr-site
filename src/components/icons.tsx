@@ -11,6 +11,7 @@ import type { SVGProps } from "react";
  *   MapPin     1:55  "Icon / Cricket Hill · Montrose Beach" 16px
  *   ArrowRight 1:39  "Icon / See the full schedule"        16px
  *   ArrowUpRight 1:64 "Icon / TUE · 5:30 AM" (row action)  20px, stroke 1.25
+ *   Navigation 1:6591 "Icon / Get directions" (Hill Details) 16px
  */
 type IconProps = Omit<SVGProps<SVGSVGElement>, "children">;
 
@@ -46,6 +47,15 @@ export function ArrowRightIcon(props: IconProps) {
     <svg width="16" height="16" viewBox="0 0 16 16" strokeWidth="1.16667" {...base} {...props}>
       <path d="M3.33333 8H12.6667" />
       <path d="M8 3.33333L12.6667 8L8 12.6667" />
+    </svg>
+  );
+}
+
+/** Hill Details 1:6591 "Icon / Get directions" (Lucide "navigation"), 16px. */
+export function NavigationIcon(props: IconProps) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" strokeWidth="1.16667" {...base} {...props}>
+      <path d="M2 7.33333L14.6667 1.33333L8.66667 14L7.33333 8.66667L2 7.33333Z" />
     </svg>
   );
 }

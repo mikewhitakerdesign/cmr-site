@@ -16,6 +16,7 @@ describe("CtaLink (Round 2.1)", () => {
     ["primary", "bg-primary", "hover:bg-primary-foreground", "hover:text-primary", false],
     ["secondary", "bg-primary-foreground", "hover:bg-primary", "hover:text-primary-foreground", false],
     ["outline", "bg-transparent", "hover:bg-primary", "hover:text-primary-foreground", true],
+    ["outlineOnDark", "bg-transparent", "hover:bg-primary-foreground", "hover:text-primary", true],
   ] as const)("%s: flips to its opposite on hover; border only on the outline", (variant, rest, hoverBg, hoverText, bordered) => {
     render(<CtaLink href="/x" variant={variant}>{variant}</CtaLink>);
     const c = classes(variant);

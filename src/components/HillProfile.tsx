@@ -29,12 +29,19 @@ export function HillProfile({
   profile,
   className,
   caption = true,
+  annotated = true,
 }: {
   name: string;
   profile: HillProfileData;
   className?: string;
   /** Show the provenance caption under the artwork. */
   caption?: boolean;
+  /**
+   * Draw the pastel labels and the rise legend. Off for small thumbnails (the
+   * /hills directory), where the row states the figure in text and one shared
+   * caption carries the provenance.
+   */
+  annotated?: boolean;
 }) {
   const { anchors, figures, width: W, height: H } = profile;
   const ft = (n: number) => `≈ ${n} ft`;
@@ -46,29 +53,33 @@ export function HillProfile({
         {/* eslint-disable-next-line @next/next/no-img-element -- static vector art; the optimizer doesn't process SVG */}
         <img src={profile.src} alt="" width={W} height={H} loading="lazy" decoding="async" className="absolute inset-0 size-full" />
 
-        <svg aria-hidden viewBox={`0 0 ${W} ${H}`} className="pointer-events-none absolute inset-0 size-full overflow-visible">
-          <Leader from={anchors.summit} dx={-150} dy={-70} W={W} H={H} />
-          <g className="hidden @[28rem]:inline">
-            <Leader from={anchors.base} dx={-170} dy={40} W={W} H={H} />
-          </g>
-        </svg>
+        {annotated && (
+          <>
+            <svg aria-hidden viewBox={`0 0 ${W} ${H}`} className="pointer-events-none absolute inset-0 size-full overflow-visible">
+              <Leader from={anchors.summit} dx={-150} dy={-70} W={W} H={H} />
+              <g className="hidden @[28rem]:inline">
+                <Leader from={anchors.base} dx={-170} dy={40} W={W} H={H} />
+              </g>
+            </svg>
 
-        <Chip at={anchors.summit} dx={-150} dy={-70} W={W} H={H} align="end" tone="mint">
-          Summit{figures && <b className="font-semibold"> {ft(figures.summitFt)}</b>}
-        </Chip>
-        <Chip at={anchors.base} dx={-170} dy={40} W={W} H={H} align="end" tone="peach" className="hidden @[28rem]:inline-flex">
-          Base{figures && <b className="font-semibold"> {ft(figures.baseFt)}</b>}
-        </Chip>
+            <Chip at={anchors.summit} dx={-150} dy={-70} W={W} H={H} align="end" tone="mint">
+              Summit{figures && <b className="font-semibold"> {ft(figures.summitFt)}</b>}
+            </Chip>
+            <Chip at={anchors.base} dx={-170} dy={40} W={W} H={H} align="end" tone="peach" className="hidden @[28rem]:inline-flex">
+              Base{figures && <b className="font-semibold"> {ft(figures.baseFt)}</b>}
+            </Chip>
 
-        <div
-          data-slot="rise-legend"
-          className="absolute top-0 right-0 rounded-md bg-(color:--cmr-tint-blue-dye) px-2.5 py-1.5 text-right text-foreground @[28rem]:px-3.5 @[28rem]:py-2.5"
-        >
-          <p className="text-[10px] leading-3 font-medium tracking-[0.06em] uppercase @[28rem]:text-p-mini">Total rise</p>
-          <p className="text-[20px] leading-6 font-black tracking-[-0.02em] @[28rem]:text-[30px] @[28rem]:leading-8">
-            {figures ? ft(figures.riseFt) : <span className="text-[13px] leading-5 font-semibold tracking-normal @[28rem]:text-p">Not measured yet</span>}
-          </p>
-        </div>
+            <div
+              data-slot="rise-legend"
+              className="absolute top-0 right-0 rounded-md bg-(color:--cmr-tint-blue-dye) px-2.5 py-1.5 text-right text-foreground @[28rem]:px-3.5 @[28rem]:py-2.5"
+            >
+              <p className="text-[10px] leading-3 font-medium tracking-[0.06em] uppercase @[28rem]:text-p-mini">Total rise</p>
+              <p className="text-[20px] leading-6 font-black tracking-[-0.02em] @[28rem]:text-[30px] @[28rem]:leading-8">
+                {figures ? ft(figures.riseFt) : <span className="text-[13px] leading-5 font-semibold tracking-normal @[28rem]:text-p">Not measured yet</span>}
+              </p>
+            </div>
+          </>
+        )}
       </div>
       {caption && (
         <figcaption className="mt-2 text-p-mini text-muted-foreground">
