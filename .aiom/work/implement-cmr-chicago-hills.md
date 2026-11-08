@@ -226,7 +226,18 @@ the park/landmark and say so; runs come only from `src/lib/runs.ts`.
 
 ## Delivery
 
-Pending push; see the PR for the head commit, CI run and Vercel Preview.
+- **PR #4**: https://github.com/mikewhitakerdesign/cmr-site/pull/4 (open, mergeable,
+  not merged).
+- Verified implementation head **`5329d58`**: GitHub CI `validate` and `browser`
+  pass (run 42528632956). Vercel Preview deployed:
+  https://cmr-site-git-feat-cmr-chicago-hills-mikewhitaker-projects.vercel.app
+  (Vercel SSO-protected). No production deployment. Commits after `5329d58` only
+  update this record.
+- First CI run (`8ba945e`, run 42528338001): `validate` passed; `browser` failed
+  one test. On desktop, the hero-contrast check timed out inside the full-page
+  scroll helper on the Linux runner (a hang in `page.evaluate`, not a contrast
+  result). The test now waits for the hero photo only. Thresholds are unchanged,
+  and it passed 9/9 locally with `--repeat-each=3` and on the second CI run.
 
 ## Decisions needed before merging
 
