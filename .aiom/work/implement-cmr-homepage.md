@@ -86,7 +86,12 @@ The tested 75%-over-band alternative (≥ 3.19:1) remains in the record below.
 
 ### Delivery status
 
-(Recorded below once CI and the Vercel Preview have been verified for the final commit.)
+Verified implementation head **`2b70fdf`** (solid-white hero headline): GitHub CI
+`validate` and `browser` pass (run 42518730605); Vercel deployment
+`AdGZwAiz1ni11ABxBefhRaDKnTok` Ready as a **Preview** at
+https://cmr-site-git-feat-cmr-homepage-mikewhitaker-projects.vercel.app (Vercel
+SSO-protected). PR #3 open, not merged; no production deployment. Commits after it
+only update this record.
 
 
 ## Round 2.1 final visual refinements (2026-11-08)
