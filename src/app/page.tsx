@@ -1,7 +1,9 @@
 import { ChicagoHills } from "@/components/home/ChicagoHills";
 import { ClubTotals } from "@/components/home/ClubTotals";
 import { CommunityIntro } from "@/components/home/CommunityIntro";
+import { FlatStateOfMind } from "@/components/home/FlatStateOfMind";
 import { HomeHero } from "@/components/home/HomeHero";
+import { JustShowUp } from "@/components/home/JustShowUp";
 import { UpcomingRuns } from "@/components/home/UpcomingRuns";
 import { clubTotals } from "@/lib/club-totals";
 import { listedHills } from "@/lib/hills";
@@ -28,6 +30,8 @@ export default function Home() {
       <ClubTotals totals={clubTotals} />
       <UpcomingRuns occurrences={upcoming} now={now} />
       <ChicagoHills hills={listedHills().slice(0, 5)} />
+      <JustShowUp />
+      <FlatStateOfMind />
     </>
   );
 }
