@@ -36,6 +36,14 @@ describe("Header", () => {
     expect(screen.getByRole("link", { name: "Join the club" })).toHaveAttribute("href", "/join");
   });
 
+  it("draws the CTA with a 1px border (like the bar's rule) that flips to black on hover (Round 2.1)", () => {
+    render(<Header />);
+    const cta = screen.getByRole("link", { name: "Join the club" });
+    expect(cta).toHaveClass("border", "border-primary", "bg-transparent");
+    expect(cta.className).not.toMatch(/\bborder-2\b/);
+    expect(cta).toHaveClass("hover:bg-primary", "hover:text-primary-foreground");
+  });
+
   it("is a sticky banner that turns compact on scroll and back near the top", () => {
     render(<Header />);
     const banner = screen.getByRole("banner");
