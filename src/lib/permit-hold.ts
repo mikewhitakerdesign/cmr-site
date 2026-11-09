@@ -5,8 +5,12 @@
  * District permitting is still under review, so the site must not present any
  * run as available, scheduled or approved. This module is the ONE switch.
  *
- * To lift the hold (Owner authorization required, see
- * .aiom/work/implement-cmr-join-page.md): set OFFICIAL_RUNS_ON_HOLD to false.
+ * LIFTED 2026-11-09 for private development and review (Owner authorization, see
+ * .aiom/work/implement-cmr-final-site-polish.md). This is NOT a statement that CMR has Park
+ * District permission or insurance; those stay open pre-public-launch follow-ups. To re-apply
+ * the hold, set OFFICIAL_RUNS_ON_HOLD to true.
+ *
+ * To lift the hold (Owner authorization required): set OFFICIAL_RUNS_ON_HOLD to false.
  * Nothing else needs to change; every place that shows a run, a run date, a run
  * detail page or a calendar download reads this flag. Held content is hidden
  * rather than deleted, so the Find a Run experience returns exactly as built.
@@ -22,7 +26,7 @@
  * requirements and that official meetups are on hold. It does not say a permit
  * was applied for, approved or denied, and it names no agency.
  */
-export const OFFICIAL_RUNS_ON_HOLD = true;
+export const OFFICIAL_RUNS_ON_HOLD = false;
 
 export const PERMIT_HOLD_COPY = {
   heading: "THE HILLS AREN'T GOING ANYWHERE.",

@@ -70,7 +70,7 @@ export function FindTheMountain({ hill }: { hill: HillWithPage }) {
           </p>
         </div>
 
-        <figure data-slot="hill-map" className="group/map relative aspect-[16/9] overflow-hidden md:aspect-auto md:min-h-[300px] rounded-xl border border-foreground bg-muted">
+        <figure data-slot="hill-map" className="group/map relative aspect-[16/9] overflow-hidden md:aspect-auto md:min-h-[300px] rounded-xl bg-muted shadow-[0_8px_14px_rgba(65,65,65,0.28)]">
           <Image
             src={page.mapImage}
             alt={`Street map around ${page.address[0]}. The pin marks the park, not a meeting point.`}
