@@ -6,7 +6,7 @@ objective: >-
   Lift the temporary permit-pending website restriction for private development
   and review, rebuild the shared footer as wordmark, divider and two columns,
   and give the "Find what you've been looking for" map the run-detail shadow.
-status: in-progress
+status: complete
 stage: implementation
 active_capability: ui-implementation
 bundle_references:
@@ -21,7 +21,7 @@ updated_at: '2026-11-09T00:00:00.000Z'
 ---
 ## Status
 
-Implemented and validated locally; PR open. Closeout follows the merge.
+**Complete: merged and deployed (2026-11-09).** PR #14 merged as `95fecae`. `validate`, `browser` and the Vercel Preview passed on the PR head, and CI passed on `main`. Production smoke: `/`, `/calendar`, `/calendar/horner-hell-repeats` and `/hills/cricket-hill` return 200, no "on hold" copy on `/calendar`, and the series and occurrence `.ics` links return 200.
 
 ## Authorization
 
