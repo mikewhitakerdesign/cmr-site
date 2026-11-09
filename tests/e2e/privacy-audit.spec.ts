@@ -9,7 +9,7 @@ import { expect, test } from "@playwright/test";
  * These are observations of the current build, not privacy claims; the Privacy
  * Policy may only say what this audit and the hosting settings support.
  */
-const PAGES = ["/", "/join", "/about", "/hills", "/hills/cricket-hill", "/calendar", "/privacy", "/terms", "/participation-guidelines"];
+const PAGES = ["/", "/join", "/about", "/faq", "/hills", "/hills/cricket-hill", "/calendar", "/privacy", "/terms", "/participation-guidelines"];
 
 test("no third-party requests, cookies or stored data while browsing", async ({ page, context }) => {
   const origin = new URL(test.info().project.use.baseURL ?? "http://localhost:4319").origin;
@@ -67,7 +67,7 @@ test("submitting Join contacts only the Join Formspree form and sends only the t
   const form = page.locator("#join");
   await form.getByLabel("First name").fill("Sam");
   await form.getByLabel("Email address").fill("sam@example.com");
-  await form.getByRole("checkbox", { name: "I'm 18 or older." }).check();
+  await form.getByRole("checkbox", { name: "I confirm that I'm at least 18 years old." }).check();
   await form.getByRole("button", { name: "Join the club" }).click();
   await expect(form.getByRole("status")).toContainText("YOU'RE IN.");
   expect(posts).toHaveLength(1);

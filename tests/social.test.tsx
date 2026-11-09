@@ -35,12 +35,12 @@ describe("resolveSocialLink", () => {
 
 describe("buildFooterNav", () => {
   it("has no social items when none are supplied", () => {
-    expect(buildFooterNav({ instagram: null, strava: null }).map((i) => i.href)).toEqual(["/calendar", "/about", "/join"]);
+    expect(buildFooterNav({ instagram: null, strava: null }).map((i) => i.href)).toEqual(["/calendar", "/about", "/faq", "/join"]);
   });
 
   it("includes only the platforms that are supplied", () => {
     const nav = buildFooterNav({ instagram: null, strava: "https://www.strava.com/clubs/cmr" });
-    expect(nav.map((i) => i.label)).toEqual(["Find a Run", "About", "Join the club", "Strava"]);
+    expect(nav.map((i) => i.label)).toEqual(["Find a Run", "About", "FAQ", "Join the club", "Strava"]);
     expect(nav.at(-1)).toMatchObject({ href: "https://www.strava.com/clubs/cmr", external: true });
   });
 });
@@ -53,7 +53,7 @@ describe("environment configuration reaches the footer nav", () => {
 
   it("renders no social links when unconfigured", async () => {
     const { footerNav } = await import("@/lib/navigation");
-    expect(footerNav.map((i) => i.label)).toEqual(["Find a Run", "About", "Join the club"]);
+    expect(footerNav.map((i) => i.label)).toEqual(["Find a Run", "About", "FAQ", "Join the club"]);
   });
 
   it("renders configured links in the footer nav", async () => {
@@ -61,7 +61,7 @@ describe("environment configuration reaches the footer nav", () => {
     vi.stubEnv("NEXT_PUBLIC_STRAVA_URL", "https://www.strava.com/clubs/cmr");
     vi.resetModules();
     const { footerNav } = await import("@/lib/navigation");
-    expect(footerNav.map((i) => i.label)).toEqual(["Find a Run", "About", "Join the club", "Instagram", "Strava"]);
+    expect(footerNav.map((i) => i.label)).toEqual(["Find a Run", "About", "FAQ", "Join the club", "Instagram", "Strava"]);
   });
 
   it("ignores a configured value that isn't a genuine destination", async () => {

@@ -25,7 +25,7 @@ const submitButton = () => screen.getByRole("button", { name: /Join the club|Joi
 async function fillValid(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText("First name"), "Sam");
   await user.type(screen.getByLabelText("Email address"), "sam@example.com");
-  await user.click(screen.getByRole("checkbox", { name: "I'm 18 or older." }));
+  await user.click(screen.getByRole("checkbox", { name: "I confirm that I'm at least 18 years old." }));
 }
 
 describe("validateJoin", () => {
@@ -52,14 +52,16 @@ describe("JoinForm", () => {
     expect(screen.getByLabelText("First name")).toBeRequired();
     expect(screen.getByLabelText("Email address")).toHaveAttribute("type", "email");
     expect(screen.getByLabelText("Email address")).toHaveAttribute("autocomplete", "email");
-    const age = screen.getByRole("checkbox", { name: "I'm 18 or older." });
+    const age = screen.getByRole("checkbox", { name: "I confirm that I'm at least 18 years old." });
     expect(age).not.toBeChecked();
     expect(age).toBeRequired();
   });
 
   it("explains that joining includes club emails with an unsubscribe option, and links to Privacy", () => {
     setup();
-    expect(screen.getByText(/you'll get club emails/)).toHaveTextContent(/unsubscribe at any time/);
+    const note = screen.getByText(/includes emails about club runs/);
+    expect(note).toHaveTextContent(/unsubscribe at any time by contacting us through the Questions form/);
+    expect(note).not.toHaveTextContent(/unsubscribe link|one-click/);
     expect(screen.getByRole("link", { name: "Privacy Policy" })).toHaveAttribute("href", "/privacy");
   });
 
@@ -119,6 +121,7 @@ describe("JoinForm", () => {
     const done = await screen.findByRole("status");
     expect(done).toHaveTextContent("YOU'RE IN.");
     expect(done).toHaveTextContent("We've received your signup. You'll hear from us when there's something worth sharing.");
+    expect(done).toHaveTextContent("In the meantime, there's a hill with your name on it.");
     await waitFor(() => expect(done).toHaveFocus());
     expect(screen.getByRole("link", { name: "Explore the hills" })).toHaveAttribute("href", "/hills");
     expect(screen.queryByLabelText("Email address")).not.toBeInTheDocument();
@@ -131,7 +134,7 @@ describe("JoinForm", () => {
     await fillValid(user);
     await user.click(submitButton());
     const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent(/didn't receive your signup/);
+    expect(alert).toHaveTextContent("We couldn't confirm your signup. Please try again. Your information is still here.");
     expect(screen.queryByText("YOU'RE IN.")).not.toBeInTheDocument();
     expect(screen.getByLabelText("First name")).toHaveValue("Sam");
     expect(screen.getByLabelText("Email address")).toHaveValue("sam@example.com");
@@ -149,7 +152,7 @@ describe("JoinForm", () => {
     const { user } = setup();
     await fillValid(user);
     await user.click(submitButton());
-    expect(await screen.findByRole("alert")).toHaveTextContent(/didn't receive your signup/);
+    expect(await screen.findByRole("alert")).toHaveTextContent(/couldn't confirm your signup/);
     expect(screen.queryByText("YOU'RE IN.")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Email address")).toHaveValue("sam@example.com");
   });

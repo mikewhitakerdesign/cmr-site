@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { FLUID_TYPE, fluidType } from "@/lib/fluid";
 import { DISPLAY_HEADING } from "@/lib/headings";
 import { JOIN_FORM_ID, JOIN_LIMITS, validateJoin, type JoinErrors } from "@/lib/join";
+import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
 import { cn } from "@/lib/utils";
 
 /**
@@ -22,7 +23,9 @@ import { cn } from "@/lib/utils";
  * Membership is a manually kept private roster (Owner decision), and there is no
  * automated welcome email. The success message is the website's own confirmation.
  *
- * The age confirmation is not a liability waiver and is not described as one.
+ * The age confirmation is not a liability waiver, a medical declaration or acceptance of the
+ * Terms, and is not described as one. Unsubscribing is manual: the disclosure points to the
+ * Questions form rather than promising an unsubscribe link that does not exist.
  *
  * Behavior:
  *   - validation: all three fields required; email format checked before sending;
@@ -84,10 +87,8 @@ export function JoinForm() {
     email: errors.email ?? serverField("email"),
     over18: errors.over18 ?? serverField("age_18_plus"),
   };
-  const formError = state.errors
-    ?.getFormErrors()
-    .map((x) => x.message.trim().replace(/([^.!?])$/, "$1."))
-    .join(" ");
+  // Any delivery failure shows the Owner's recoverable-error copy; Formspree's wording is not shown.
+  const formError = state.errors?.getFormErrors().length ? "We couldn't confirm your signup. Please try again. Your information is still here." : undefined;
 
   if (state.succeeded) {
     return (
@@ -104,8 +105,14 @@ export function JoinForm() {
         <p className="mt-5 max-w-[48ch] text-[20px] leading-[30px]">
           We&apos;ve received your signup. You&apos;ll hear from us when there&apos;s something worth sharing.
         </p>
-        <CtaLink href="/hills" variant="primary" className="mt-8 h-14 px-7 text-[18px] leading-[27px] font-medium">
-          Explore the hills
+        <p className="mt-3 max-w-[48ch] text-[18px] leading-[27px]">In the meantime, there&apos;s a hill with your name on it.</p>
+        {/* While official meetups are on hold, send people to the Hills directory, never to an unavailable event. */}
+        <CtaLink
+          href={OFFICIAL_RUNS_ON_HOLD ? "/hills" : "/calendar"}
+          variant="primary"
+          className="mt-8 h-14 px-7 text-[18px] leading-[27px] font-medium"
+        >
+          {OFFICIAL_RUNS_ON_HOLD ? "Explore the hills" : "Find a Run"}
         </CtaLink>
       </div>
     );
@@ -162,7 +169,7 @@ export function JoinForm() {
               "aria-invalid:outline-2 aria-invalid:outline-destructive-border",
             )}
           />
-          <span>I&apos;m 18 or older.</span>
+          <span>I confirm that I&apos;m at least 18 years old.</span>
         </label>
         {fieldError.over18 && (
           <p id={`${ids.over18}-error`} className="text-p-mini font-medium text-destructive">
@@ -177,12 +184,12 @@ export function JoinForm() {
       <input type="hidden" name="_subject" value="CMR Join signup" />
 
       <p className="max-w-[56ch] text-p-sm text-muted-foreground">
-        Joining means you&apos;ll get club emails: run announcements, changes and the occasional bit of community news.
-        You can unsubscribe at any time. We use your details only to keep you posted, as described in the{" "}
+        Joining is free and includes emails about club runs, schedule changes, and occasional community news. You can
+        unsubscribe at any time by contacting us through the Questions form. Read our{" "}
         <Link href="/privacy" className="rounded-xs underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring">
           Privacy Policy
-        </Link>
-        .
+        </Link>{" "}
+        to learn how we handle your information.
       </p>
 
       {formError && (

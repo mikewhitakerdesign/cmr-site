@@ -96,9 +96,17 @@ test.describe("hill pages", () => {
     const specs = page.locator('[data-slot="hill-specs"]');
     await expect(specs).toBeVisible();
     expect(await specs.evaluate((e) => parseFloat(getComputedStyle(e).borderTopLeftRadius))).toBeGreaterThanOrEqual(12);
-    const art = (await specs.locator('[data-slot="hill-contour-art"]').boundingBox())!;
-    expect(art.width).toBe(info.project.name === "desktop" ? 250 : info.project.name === "tablet" ? 160 : 120);
+    // The contour drawing sits above the gray block, not inside it (Owner direction, 2026-11-09).
+    await expect(specs.locator('[data-slot="hill-contour-art"]')).toHaveCount(0);
+    const art = (await page.locator('[data-slot="hill-contour-art"]').first().boundingBox())!;
+    expect(art.width).toBe(info.project.name === "desktop" ? 240 : info.project.name === "tablet" ? 180 : 140);
+    expect(art.y + art.height).toBeLessThanOrEqual((await specs.boundingBox())!.y + 1);
     if (info.project.name !== "mobile") {
+      // Four quadrants: heading | drawing on the top row, copy | specs below, the drawing right of the heading.
+      const h = (await page.locator("#about-heading").boundingBox())!;
+      const sb = (await specs.boundingBox())!;
+      expect(art.x).toBeGreaterThan(h.x + h.width - 1);
+      expect(Math.abs(art.x + art.width - (sb.x + sb.width))).toBeLessThan(2); // right edges align
       const copy = (await page.locator("#about-heading ~ div").first().locator("p").first().boundingBox())!;
       const box = (await specs.boundingBox())!;
       expect(Math.abs(box.y - copy.y)).toBeLessThan(6); // the box starts level with the copy
@@ -116,16 +124,13 @@ test.describe("hill pages", () => {
     expect(await axe(page)).toEqual([]);
   });
 
-  test("the word 'hill' in the About heading carries the tie-dye; More hills does not", async ({ page }) => {
-    await page.goto("/hills/cricket-hill");
-    const word = page.locator("#about-heading .cmr-tie-dye-text");
-    await expect(word).toHaveCount(1);
-    await expect(word).toHaveText("hill");
-    await expect(page.locator("#about-heading")).toHaveText("The hill at Montrose.");
-    await expect(page.locator("#more-heading .cmr-tie-dye-text")).toHaveCount(0);
-    expect(await word.evaluate((e) => getComputedStyle(e).webkitTextStrokeWidth)).not.toBe("0px");
-    await page.goto("/hills/mt-trashmore");
-    await expect(page.locator("#about-heading .cmr-tie-dye-text")).toHaveText("hill");
+  test("the About heading is plain black text, with no tie-dye on 'hill'", async ({ page }) => {
+    for (const [slug, text] of [["cricket-hill", "The hill at Montrose."], ["mt-trashmore", "The hill at James Park."]]) {
+      await page.goto(`/hills/${slug}`);
+      await expect(page.locator("#about-heading")).toHaveText(text);
+      await expect(page.locator("#about-heading *")).toHaveCount(0);
+      expect(await page.locator("#about-heading").evaluate((e) => getComputedStyle(e).color)).toBe("rgb(0, 0, 0)");
+    }
   });
 
   test("the hero shows a calm, sparse contour field", async ({ page }) => {

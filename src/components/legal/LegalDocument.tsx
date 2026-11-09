@@ -18,7 +18,9 @@ export function LegalDocument({ title, doc }: { title: string; doc: LegalDoc | n
         </h1>
         {doc ? (
           <>
-            <p className={cn("mt-4 font-mono text-[13px] leading-5 tracking-[0.1em] uppercase", BODY_TEXT_COLOR)}>Last updated {doc.updated}</p>
+            <p className={cn("mt-4 font-mono text-[13px] leading-5 tracking-[0.1em] uppercase", BODY_TEXT_COLOR)}>
+              {doc.dateLabel ?? "Last updated"} {doc.updated}
+            </p>
             <div className="mt-8 flex flex-col gap-4 text-[18px] leading-[27px]">
               {doc.intro?.map((p) => <p key={p}>{p}</p>)}
             </div>
@@ -28,7 +30,15 @@ export function LegalDocument({ title, doc }: { title: string; doc: LegalDoc | n
                   {s.heading}
                 </h2>
                 <div className="mt-3 flex flex-col gap-4 text-[18px] leading-[27px]">
-                  {s.paragraphs.map((p) => <p key={p}>{p}</p>)}
+                  {s.paragraphs.map((p) =>
+                    typeof p === "string" ? (
+                      <p key={p}>{p}</p>
+                    ) : (
+                      <h3 key={p.h3} className="mt-2 text-[20px] leading-[28px] font-semibold">
+                        {p.h3}
+                      </h3>
+                    ),
+                  )}
                 </div>
               </section>
             ))}

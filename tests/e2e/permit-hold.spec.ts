@@ -20,7 +20,7 @@ async function axe(page: Page) {
 const noHScroll = (page: Page) => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
 
 const RUN_NAMES = /Cricket Mtn Repeats|Horner Hell Repeats/i;
-const PAGES = ["/", "/hills", "/hills/cricket-hill", "/hills/horner-hill", "/hills/warren-hill", "/about", "/join", "/calendar"];
+const PAGES = ["/", "/hills", "/hills/cricket-hill", "/hills/horner-hill", "/hills/warren-hill", "/about", "/faq", "/privacy", "/terms", "/participation-guidelines", "/join", "/calendar"];
 
 test.beforeEach(async ({ page }) => {
   await page.route("https://formspree.io/**", (r) => r.abort());
@@ -40,6 +40,24 @@ test.describe("/calendar while held", () => {
     await expect(page.getByText(RUN_NAMES)).toHaveCount(0);
     await expect(page.getByText(/Add to calendar|Week|Month|forecast|Bad weather/)).toHaveCount(0);
     await expect(page.locator("time")).toHaveCount(0);
+  });
+
+  test("is a black contour hero with a translucent glass panel on top (hill-page visual language)", async ({ page }) => {
+    await page.goto("/calendar");
+    const hold = page.locator("[data-slot=permit-hold]");
+    expect(await hold.evaluate((e) => getComputedStyle(e).backgroundColor)).toBe("rgb(0, 0, 0)");
+    await expect(hold.locator("[data-slot=contour-field]")).toHaveCount(1);
+    const panel = hold.locator("[data-slot=permit-hold-panel]");
+    const s = await panel.evaluate((e) => {
+      const c = getComputedStyle(e);
+      return { bg: c.backgroundColor, blur: c.backdropFilter || (c as unknown as Record<string, string>).webkitBackdropFilter };
+    });
+    expect(s.blur).toMatch(/blur/);
+    const alpha = Number(s.bg.match(/[,/]\s*([\d.]+)\s*\)$/)?.[1] ?? 1);
+    expect(alpha).toBeGreaterThan(0);
+    expect(alpha).toBeLessThan(0.3); // slightly translucent
+    // Readable: white text over the panel.
+    expect(await page.locator("#permit-hold-heading").evaluate((e) => getComputedStyle(e).color)).toBe("rgb(255, 255, 255)");
   });
 
   test("is accessible, readable and does not scroll sideways", async ({ page }) => {

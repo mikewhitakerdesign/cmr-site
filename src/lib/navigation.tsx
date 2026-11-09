@@ -49,6 +49,7 @@ export function buildFooterNav(social: SocialLinks): NavItem[] {
   return [
     { label: "Find a Run", href: "/calendar" },
     { label: "About", href: "/about" },
+    { label: "FAQ", href: "/faq" },
     { label: "Join the club", href: "/join" },
     ...(social.instagram ? [{ label: "Instagram", href: social.instagram, external: true }] : []),
     ...(social.strava ? [{ label: "Strava", href: social.strava, external: true }] : []),

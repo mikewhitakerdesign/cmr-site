@@ -7,7 +7,11 @@ import { footerNav, legalLinks, riskNotice as defaultRiskNotice, type LegalLink,
 import { cn } from "@/lib/utils";
 
 export type FooterProps = {
-  /** Newsletter block props, or `false` to omit it. */
+  /**
+   * Newsletter block props, or `false` to omit it (the default). Hidden for v1 (Owner direction,
+   * 2026-11-09): no provider is chosen, and a disabled second signup beside the Join form was
+   * confusing. Pass `{}` to bring the block back once a provider is configured.
+   */
   newsletter?: NewsletterSignupProps | false;
   links?: NavItem[];
   /** Legal links; entries without an href are not rendered. */
@@ -44,7 +48,7 @@ const linkClass =
  * color. Links and legal behavior are unchanged.
  */
 export default function Footer({
-  newsletter = {},
+  newsletter = false,
   links = footerNav,
   legal = legalLinks,
   riskNotice = defaultRiskNotice,
@@ -73,16 +77,21 @@ export default function Footer({
               )}
             />
           )}
-          {/* PR #4 final refinements: the wordmark takes you back to the top of the page. */}
+          {/* PR #4 final refinements: the wordmark takes you back to the top of the page. It sits left
+              without the newsletter, and on the right of it when the newsletter returns. */}
           <BackToTopLink
             label="Chicago Mountain Runners, back to top"
-            className="block w-full max-w-[640px] rounded-xs motion-safe:transition-opacity hover:opacity-80 md:col-start-2 md:justify-self-end"
+            className={cn(
+              "block w-full max-w-[640px] rounded-xs motion-safe:transition-opacity hover:opacity-80",
+              newsletter !== false && "md:col-start-2 md:justify-self-end",
+            )}
           >
             <CmrWordmark decorative className="w-full" />
           </BackToTopLink>
         </div>
 
         <div className="mt-14 border-t border-(color:--cmr-quiet-ink)/20 pt-8 md:mt-16 lg:mt-20 lg:flex lg:items-start lg:justify-between lg:gap-16">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 lg:gap-x-8">
           <nav aria-label="Footer">
             <ul className="flex flex-wrap gap-x-5 gap-y-2 text-p-sm font-medium lg:gap-x-8">
               {links.map((item) => (
@@ -100,6 +109,9 @@ export default function Footer({
               ))}
             </ul>
           </nav>
+          {/* Owner direction (2026-11-09): the motion control sits in this row, right of the links. */}
+          <MotionToggle />
+          </div>
 
           <div className="mt-8 max-w-[550px] lg:mt-0 lg:max-w-[448px]">
             {visibleLegal.length > 0 && (
@@ -115,7 +127,6 @@ export default function Footer({
             )}
             <p className={cn("text-p-mini", visibleLegal.length > 0 && "mt-4")}>{riskNotice}</p>
             <p className="mt-3 text-p-mini">© {year} Chicago Mountain Runners</p>
-            <MotionToggle className="mt-3" />
           </div>
         </div>
       </div>

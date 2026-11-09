@@ -133,23 +133,6 @@ html[data-motion="on"] .wx-sway { animation: wx-sway 3.2s ease-in-out infinite; 
 html[data-motion="on"] .wx-gust { animation: wx-gust 3s ease-in-out infinite alternate; }
 
 /*
- * The tie-dye word: one word of a heading filled with the pale mint, peach,
- * lavender and blue wash, held legible by a thin black outline (the fill alone
- * is far too pale on white). Reusable: <TieDyeWord>. The outline is drawn
- * behind the fill so letterforms keep their weight.
- */
-@utility cmr-tie-dye-text {
-  color: transparent;
-  background-image:
-    linear-gradient(100deg, var(--cmr-tint-mint-dye) 0%, var(--cmr-tint-peach-dye) 34%, var(--cmr-tint-lavender-dye) 66%, var(--cmr-tint-blue-dye) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-stroke: 0.045em var(--foreground);
-  paint-order: stroke fill;
-  text-shadow: 0 0.03em 0 color-mix(in srgb, var(--foreground) 30%, transparent);
-}
-
-/*
  * Run map hover zoom (Map & Weather Card Refinement). The map image only: the
  * pin, the attribution and the weather card are siblings and never scale. Runs
  * only under `html[data-motion="on"]` (the footer control / system reduced

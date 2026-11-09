@@ -26,75 +26,84 @@ updated_at: '2026-11-09T21:00:00.000Z'
 ---
 ## Status
 
-**Implemented and validated for the portions that do not depend on missing Owner inputs; PR open for Owner review. Not merged, not deployed. No real Formspree submission was made.**
+**Implemented, validated and under Owner-authorized merge (2026-11-09). Final merge commits and production results are recorded in "Outcome" at the end of this section once they exist.** No real Formspree submission was made at any point; tests mock Formspree.
 
-Branch `feat/cmr-join-faq-policies` (worktree `../cmr-site-join`), **stacked on PR #6 (`feat/cmr-find-a-run`)**; the PR is opened against that branch. PR #6, `plan/cmr-join-page` and its uncommitted records in the primary worktree are untouched.
+Branch `feat/cmr-join-faq-policies` (worktree `../cmr-site-join`), PR #8. It was opened stacked on PR #6; PR #6 was merged by the Owner on 2026-11-09 (merge commit `57be02e`, head `df3a02a` unchanged, CI green), and PR #8 was then rebased onto `main` and retargeted. `plan/cmr-join-page` and its uncommitted records in the primary worktree are untouched.
 
-**Merge order (Owner direction, 2026-11-09):** 1) PR #6 merges to `main` (Owner approval). 2) This PR is retargeted or rebased onto `main`, validation is rerun, and work stops for Owner approval before merge. This PR must not merge before PR #6.
+**Authorization:** Owner instruction of 2026-11-09 (follow-up message with the CMR-JOIN-001 content handoff, revision 6): finish PR #8, validate, merge in order, confirm production, clean up only what this work created. Scope limits are the ones listed under "Out of scope" below. No approval artifact was added; the instruction is recorded here.
 
-### Publication blockers (content left unpublished)
+## Content source and what was published
 
-| # | Blocker | State |
-|---|---|---|
-| B1 | Owner-approved **Website Terms, Privacy Policy and Participation Guidelines** drafts were not supplied | `/privacy`, `/terms`, `/participation-guidelines` exist as **"in review" shells** (no policy text, `noindex`, footer links hidden). Text goes in `src/content/legal.ts`. The Join form links to `/privacy`, so **Join must not go live until Privacy is published** |
-| B2 | **FAQ** content (GPT planning conversation) was not supplied | Not built. No FAQ route or content exists. Not invented |
-| B3 | **CMR-JOIN-001** decision record was not found in the repo | The approved membership model in the brief was used as stated |
-| B4 | **Unsubscribe mechanism** is unspecified | Pages say "You can unsubscribe at any time" (approved decision) but nothing states how. Owner to define before launch (manual roster) |
-| B5 | Privacy claims depend on **hosting settings** not in the repo | See audit: Vercel logging/analytics, Formspree plan, retention |
-| B6 | **Permit hold** stays on until the Owner authorizes lifting it | Flag `OFFICIAL_RUNS_ON_HOLD` in `src/lib/permit-hold.ts` |
+Source of truth: `CMR-JOIN-001-content-handoff.md` (revision 6, 2026-11-09). Used verbatim: the Join hero, form copy, success copy, error copy, FAQ (23 questions in four categories), Participation Guidelines, Terms of Use, Privacy Policy, permit-hold copy.
 
-## Implementation plan and affected files
+Applied exactly as written, with these implementation-fit changes only:
+- **Reviewer-only bracket notes** (`[PUBLICATION BLOCKER]`, `[VERIFY]`, `[LEGAL REVIEW]`) are not shown on public pages. Each is recorded under "Open operational items" below.
+- **Effective / last-updated date** is November 9, 2026, the date the Owner authorized publication.
+- **Website operator** reads "Chicago Mountain Runners, an informal running community based in Chicago, Illinois." It names no legal entity, because none exists (JOIN decision record, section 1.1).
+- **Manual email opt-out** (Owner instruction): Join, FAQ and Privacy say a member unsubscribes by contacting CMR through the Questions form; Privacy says there is no one-click link. No sending address was established, so none is named; the Questions form is the contact path everywhere.
+- **Privacy section 3** (cookies, storage, analytics) was rewritten from the audit below instead of keeping the placeholder; Privacy section 2 adds that the browser posts directly to Formspree and the site stores nothing.
+- **Hold-dependent sentences** (FAQ "Do I need to join", "Where and when", Terms section 4, Join essentials) are conditional on the permit-hold flag and revert when it is lifted.
+- **Button labels** stay sentence-case ("Join the club", "Explore the hills") like every other CTA on the site; the handoff prints them in capitals.
+- Not built, per the handoff: FAQ entries on photography and on a participation waiver; any waiver workflow.
 
-**Permit-pending hold** (one flag, `src/lib/permit-hold.ts`). While true: `/calendar` shows the hold notice (`components/calendar/PermitHold.tsx`, translucent panel over the contour field, no agency name or logo, static, not an alert); `/calendar/[slug]` redirects to `/calendar`, is not generated and is `noindex`; `/calendar/[slug]/ics` returns 404; homepage next-run card, "Upcoming runs" and "Just show up" copy use hold variants; hill pages' "Run it with us" shows the hold variant; the directory lists no weekly run. The Chicago Hills directory and hill pages stay open. The held next-run card keeps the run card's footprint so the hero layout does not shift when the hold is lifted. `tests/lib/permit-hold.test.ts` scans the source and **fails if any page or component reads run data without referencing the hold** (three reviewed exceptions are listed in the test). Held content is hidden, not deleted.
+## Design refinements (Owner direction, 2026-11-09)
 
-**Join** (`src/app/join/page.tsx`, `components/join/JoinForm.tsx`, `lib/join.ts`, `lib/validation.ts`): approved hero copy verbatim; "The basics" (every line is an approved membership decision); form with first name, email address, required unchecked 18+ box; honeypot and a hidden `_subject` ("CMR Join signup") so Join mail is distinguishable from Questions mail; validation, linked errors, first-invalid focus, "Joining…" disabled state plus a synchronous double-submit lock, entries kept on error, success only after Formspree confirms, inline "YOU'RE IN." (focused, announced, no personal data echoed) with an "Explore the hills" link. Endpoint `xrppvnln` only; the Questions form (`mwlljgld`) is untouched and a test asserts they differ. `Field` and the email check were extracted from `QuestionsWidget` with no behavior change (its 10 tests unchanged and passing). The age box is not described as a waiver and a test asserts that.
+A. Tie-dye removed from the hill About headings (component and CSS utility deleted). B. Hill About: the contour drawing sits top right above the gray specs block; desktop reads as four quadrants (heading, drawing, copy, specs). C. Pause motion sits in the footer link row, right of "Join the club" (it wraps to the row's left edge on phones, where five items do not fit one line). D. Join hero: topographic WebGL field in the lightest gray lines (neutral 300) under the homepage hero's mesh-gradient wash at 20%. E. Find a Run hold: black contour hero with white lines (hill-page language) and a slightly translucent glass panel (white 10%, blur) on top. F. Footer newsletter block hidden for v1 (`Footer` `newsletter` defaults to `false`; the component and its unit tests remain for when a provider is chosen). A FAQ link was added to the footer link row.
 
-**Legal shells** (`src/content/legal.ts`, `components/legal/LegalDocument.tsx`, three routes). Footer legal links appear only when a document is non-null; the old "Participation waiver" label became "Participation Guidelines".
+## Integrations
 
-**Tests:** `tests/lib/permit-hold.test.ts`, `tests/components/PermitHold.test.tsx`, `tests/components/JoinForm.test.tsx`, `tests/e2e/{permit-hold,join,privacy-audit}.spec.ts`. Existing run-dependent specs now state the open state explicitly (props, a mock for the ics route test) or `test.skip(OFFICIAL_RUNS_ON_HOLD)`, so they run again automatically when the hold is lifted. `tests/social.test.tsx` no longer expects the scaffold's social links on `/join`.
+| Integration | Form | Used by | Notes |
+|---|---|---|---|
+| Formspree Join | `xrppvnln` | `/join` only (`src/lib/join.ts`) | Sends `first_name`, `email`, `age_18_plus`, hidden `_subject` ("CMR Join signup") and the `_gotcha` honeypot. No welcome email, no list sync |
+| Formspree Questions | `mwlljgld` | Floating Questions panel (`src/lib/questions.ts`) | Untouched; a test asserts the two IDs differ and an e2e test posts to each |
 
-## Decisions and assumptions (for Owner confirmation)
+## Permit-hold mechanism
 
-1. **Approved Join copy used verbatim**, including "Come to a run whenever it works for you." That line sits on a page whose runs are on hold; it does not claim permission, but the Owner may want a hold-aware variant.
-2. **Section labels written here, not approved copy:** "The basics." and "Sign up." plus the five essentials rows and the form's disclosure paragraph. Please review wording.
-3. **"Find a Run" labels and routes are unchanged**; they lead to the hold notice. Header, footer and hero keep their labels so lifting the hold changes nothing else.
-4. **"Just show up" body copy changes while held** ("Find a hill, show up and climb it…") so it does not suggest organized runs exist. This edits an approved homepage line; it reverts with the flag.
-5. **Footer newsletter block** ("Get the next run in your inbox." / "Join the list", disabled) still renders on every page, including `/join` and the hold notice, where it reads as a second, unavailable signup and mentions "the next run". It is shared chrome from PR #2, so it is **unchanged**. Recommend the Owner decide whether to hide it for v1 (J4).
-6. **Checkbox is a native input** styled with CMR classes; no new design-system component was added.
-7. **Membership is a manually kept roster.** No welcome email is sent; the confirmation says only that the signup was received.
-8. **G2 profile amendment (both Formspree forms) is still the Owner's to make**; `.aiom/profile.md` was not edited.
-9. Join does not display Instagram/Strava links (the scaffold's env-driven links were dropped; the footer still shows them when configured).
+`OFFICIAL_RUNS_ON_HOLD` in `src/lib/permit-hold.ts` (currently `true`). Covers `/calendar` (notice in place of the real Find a Run experience), `/calendar/[slug]` (redirect, not generated, `noindex`), `/calendar/[slug]/ics` (404), the homepage next-run card, "Upcoming runs" and "Just show up" copy, hill-page "Run it with us" and the directory. Chicago Hills stay open. `tests/lib/permit-hold.test.ts` fails if a page or component reads run data without referencing the hold. **To lift it: set the flag to `false`** (Owner authorization required); the Find a Run, homepage, hills and shared-UI specs were run with it lifted and passed. The copy names no agency, logo, application or approval.
 
-## Privacy and integration audit (2026-11-09, this build)
+## Privacy and integration audit
 
-Evidence is code inspection plus `tests/e2e/privacy-audit.spec.ts`, which drives the built site in Chromium. **These are observations, not privacy claims.** Nothing here supports a retention period; none is stated.
+Evidence is code inspection plus `tests/e2e/privacy-audit.spec.ts` (built site in Chromium, ten pages including FAQ and the legal pages) and a check of the deployed Vercel Preview recorded under Outcome. These are observations; Privacy states only what they support.
 
 | Area | Finding |
 |---|---|
-| Analytics | None in code or dependencies; the served HTML contains no analytics, tag-manager, pixel, chat or embed script and no iframe (test) |
-| Cookies | None set while browsing nine pages (test); `document.cookie` empty |
-| Local storage | Only `cmr-motion` ("on"/"off"), written **only** when the visitor uses the footer Pause/Resume control; empty otherwise; no sessionStorage or IndexedDB (test) |
-| Third-party requests | Zero requests to other hosts while browsing (test). Fonts come through `next/font/google` and are self-hosted at build. OpenStreetMap appears as an attribution link only; maps are static local images |
-| Third-party scripts | None loaded. `@formspree/react` bundles Stripe code but loads Stripe only if a Stripe key is passed to its provider; none is, and a submission made no Stripe request (test) |
-| Formspree | The browser posts directly to `formspree.io/f/xrppvnln` (Join) or `/f/mwlljgld` (Questions). Join sends exactly `first_name`, `email`, `age_18_plus`, `_subject`, `_gotcha` (test). Formspree also receives what any request carries (IP, user agent). **Formspree's retention, notification recipient, allowed domains, spam settings and plan limits live in the Owner's account and could not be inspected** |
-| Weather (NWS) | Server-side only, no visitor data sent; not rendered or fetched while the hold is on |
-| Hosting / logging | No hosting config in the repo. **Vercel request logging, Vercel Analytics/Speed Insights toggles and log retention are dashboard settings I could not inspect.** Owner to verify before the Privacy Policy says anything about them |
-| Newsletter footer form | Disabled; no provider configured (`NEXT_PUBLIC_NEWSLETTER_FORM_ACTION` unset). If an action is ever set it would post to that third party |
-| Other personal data | None. No accounts, database, API route, or stored submissions in this app |
+| Analytics | None in code or dependencies; served HTML has no analytics, tag-manager, pixel, chat or embed script and no iframe |
+| Cookies | None set while browsing; `document.cookie` empty |
+| Local storage | Only `cmr-motion` ("on"/"off"), written only when the visitor uses Pause/Resume motion; otherwise empty; no sessionStorage or IndexedDB |
+| Third-party requests | Zero requests to other hosts while browsing. Fonts are self-hosted at build by `next/font`. OpenStreetMap, Chicago Park District, WBEZ and similar appear as outbound links only |
+| Third-party scripts | None. `@formspree/react` bundles Stripe code but loads Stripe only if a Stripe key is passed to its provider; none is, and a submission made no Stripe request |
+| Formspree | Browser posts directly to Formspree. Join sends exactly the fields listed above. Formspree's own retention, notification recipients, allowed domains, spam settings and plan are account settings that could not be inspected |
+| Weather (NWS) | Server-side only; not fetched or rendered while the hold is on |
+| Hosting | Vercel. Platform request logging is described in Privacy only as "may process"; account-level log retention and any Analytics/Speed Insights toggle are dashboard settings, checked indirectly on the deployed Preview (see Outcome) |
+| Newsletter | Hidden for v1; no provider; `NEXT_PUBLIC_NEWSLETTER_FORM_ACTION` unset |
+| Other personal data | None. No accounts, database, API route or stored submissions in this app |
 
-Privacy Policy text must be limited to what this table and the Owner's dashboard checks support.
+## Open operational items (not site blockers; Owner actions)
 
-## Validation (2026-11-09, macOS, Chromium)
+These were bracketed in the handoff and are not claims on the public pages. They are commitments the Privacy/Terms text relies on being true in practice.
+1. **Counsel review** of Terms (limitation language, governing law) and of the Participation Guidelines risk acknowledgment, and of any future separate release (OPEN-P2, OPEN-P7). Pages are published on the Owner's instruction; each document can be withdrawn by setting it to `null` in `src/content/legal.ts`.
+2. **Legal operator / entity** and a real contact email (OPEN-P2, OPEN-P3). Pages use the Questions form.
+3. **Retention and deletion procedure** for the roster, unsubscribe records and Questions mail (OPEN-P4); Privacy gives no periods.
+4. **Roster access**: Privacy says access is limited; keep the roster private and access-restricted (OPEN-P4/P6).
+5. **Formspree account**: confirm recipient, allowed domains (production and previews), plan and archive settings.
+6. **Run-safety procedures** (cancellation triggers, incident record, photo preferences; OPEN-P6) and the **permit path** (OPEN-P1) before lifting the hold.
+7. **`.aiom/profile.md` G2 amendment** enumerating both Formspree forms (Owner's durable-governance change; not edited here).
 
-Held (as shipped): `eslint`, `tsc --noEmit` (only the generated `PageProps`/`LayoutProps` types are absent outside `next build`), `tokens:check`, `next build`: pass. Vitest: 392 tests, 33 files, pass. Playwright (393 / 768 / 1440): 354 pass, 81 skipped (visual baselines, and open-state specs that do not apply while held), including axe with contrast on `/join` (idle, errors, success), `/calendar` hold notice, legal shells, hills and homepage.
+## Validation
 
-**Reversibility check:** with `OFFICIAL_RUNS_ON_HOLD = false` (temporarily, then restored) the original Find a Run, homepage, hills and shared-UI specs pass: 369 Playwright, 390 Vitest. Lifting the hold is a one-line change.
+Local, on the PR head: `eslint`, `tsc --noEmit` (only the generated `PageProps`/`LayoutProps` are absent outside `next build`), `tokens:check`, `next build`, Vitest, Playwright at 393 / 768 / 1440 (axe with contrast on every new or changed page and state), and `@visual` baselines for Join, success, hold, FAQ, the three legal pages, the hill About section, header, footer, homepage and hills (macOS only; excluded from CI like every `@visual` spec). Exact counts are recorded in the PR. The suite was also run with the hold lifted. CI results and production smoke checks are recorded under Outcome.
 
-Not done: `@visual` baselines for the new pages (macOS-only and excluded from CI); one real Formspree submission (needs explicit Owner authorization); contrast measurement on photographs (the new pages use no photograph).
+## Out of scope (unchanged)
+
+Admin backend, authentication, member dashboard or database beyond Formspree and a manual roster, CRM, automated welcome email, newsletter platform, waiver signing, event registration, Strava and Instagram integration, new dependencies.
 
 ## Future enhancements (documented, not built)
 
-FAQ (needs content), legal text (needs approved drafts), newsletter provider, automated welcome email, any waiver workflow, organizer checklist, Strava/Instagram integration.
+FAQ entries on photography and on a participation waiver (after the Owner decides each); newsletter provider and the footer block; a real sending address and unsubscribe flow; organizer checklist document; Strava/Instagram (separate projects); an admin view only if manual workflows prove insufficient.
+
+## Outcome
+
+(Filled in after merge: merge commits, CI, production deployment and smoke checks, cleanup.)
 
 ## Planning record (2026-11-08, preserved)
 

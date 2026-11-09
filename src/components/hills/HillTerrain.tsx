@@ -4,7 +4,6 @@ import { BODY, EYEBROW, SECTION_HEADING, sectionHeading } from "@/components/hil
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
 import { BODY_TEXT_COLOR } from "@/lib/headings";
 import { REPEAT_TARGETS_FT, formatMiles, routeCounts, type HillWithPage } from "@/lib/hills";
-import { TieDyeWord } from "@/components/TieDyeWord";
 import { HillContourArt } from "@/components/hills/HillContourArt";
 import { grayTintVars, tintVars } from "@/lib/tints";
 import { cn } from "@/lib/utils";
@@ -37,8 +36,7 @@ export function HillAbout({ hill }: { hill: HillWithPage }) {
     <section aria-labelledby="about-heading" className="py-24">
       <Container className="grid gap-x-16 gap-y-8 md:grid-cols-2 md:grid-rows-[auto_1fr]">
         <h2 id="about-heading" style={sectionHeading()} className={cn(FLUID_TYPE, SECTION_HEADING, "md:col-start-1 md:row-start-1")}>
-          {/* The word "hill" or "mountain" gets the tie-dye fill; the heading text is unchanged. */}
-          {page.aboutHeading.split(/\b(hill|mountain)\b/i).map((part, i) => (i % 2 === 1 ? <TieDyeWord key={i}>{part}</TieDyeWord> : part))}
+          {page.aboutHeading}
         </h2>
         <div className="md:col-start-1 md:row-start-2">
           <div className={cn(BODY, BODY_TEXT_COLOR, "max-w-[448px] space-y-5")}>
@@ -66,12 +64,15 @@ export function HillAbout({ hill }: { hill: HillWithPage }) {
           )}
         </div>
 
+        {/* Top right: the contour drawing sits above the gray block, not inside it, so the desktop
+            composition reads as four quadrants: heading | drawing, copy | specs. */}
+        <div className="md:col-start-2 md:row-start-1 md:flex md:items-center md:justify-end">
+          <HillContourArt slug={hill.slug} className="size-[140px] text-foreground md:size-[180px] lg:size-[240px]" />
+        </div>
+
         {/* Starts level with the first line of the copy beside it (the heading is its own grid row). */}
         <div data-slot="hill-specs" className="self-start rounded-xl bg-muted p-6 md:col-start-2 md:row-start-2 md:p-8">
-          <div className="flex items-start justify-between gap-4">
-            <h3 className={cn(EYEBROW, "max-w-[12ch] text-foreground/70 md:max-w-none")}>Know what you&apos;re running</h3>
-            <HillContourArt slug={hill.slug} className="size-[120px] shrink-0 text-foreground md:size-[160px] lg:size-[250px]" />
-          </div>
+          <h3 className={cn(EYEBROW, "text-foreground/70")}>Know what you&apos;re running</h3>
           <dl className="pt-6">
             {rows.map(([label, value]) => (
               <div key={label} className="flex items-baseline justify-between gap-4 border-b border-foreground/15 py-3 text-[14px] leading-5 last:border-b-0">
