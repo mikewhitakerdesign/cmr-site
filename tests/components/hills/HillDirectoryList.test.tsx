@@ -12,10 +12,10 @@ const facts = (row: HTMLElement) =>
   Object.fromEntries([...row.querySelectorAll("dl > div")].map((d) => [d.querySelector("dt")!.textContent, d.querySelector("dd")!.textContent]));
 
 describe("HillDirectoryList (/hills)", () => {
-  it("numbers the five hills in order and links each whole row to its page", () => {
+  it("lists the five hills in order, unnumbered, and links each whole row to its page", () => {
     render(<HillDirectoryList entries={directoryEntries(NOW)} />);
     expect(rows().map((r) => r.getAttribute("data-hill"))).toEqual(["cricket-hill", "warren-hill", "horner-hill", "schiller-hill", "mt-trashmore"]);
-    expect(rows().map((r) => r.querySelector("span")!.textContent)).toEqual(["01", "02", "03", "04", "05"]);
+    for (const r of rows()) expect(r.textContent).not.toMatch(/\b0[1-5]\b/);
     for (const r of rows()) {
       const links = within(r).getAllByRole("link");
       expect(links).toHaveLength(1); // one link per row; the ::after makes the row clickable
@@ -30,12 +30,12 @@ describe("HillDirectoryList (/hills)", () => {
     ]);
   });
 
-  it("compares rise, surface and CMR runs, without numbers for Warren Hill", () => {
+  it("compares rise, surface and weekly CMR runs, without numbers for Warren Hill", () => {
     render(<HillDirectoryList entries={directoryEntries(NOW)} />);
     const [cricket, warren, horner] = rows();
-    expect(facts(cricket)).toEqual({ Rise: "≈ 30 ft", Surface: "Grass / paved path", "With CMR": "Saturdays · 5:30 AM" });
-    expect(facts(warren)).toEqual({ Rise: "Not measured", Surface: "TBD", "With CMR": "Not yet" });
-    expect(facts(horner)).toEqual({ Rise: "≈ 20 ft", Surface: "TBD", "With CMR": "Wednesdays · 5:30 AM" });
+    expect(facts(cricket)).toEqual({ Rise: "≈ 30 ft", Surface: "Grass/dirt", "Weekly with CMR": "Saturdays · 5:30 AM" });
+    expect(facts(warren)).toEqual({ Rise: "Not measured", Surface: "Grass/dirt", "Weekly with CMR": "No set weekly run" });
+    expect(facts(horner)).toEqual({ Rise: "≈ 20 ft", Surface: "Grass/dirt", "Weekly with CMR": "Wednesdays · 5:30 AM" });
   });
 
   it("shows each approved drawing without labels, as a thumbnail", () => {
@@ -52,10 +52,9 @@ describe("HillDirectoryList (/hills)", () => {
     expect(container.querySelector("figcaption")).toBeNull();
   });
 
-  it("keeps directory numbers in a subset and supports h3 names", () => {
+  it("supports h3 names", () => {
     const more = directoryEntries(NOW).filter((e) => e.hill.slug !== "cricket-hill");
     render(<HillDirectoryList entries={more} headingLevel="h3" />);
-    expect(rows()[0].querySelector("span")).toHaveTextContent("02");
     expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(4);
   });
 

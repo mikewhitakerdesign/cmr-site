@@ -1,6 +1,8 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { directoryEntries } from "@/lib/hill-directory";
-import { getHill, hills, hillsWithPages, listedHills, otherHills, repeatsTo, surfaceLabel } from "@/lib/hills";
+import { REPEAT_TARGETS_FT, formatMiles, getHill, hills, hillsWithPages, listedHills, otherHills, routeCounts } from "@/lib/hills";
 import { directionsUrl, mapUrl } from "@/lib/maps";
 import { getRunsAtHill, runs } from "@/lib/runs";
 import { describeCadence } from "@/lib/schedule";
@@ -31,14 +33,18 @@ describe("hill records (Chicago Hills milestone)", () => {
     expect(warren.profile?.figures).toBeNull();
   });
 
-  it("records surface only where the approved frame shows it (Cricket Hill)", () => {
+  it("keeps the Figma surface rows for Cricket Hill only, and the Owner's Grass/dirt summary for every hill", () => {
     expect(hillsWithPages().filter((h) => h.page.surface).map((h) => h.slug)).toEqual(["cricket-hill"]);
-    expect(surfaceLabel(getHill("cricket-hill")!.page)).toBe("Grass / paved path");
-    expect(surfaceLabel(getHill("horner-hill")!.page)).toBeUndefined();
+    for (const h of hillsWithPages()) expect(h.page.surfaceSummary).toBe("Grass/dirt");
   });
 
-  it("uses a photograph only where one is approved (Cricket Hill)", () => {
-    expect(hillsWithPages().filter((h) => h.page.hero).map((h) => h.slug)).toEqual(["cricket-hill"]);
+  it("gives every hill page a static map built from its place, and no photograph", () => {
+    for (const h of hillsWithPages()) {
+      expect(h.page.mapImage).toBe(`/hills/maps/${h.slug}.jpg`);
+      expect(existsSync(join(process.cwd(), "public", h.page.mapImage))).toBe(true);
+      expect(h.page).not.toHaveProperty("hero");
+      expect(h.page).not.toHaveProperty("standfirst");
+    }
   });
 
   it("cites only https sources, and never invents a meeting point in the address", () => {
@@ -62,17 +68,40 @@ describe("hill records (Chicago Hills milestone)", () => {
   });
 });
 
-describe("derived repeats (IA decision 7)", () => {
-  it("counts repeats from gain per repeat, rounding up", () => {
-    expect(repeatsTo(500, 40)).toBe(13);
-    expect(repeatsTo(1000, 40)).toBe(25);
-    expect(repeatsTo(500, 30)).toBe(17);
+describe("route baseline and derived repeat counts (Owner, 2026-11-08)", () => {
+  it("counts to four climbing targets", () => {
+    expect(REPEAT_TARGETS_FT).toEqual([500, 1000, 2500, 5000]);
   });
 
-  it("stays undefined while gain per repeat is unmeasured or invalid", () => {
-    expect(repeatsTo(500, undefined)).toBeUndefined();
-    expect(repeatsTo(500, 0)).toBeUndefined();
-    expect(repeatsTo(500, -5)).toBeUndefined();
+  it("stores Cricket Hill's Owner-provided baseline, not counts", () => {
+    const route = getHill("cricket-hill")!.page!.route!;
+    expect(route).toMatchObject({ distanceMi: 0.2, gainPerRepeatFt: 40 });
+    expect(route.basis).toMatch(/25 complete repeats ≈ 5 miles and ≈ 1,000 ft/);
+    expect(route).not.toHaveProperty("counts");
+  });
+
+  it("derives the Owner's table, rounding up to whole repeats", () => {
+    expect(routeCounts(getHill("cricket-hill")!.page!.route)).toEqual({
+      500: { repeats: 13, miles: 2.6 },
+      1000: { repeats: 25, miles: 5 },
+      2500: { repeats: 63, miles: 12.6 },
+      5000: { repeats: 125, miles: 25 },
+    });
+  });
+
+  it("calculates nothing without a route — never from the hill's overall rise", () => {
+    for (const slug of ["warren-hill", "horner-hill", "schiller-hill", "mt-trashmore"]) {
+      const h = getHill(slug)!;
+      expect(h.page!.route).toBeUndefined();
+      expect(routeCounts(h.page!.route)).toBeUndefined();
+    }
+    expect(routeCounts({ distanceMi: 0.2, gainPerRepeatFt: 0, basis: "" })).toBeUndefined();
+  });
+
+  it("writes miles the way the Owner does", () => {
+    expect(formatMiles(0.2)).toBe(".2");
+    expect(formatMiles(1.5)).toBe("1.5");
+    expect(formatMiles(3)).toBe("3");
   });
 });
 
@@ -82,13 +111,21 @@ describe("hill navigation helpers", () => {
     expect(otherHills("mt-trashmore").map((h) => h.slug)).toEqual(FIVE.slice(0, 4));
   });
 
-  it("numbers directory entries 01–05 and lists when CMR runs each hill", () => {
+  it("lists directory entries in display order with when CMR runs each hill every week", () => {
     const entries = directoryEntries(NOW);
-    expect(entries.map((e) => [e.hill.slug, e.number])).toEqual(FIVE.map((s, i) => [s, i + 1]));
+    expect(entries.map((e) => e.hill.slug)).toEqual(FIVE);
     const by = Object.fromEntries(entries.map((e) => [e.hill.slug, e.cadences]));
     expect(by["cricket-hill"]).toEqual(["Saturdays · 5:30 AM"]);
     expect(by["horner-hill"]).toEqual(["Wednesdays · 5:30 AM"]);
     expect(by["warren-hill"]).toEqual([]);
+  });
+
+  it("leaves one-off runs out of the weekly column", () => {
+    const once = runs.map((r) => (r.slug === "cricket-mtn-repeats" ? { ...r, schedule: { kind: "once" as const, date: "2026-12-05", time: "07:00" } } : r));
+    expect(getRunsAtHill("cricket-hill", NOW, once)).toHaveLength(1);
+    const by = Object.fromEntries(directoryEntries(NOW, once).map((e) => [e.hill.slug, e.cadences]));
+    expect(by["cricket-hill"]).toEqual([]);
+    expect(by["horner-hill"]).toEqual(["Wednesdays · 5:30 AM"]);
   });
 });
 

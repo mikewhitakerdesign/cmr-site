@@ -171,17 +171,32 @@ test.describe("header", () => {
 });
 
 test.describe("footer", () => {
-  test("uses the Round 2 quiet neutral surface, a tone-on-tone logo and Figma typography", async ({ page }, info) => {
+  test("uses the Round 2 quiet neutral surface, the tone-on-tone wordmark and Figma typography", async ({ page }, info) => {
     const s = spec(info.project.name);
     const footer = page.locator("footer");
     expect(await css(footer, "background-color")).toBe("rgb(245, 245, 245)"); // MWDS muted (neutrals 100)
     expect(await css(footer, "color")).toBe("rgb(64, 64, 64)"); // neutrals 700, 9.4:1 on the surface
     expect(contrast("rgb(64, 64, 64)", "rgb(245, 245, 245)")).toBeGreaterThanOrEqual(7);
     expect(await css(footer, "border-top-width")).toBe("1px");
-    const logo = footer.getByRole("img", { name: "Chicago Mountain Runners" });
-    await expect(logo).toBeVisible();
-    expect((await box(logo)).y).toBeLessThan((await box(footer.getByRole("heading"))).y); // above the heading
-    expect(Math.round((await box(logo)).x)).toBe(Math.round((await box(footer.getByRole("heading"))).x)); // left-aligned
+    // Refinement pass (Owner direction, 2026-11-08): one large wordmark, in the footer ink,
+    // in the right half beside the newsletter (below it on mobile). The small badge is gone.
+    const mark = footer.locator("[data-slot=cmr-wordmark]");
+    await expect(footer.getByRole("img", { name: "Chicago Mountain Runners" })).toHaveCount(1);
+    await expect(mark).toBeVisible();
+    expect(await css(mark, "background-color")).toBe("rgb(64, 64, 64)");
+    const m = await box(mark);
+    expect(m.width / m.height).toBeCloseTo(1858 / 888, 1);
+    const news = await box(footer.locator("section").first());
+    const inner = await box(footer.locator(":scope > div"));
+    if (info.project.name === "mobile") {
+      expect(m.y).toBeGreaterThan(news.y + news.height);
+    } else {
+      expect(news.width / inner.width).toBeGreaterThan(0.4);
+      expect(news.width / inner.width).toBeLessThan(0.55);
+      expect(m.x).toBeGreaterThanOrEqual(news.x + news.width);
+      const padRight = parseFloat(await css(footer.locator(":scope > div"), "padding-right"));
+      expect(Math.abs(m.x + m.width - (inner.x + inner.width - padRight))).toBeLessThanOrEqual(1); // flush right
+    }
 
     const heading = footer.getByRole("heading", { name: "Get the next run in your inbox." });
     expect(await css(heading, "font-size")).toBe(`${s.headingPx}px`);

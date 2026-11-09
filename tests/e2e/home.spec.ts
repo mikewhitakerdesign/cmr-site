@@ -246,6 +246,9 @@ test.describe("layout against Figma", () => {
     expect(await size(flat(page).locator("p"))).toBeCloseTo(f.flat, 0);
     expect(await size(hills(page).getByRole("heading", { level: 2 }))).toBeCloseTo(f.hills, 0);
     expect(await size(page.locator("section[aria-labelledby=club-totals-heading] dd").first())).toBeCloseTo(f.stat, 0);
+    // Owner direction (2026-11-08): "2026 club totals." and "See you on the hill." match "Get high in the city.".
+    expect(await size(page.locator("#club-totals-heading"))).toBeCloseTo(f.hills, 0);
+    expect(await size(page.locator("#upcoming-runs-heading"))).toBeCloseTo(f.hills, 0);
   });
 
   test("no horizontal overflow and no colliding hero layout at intermediate widths", async ({ page }, info) => {
@@ -306,7 +309,7 @@ test.describe("navigation and interaction", () => {
     const hb = await box(trashmore);
     await page.mouse.click(hb.x + hb.width - 60, hb.y + hb.height / 2);
     await expect(page).toHaveURL(/\/hills\/mt-trashmore$/);
-    await expect(page.getByText("Not measured yet").first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mt. Trashmore");
     await page.goBack();
 
     await hills(page).getByRole("link", { name: "Explore all hills" }).click();
@@ -543,7 +546,12 @@ test.describe("Round 2 interactions", () => {
     await reduced.goto("/");
     await reduced.locator("section[aria-labelledby=club-totals-heading]").scrollIntoViewIfNeeded();
     for (const o of await reduced.locator("[data-odometer]").all()) await expect(o).toHaveAttribute("data-odometer", "settled");
-    await expect(reduced.locator("[data-slot=topo-pattern]")).toBeVisible();
+    const field = flat(reduced).locator("[data-slot=contour-field]");
+    await field.scrollIntoViewIfNeeded();
+    await expect(field).toHaveAttribute("data-state", "still");
+    const a = await field.locator("canvas").screenshot();
+    await reduced.waitForTimeout(1000);
+    expect(Buffer.compare(a, await field.locator("canvas").screenshot())).toBe(0);
     await reduced.close();
   });
 
@@ -592,20 +600,25 @@ test.describe("Round 2 interactions", () => {
     await expect(fig).not.toContainText("≈");
   });
 
-  test("the topography is a static vector background: the pointer does nothing to it (Round 2.1)", async ({ page }) => {
-    const pattern = flat(page).locator("[data-slot=topo-pattern]");
+  test("the topography moves on its own in grey; the pointer and the statement don't move it (refinement pass)", async ({ page }) => {
+    const field = flat(page).locator("[data-slot=contour-field]");
     await flat(page).scrollIntoViewIfNeeded();
-    await expect(pattern.locator("use")).toHaveCount(1);
-    await expect(pattern.locator("filter, mask, feTurbulence, feDisplacementMap")).toHaveCount(0);
-    const snapshot = () => pattern.evaluate((el) => el.outerHTML);
-    const before = await snapshot();
+    await expect(field).toHaveAttribute("data-state", "animating");
+    await expect(field).toHaveAttribute("aria-hidden", "true");
+    const canvas = field.locator("canvas");
+    // Grey lines (MWDS neutrals 300) on the white surface.
+    expect(await css(canvas, "color")).toBe("rgb(212, 212, 212)");
+    expect(await css(canvas, "background-color")).toBe("rgb(255, 255, 255)");
+    const text = flat(page).locator("p");
+    const before = await box(text);
+    const a = await canvas.screenshot();
     const b = await box(flat(page));
-    await page.mouse.move(b.x + 100, b.y + b.height / 2);
     for (let i = 1; i <= 12; i++) await page.mouse.move(b.x + 100 + i * 40, b.y + b.height / 2 + (i % 2) * 20);
-    await page.waitForTimeout(300);
-    expect(await snapshot()).toBe(before);
-    // Crisp: constant 1.5px strokes at any size, drawn by the browser from vector paths.
-    expect(await pattern.locator("g").first().evaluate((g) => getComputedStyle(g).strokeWidth)).toBe("1.5px");
+    await page.waitForTimeout(1500);
+    expect(Buffer.compare(a, await canvas.screenshot()), "the lines move").not.toBe(0);
+    expect(await box(text)).toEqual(before);
+    // No pointer-driven effect is wired up (the Round 2 liquid cursor stays removed).
+    await expect(flat(page).locator("filter, feTurbulence, feDisplacementMap")).toHaveCount(0);
   });
 
   test("the Questions panel validates, sends through Formspree (mocked) and confirms", async ({ page }) => {
@@ -666,8 +679,11 @@ test.describe("Round 2 interactions", () => {
 });
 
 test.describe("visual @visual", () => {
+  // Reduced motion: the contour background renders one deterministic still frame.
+  test.use({ reducedMotion: "reduce" });
   test("full homepage", async ({ page }, info) => {
     await loadAll(page);
+    await expect(flat(page).locator("[data-slot=contour-field]")).toHaveAttribute("data-state", "still");
     // Run order, slot labels and the next-run card depend on the build clock.
     const mask = [hero(page).getByRole("article"), runs(page).locator("ol")];
     await expect(page).toHaveScreenshot(`home-${info.project.name}.png`, { fullPage: true, mask, animations: "disabled" });

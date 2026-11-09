@@ -11,11 +11,15 @@ const AXE_PATH = require.resolve("axe-core");
 const SLUGS = ["cricket-hill", "warren-hill", "horner-hill", "schiller-hill", "mt-trashmore"] as const;
 const NAMES = ["Cricket Hill", "Warren Hill", "Horner Hill", "Schiller Hill", "Mt. Trashmore"];
 
-/** Figma measurements per frame. Hero height is below the sticky header (Figma draws it over the hero). */
+/**
+ * Per frame. Hero height is Figma's, below the sticky header. The hero name is
+ * the refinement pass's larger size (60 / 104 / 176; on phones capped to the
+ * column: (393 − 48) / 6.4 ≈ 53.9). Display = "Get high in the city.".
+ */
 const FIGMA = {
-  mobile: { heroH: 540, h1: 48, statCols: 2, lede: 36 },
-  tablet: { heroH: 697, h1: 72.96, statCols: 5, lede: 36 },
-  desktop: { heroH: 844, h1: 144, statCols: 5, lede: 64 },
+  mobile: { heroH: 540, h1: 53.9, lede: 36, display: 48 },
+  tablet: { heroH: 697, h1: 104, lede: 36, display: 54 },
+  desktop: { heroH: 844, h1: 176, lede: 64, display: 96 },
 } as const;
 const spec = (name: string) => FIGMA[name as keyof typeof FIGMA];
 
@@ -57,15 +61,38 @@ test.describe("/hills directory", () => {
 
   test("title, heading and the five hills in order, each linked", async ({ page }) => {
     await expect(page).toHaveTitle("Chicago Hills — Chicago Mountain Runners");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Chicago Hills Mtns");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Chicago Hills Mountains");
     const rows = page.locator("main ol > li");
     await expect(rows).toHaveCount(5);
     for (const [i, slug] of SLUGS.entries()) {
       await expect(rows.nth(i).getByRole("link")).toHaveAttribute("href", `/hills/${slug}`);
       await expect(rows.nth(i).getByRole("heading", { level: 2 })).toHaveText(NAMES[i]);
     }
-    await expect(page.getByText("Vertical scale exaggerated.", { exact: false })).toBeVisible();
+    // The rise footnote is gone (Owner direction); the one-line status note stays.
+    await expect(page.getByText(/USGS 3DEP/)).toHaveCount(0);
     await expect(page.locator("[data-slot=content-status]")).toContainText("Provisional");
+  });
+
+  test("headline: no eyebrow, “Chicago H̶i̶l̶l̶s̶” on one line and “Mountains” alone on the second", async ({ page }) => {
+    const h1 = page.getByRole("heading", { level: 1 });
+    await expect(page.locator("main section").first().locator("p").first()).not.toContainText("hills ·");
+    for (const w of [320, 393, 768, 1440, 1920]) {
+      await page.setViewportSize({ width: w, height: 900 });
+      const [first, second] = await h1.locator(":scope > span").evaluateAll((els) =>
+        els.map((e) => ({ top: e.getBoundingClientRect().top, h: e.getBoundingClientRect().height, lh: parseFloat(getComputedStyle(e).lineHeight) })),
+      );
+      expect(second.top, `${w}px`).toBeGreaterThan(first.top);
+      expect(first.h, `${w}px: one line`).toBeLessThan(first.lh * 1.5);
+      expect(second.h, `${w}px: one line`).toBeLessThan(second.lh * 1.5);
+    }
+  });
+
+  test("rows: no numbers, Grass/dirt, Weekly with CMR", async ({ page }) => {
+    const rows = page.locator("main ol > li");
+    for (const r of await rows.all()) await expect(r).not.toContainText(/\b0[1-5]\b/);
+    await expect(page.getByText("With CMR", { exact: true })).toHaveCount(0);
+    await expect(rows.nth(1)).toContainText("No set weekly run");
+    await expect(rows.nth(1)).toContainText("Grass/dirt");
   });
 
   test("the header marks Hills as the current section", async ({ page }) => {
@@ -125,8 +152,12 @@ test.describe("/hills directory", () => {
     expect(await axe(page)).toEqual([]);
   });
 
-  test("the closing band leads to the calendar and Join", async ({ page }) => {
-    const band = page.locator("section[aria-labelledby=pick-heading]");
+  test("the closing band is the homepage “Just show up.”, leading to the calendar and Join", async ({ page }) => {
+    const band = page.locator("section[aria-labelledby=just-show-up-heading]");
+    await expect(band.getByRole("heading")).toHaveText("JUST SHOW UP.");
+    await expect(page.locator("section[aria-labelledby=pick-heading]")).toHaveCount(0);
+    // Last section before the footer.
+    expect(await page.locator("main > section").last().getAttribute("aria-labelledby")).toBe("just-show-up-heading");
     await expect(band.getByRole("link", { name: "Find a Run" })).toHaveAttribute("href", "/calendar");
     await expect(band.getByRole("link", { name: "Join the club" })).toHaveAttribute("href", "/join");
   });
@@ -152,29 +183,65 @@ test.describe("hill detail pages", () => {
     expect(res?.status()).toBe(404);
   });
 
-  test("Figma geometry: hero height, h1 and lede size, stats columns", async ({ page }, info) => {
+  test("geometry: hero height, two-line name, lede size, no stats strip or profile section", async ({ page }, info) => {
     const f = spec(info.project.name);
-    await page.goto("/hills/cricket-hill");
+    await page.goto("/hills/warren-hill");
     await page.evaluate(() => document.fonts.ready);
     const hero = page.locator("section[aria-labelledby=hill-heading]");
     expect(Math.abs((await box(hero)).height - f.heroH)).toBeLessThanOrEqual(2);
     expect(parseFloat(await css(page.locator("#hill-heading"), "font-size"))).toBeCloseTo(f.h1, 0);
+    const words = await page.locator("#hill-heading > span").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+    expect(words).toHaveLength(2);
+    expect(words[1]).toBeGreaterThan(words[0]);
+    expect(await hero.locator("p").count()).toBe(0); // no eyebrow
     expect(parseFloat(await css(page.locator("section[aria-label=Overview] p").first(), "font-size"))).toBeCloseTo(f.lede, 0);
-    const stats = page.locator("[data-slot=hill-stat]");
-    const tops = await stats.evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
-    expect(tops.filter((t) => t === tops[0])).toHaveLength(f.statCols);
+    await expect(page.locator("[data-slot=hill-stat], #profile-heading")).toHaveCount(0);
+    // The breadcrumb sits directly below the hero.
+    expect(await hero.evaluate((h) => h.nextElementSibling?.getAttribute("aria-label"))).toBe("Breadcrumb");
   });
 
-  test("the hero text is legible over the photograph", async ({ page }, info) => {
+  test("the longest hero name fits the column at every width", async ({ page }) => {
+    await page.goto("/hills/mt-trashmore");
+    await page.evaluate(() => document.fonts.ready);
+    for (const w of [320, 360, 393, 600, 768, 1024, 1440]) {
+      await page.setViewportSize({ width: w, height: 900 });
+      const right = await page.locator("#hill-heading > span").evaluateAll((els) => Math.max(...els.map((e) => {
+        const r = document.createRange();
+        r.selectNodeContents(e);
+        return r.getBoundingClientRect().right;
+      })));
+      expect(right, `${w}px`).toBeLessThanOrEqual(w - 16);
+    }
+  });
+
+  test("hero background: animated contour lines, still under reduced motion", async ({ browser, page }) => {
+    await page.goto("/hills/horner-hill");
+    const field = page.locator("section[aria-labelledby=hill-heading] [data-slot=contour-field]");
+    await expect(field).toHaveAttribute("data-state", "animating");
+    await expect(field).toHaveAttribute("aria-hidden", "true");
+    const canvas = field.locator("canvas");
+    const a = await canvas.screenshot();
+    await page.waitForTimeout(1500);
+    expect(Buffer.compare(a, await canvas.screenshot()), "the lines move").not.toBe(0);
+    // Grey lines (MWDS neutrals 600), not white.
+    expect(await css(canvas, "color")).toBe("rgb(82, 82, 82)");
+
+    const reduced = await browser.newPage({ reducedMotion: "reduce", viewport: page.viewportSize()! });
+    await reduced.goto("/hills/horner-hill");
+    const still = reduced.locator("section[aria-labelledby=hill-heading] [data-slot=contour-field]");
+    await expect(still).toHaveAttribute("data-state", "still");
+    const s1 = await still.locator("canvas").screenshot();
+    await reduced.waitForTimeout(1000);
+    expect(Buffer.compare(s1, await still.locator("canvas").screenshot()), "reduced motion: one still frame").toBe(0);
+    await reduced.close();
+  });
+
+  test("the hero text is legible over the moving lines", async ({ page }, info) => {
     await page.goto("/hills/cricket-hill");
-    // Only the hero photo matters here (no full-page scroll: it hung once on the Linux runner).
-    const photo = page.locator("section[aria-labelledby=hill-heading] img");
-    await expect(photo).toHaveJSProperty("complete", true);
-    expect(await photo.evaluate((i: HTMLImageElement) => i.naturalWidth)).toBeGreaterThan(0);
+    await expect(page.locator("section[aria-labelledby=hill-heading] [data-slot=contour-field]")).not.toHaveAttribute("data-state", "pending");
     await page.evaluate(() => document.fonts.ready);
     for (const [name, locate, need] of [
       ["hill name", page.locator("#hill-heading"), 3],
-      ["eyebrow", page.locator("#hill-heading").locator("xpath=preceding-sibling::p"), 4.5],
       ["breadcrumb", page.getByRole("navigation", { name: "Breadcrumb" }), 4.5],
     ] as const) {
       const r = await measureTextContrast(page, locate);
@@ -184,12 +251,60 @@ test.describe("hill detail pages", () => {
     }
   });
 
-  test("the terrain profile keeps its labels and exaggeration caption", async ({ page }) => {
-    await page.goto("/hills/mt-trashmore");
-    const fig = page.locator("section[aria-labelledby=profile-heading] figure");
-    await expect(fig.locator("[data-slot=rise-legend]")).toContainText("≈ 60 ft");
-    await expect(fig.locator("figcaption")).toContainText("Vertical scale exaggerated.");
-    await expect(fig.locator("img")).toHaveJSProperty("complete", true);
+  test("section headings use the homepage “Get high in the city.” size; two-line headings hold two lines from tablet", async ({ page }, info) => {
+    const f = spec(info.project.name);
+    await page.goto("/hills/cricket-hill");
+    await page.evaluate(() => document.fonts.ready);
+    for (const sel of ["#about-heading", "#repeats-heading", "#find-heading", "#more-heading", "#runs-heading + ul h3"]) {
+      expect(parseFloat(await css(page.locator(sel), "font-size")), sel).toBeCloseTo(f.display, 0);
+    }
+    if (info.project.name === "mobile") return; // 48px can't hold "How tall you need it?" in 345px
+    for (const sel of ["#repeats-heading", "#find-heading"]) {
+      const lines = await page.locator(`${sel} > span`).evaluateAll((els) =>
+        els.map((e) => e.getBoundingClientRect().height / parseFloat(getComputedStyle(e).lineHeight)),
+      );
+      expect(lines.map(Math.round), sel).toEqual([1, 1]);
+    }
+  });
+
+  test("repeats: four circles in a 2 × 2 quadrant with Cricket Hill's derived counts and miles, beside the copy on desktop", async ({ page }, info) => {
+    await page.goto("/hills/cricket-hill");
+    const section = page.locator("section[aria-labelledby=repeats-heading]");
+    const circles = section.locator("[data-slot=repeat-circle]");
+    await expect(circles).toHaveCount(4);
+    await expect(section.locator("dd .sr-only")).toHaveText([
+      "13 repeats, about 2.6 miles",
+      "25 repeats, about 5 miles",
+      "63 repeats, about 12.6 miles",
+      "125 repeats, about 25 miles",
+    ]);
+    await expect(section.locator("[data-slot=repeat-miles]")).toHaveText(["2.6 miles", "5 miles", "12.6 miles", "25 miles"]);
+    await expect(section).toContainText("The Cricket Hill route is .2 miles up and down.");
+    await expect(section.locator("img")).toHaveCount(0);
+    const boxes = await circles.evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).map((r) => ({ x: Math.round(r.x), y: Math.round(r.y), w: r.width, h: r.height })));
+    expect(new Set(boxes.map((b) => b.x)).size).toBe(2);
+    expect(new Set(boxes.map((b) => b.y)).size).toBe(2);
+    for (const b of boxes) expect(Math.abs(b.w - b.h)).toBeLessThanOrEqual(1);
+    if (info.project.name !== "mobile") {
+      const copy = await box(section.locator("p").first());
+      expect(boxes[0].x).toBeGreaterThan(copy.x + copy.width);
+    }
+  });
+
+  test("a hill with no mapped route keeps the quadrant, reading TBD", async ({ page }) => {
+    await page.goto("/hills/schiller-hill");
+    const section = page.locator("section[aria-labelledby=repeats-heading]");
+    await expect(section.locator("[data-slot=repeat-circle]")).toHaveCount(4);
+    await expect(section.locator("[data-slot=repeat-circle]").first()).toContainText("TBD");
+    await expect(section.locator("[data-slot=repeat-miles]")).toHaveText(Array(4).fill("TBD"));
+    await expect(section).toContainText("CMR hasn't mapped a route on Schiller Hill yet");
+  });
+
+  test("no visible provisional tag or note on a hill page; status stays in the markup", async ({ page }) => {
+    await page.goto("/hills/cricket-hill");
+    await expect(page.locator("main [data-provisional], main [data-slot=content-status]")).toHaveCount(0);
+    await expect(page.locator("section[aria-label=Overview]")).toHaveAttribute("data-status", "provisional");
+    await expect(page.getByText("One of Chicago Mountain Runners' primary training hills.")).toHaveCount(0);
   });
 
   test("Hill → Run → Hill: the run band links the run, whose page links back", async ({ page }) => {
@@ -202,7 +317,7 @@ test.describe("hill detail pages", () => {
 
   test("a hill without a CMR run says so", async ({ page }) => {
     await page.goto("/hills/schiller-hill");
-    await expect(page.getByRole("heading", { name: "No group runs here yet." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "No set weekly run." })).toBeVisible();
   });
 
   test("map links open off-site in a new tab, and nothing is fetched from a map service", async ({ page }) => {
@@ -216,13 +331,20 @@ test.describe("hill detail pages", () => {
     await expect(dir).toHaveAttribute("target", "_blank");
     await expect(dir).toHaveAttribute("href", /^https:\/\/www\.google\.com\/maps\/dir\/\?api=1&destination=Horner%20Park/);
     expect(external).toEqual([]);
+    // The map is a local static image (OpenStreetMap, built once), credited.
+    const map = page.locator("[data-slot=hill-map]");
+    await expect(map.locator("img")).toHaveJSProperty("complete", true);
+    expect(await map.locator("img").evaluate((i: HTMLImageElement) => i.naturalWidth)).toBeGreaterThan(0);
+    await expect(map.getByRole("link", { name: "OpenStreetMap" })).toHaveAttribute("href", "https://www.openstreetmap.org/copyright");
   });
 
   test("breadcrumb and More hills lead back into the directory", async ({ page }) => {
     await page.goto("/hills/horner-hill");
     const more = page.locator("section[aria-labelledby=more-heading]");
-    await expect(more.locator("ol > li")).toHaveCount(4);
-    await expect(more.locator("ol > li").first().getByRole("link")).toHaveAttribute("href", "/hills/schiller-hill");
+    await expect(more.getByRole("heading", { level: 2 })).toHaveText("More hills on repeat.");
+    await expect(more.locator("ul > li")).toHaveCount(4);
+    await expect(more.locator("[data-hill-profile], dl")).toHaveCount(0); // names only: no drawings or columns
+    await expect(more.locator("ul > li").first().getByRole("link")).toHaveAttribute("href", "/hills/schiller-hill");
     await more.getByRole("link", { name: "All hills" }).click();
     await expect(page).toHaveURL(/\/hills$/);
     await page.goto("/hills/horner-hill");
@@ -255,11 +377,14 @@ test.describe("from the homepage", () => {
 });
 
 test.describe("visual @visual", () => {
+  // Reduced motion: the contour background renders one deterministic still frame.
+  test.use({ reducedMotion: "reduce" });
   for (const path of ["/hills", "/hills/cricket-hill", "/hills/warren-hill"]) {
     test(`full page ${path}`, async ({ page }, info) => {
       await page.goto(path);
       await page.evaluate(() => document.fonts.ready);
       await loadAll(page);
+      for (const f of await page.locator("[data-slot=contour-field]").all()) await expect(f).toHaveAttribute("data-state", "still");
       const name = path.replaceAll("/", "-").slice(1);
       await expect(page).toHaveScreenshot(`${name}-${info.project.name}.png`, { fullPage: true, animations: "disabled" });
     });
