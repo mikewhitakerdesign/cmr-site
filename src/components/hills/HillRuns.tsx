@@ -1,5 +1,7 @@
 import { Container } from "@/components/Container";
 import { CtaLink } from "@/components/CtaLink";
+import { Tooltip } from "@/components/Tooltip";
+import { JOIN_TOOLTIP } from "@/lib/navigation";
 import { EYEBROW, SECTION_HEADING, sectionHeading } from "@/components/hills/styles";
 import { FLUID_TYPE } from "@/lib/fluid";
 import type { HillWithPage } from "@/lib/hills";
@@ -124,9 +126,11 @@ function HillRunsOnHold() {
             </p>
           </div>
           <div className="flex flex-wrap gap-3 md:shrink-0 md:flex-nowrap">
-            <CtaLink href="/join" variant="secondary" className={CTA}>
-              Join the club
-            </CtaLink>
+            <Tooltip text={JOIN_TOOLTIP}>
+              <CtaLink href="/join" variant="secondary" className={CTA}>
+                Join the club
+              </CtaLink>
+            </Tooltip>
             <CtaLink href="/hills" variant="outlineOnDark" className={CTA}>
               More hills
             </CtaLink>

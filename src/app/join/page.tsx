@@ -96,7 +96,7 @@ export default function JoinPage() {
             <h2 id="form-heading" style={fluidType([44, 56, 72], [44, 56, 68])} className={cn(FLUID_TYPE, DISPLAY_HEADING, "text-balance")}>
               COUNT ME IN.
             </h2>
-            <p className={cn("mt-4 max-w-[28ch] text-[18px] leading-[27px]", BODY_TEXT_COLOR)}>A couple of details, and you&apos;re officially unofficial.</p>
+            <p className={cn("mt-4 max-w-[28ch] text-[18px] leading-[27px] xl:max-w-none xl:whitespace-nowrap", BODY_TEXT_COLOR)}>A couple of details, and you&apos;re officially unofficial.</p>
           </div>
           <div className="max-w-[640px]">
             <JoinForm />

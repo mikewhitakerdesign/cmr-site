@@ -42,22 +42,35 @@ test.describe("/calendar while held", () => {
     await expect(page.locator("time")).toHaveCount(0);
   });
 
-  test("is a black contour hero with a translucent glass panel on top (hill-page visual language)", async ({ page }) => {
+  test("is a glass panel over the real Find a Run headline: inert, schedule-free backdrop, no black hero", async ({ page }) => {
     await page.goto("/calendar");
     const hold = page.locator("[data-slot=permit-hold]");
-    expect(await hold.evaluate((e) => getComputedStyle(e).backgroundColor)).toBe("rgb(0, 0, 0)");
-    await expect(hold.locator("[data-slot=contour-field]")).toHaveCount(1);
+    expect(await hold.evaluate((e) => getComputedStyle(e).backgroundColor)).not.toBe("rgb(0, 0, 0)");
+    await expect(hold.locator("[data-slot=contour-field]")).toHaveCount(0);
+    const backdrop = hold.locator("[data-slot=permit-hold-backdrop]");
+    await expect(backdrop).toHaveAttribute("inert", "");
+    await expect(backdrop).toHaveAttribute("aria-hidden", "true");
+    expect(await backdrop.locator("a, button, input, [tabindex]").count()).toBe(0);
+    expect(await backdrop.evaluate((e) => getComputedStyle(e).pointerEvents)).toBe("none");
+    await expect(backdrop).toContainText("Pick a hill");
+    await expect(backdrop.getByText(/weekly|forecast|\d{1,2}:\d{2}/i)).toHaveCount(0);
+    // No dismiss control: the only buttons in the section are none.
+    await expect(hold.getByRole("button")).toHaveCount(0);
     const panel = hold.locator("[data-slot=permit-hold-panel]");
     const s = await panel.evaluate((e) => {
       const c = getComputedStyle(e);
-      return { bg: c.backgroundColor, blur: c.backdropFilter || (c as unknown as Record<string, string>).webkitBackdropFilter };
+      return { bg: c.backgroundColor, blur: c.backdropFilter || (c as unknown as Record<string, string>).webkitBackdropFilter, w: e.getBoundingClientRect().width };
     });
     expect(s.blur).toMatch(/blur/);
     const alpha = Number(s.bg.match(/[,/]\s*([\d.]+)\s*\)$/)?.[1] ?? 1);
-    expect(alpha).toBeGreaterThan(0);
-    expect(alpha).toBeLessThan(0.3); // slightly translucent
-    // Readable: white text over the panel.
-    expect(await page.locator("#permit-hold-heading").evaluate((e) => getComputedStyle(e).color)).toBe("rgb(255, 255, 255)");
+    expect(alpha).toBeGreaterThanOrEqual(0.6);
+    expect(alpha).toBeLessThan(0.95);
+    // Dark text on the light glass.
+    expect(await page.locator("#permit-hold-heading").evaluate((e) => getComputedStyle(e).color)).toBe("rgb(0, 0, 0)");
+    // Wider than before (880px max) on desktop; never past the viewport.
+    const vw = page.viewportSize()!.width;
+    if (vw >= 1400) expect(s.w).toBeGreaterThan(900);
+    expect(s.w).toBeLessThanOrEqual(vw);
   });
 
   test("is accessible, readable and does not scroll sideways", async ({ page }) => {

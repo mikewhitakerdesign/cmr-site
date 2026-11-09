@@ -39,7 +39,7 @@ describe("Header", () => {
   it("draws the CTA with a 1px border (like the bar's rule) that flips to black on hover (Round 2.1)", () => {
     render(<Header />);
     const cta = screen.getByRole("link", { name: "Join the club" });
-    expect(cta).toHaveClass("border", "border-primary", "bg-transparent");
+    expect(cta).toHaveClass("border", "border-primary", "bg-background");
     expect(cta.className).not.toMatch(/\bborder-2\b/);
     expect(cta).toHaveClass("hover:bg-primary", "hover:text-primary-foreground");
   });

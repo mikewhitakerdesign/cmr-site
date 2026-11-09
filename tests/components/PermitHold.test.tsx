@@ -30,6 +30,18 @@ describe("permit-hold notice", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
+  it("sits over a dead, schedule-free backdrop with no dismiss control", () => {
+    const { container } = render(<PermitHold />);
+    const backdrop = container.querySelector("[data-slot=permit-hold-backdrop]")!;
+    expect(backdrop).toHaveAttribute("inert");
+    expect(backdrop).toHaveAttribute("aria-hidden", "true");
+    expect(backdrop.querySelector("a, button, input, time")).toBeNull();
+    expect(backdrop.textContent).toContain("Pick a hill");
+    expect(backdrop.textContent).not.toMatch(/weekly|forecast|\d:\d\d/i);
+    expect(screen.queryByRole("button")).toBeNull();
+    expect(container.querySelector("[data-slot=contour-field]")).toBeNull();
+  });
+
   it("does not use an agency logo or name", () => {
     const { container } = render(<PermitHold />);
     expect(container.querySelector("img")).toBeNull();

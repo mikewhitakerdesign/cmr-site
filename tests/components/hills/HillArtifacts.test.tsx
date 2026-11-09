@@ -18,6 +18,22 @@ describe("hill page refinements", () => {
     expect(a.match(/<path/g)).toHaveLength(8);
   });
 
+  it("keeps every ring whole: all points of every hill's art lie inside its viewBox, with room to spare", () => {
+    for (const h of hillsWithPages()) {
+      const svg = render(<HillContourArt slug={h.slug} />).container.querySelector("svg")!;
+      const [x, y, w, hgt] = svg.getAttribute("viewBox")!.split(" ").map(Number);
+      expect(w).toBeCloseTo(hgt, 1); // square, so the 240px box is not distorted
+      for (const path of svg.querySelectorAll("path")) {
+        for (const [px, py] of path.getAttribute("d")!.match(/-?\d+(\.\d+)? -?\d+(\.\d+)?/g)!.map((pt) => pt.split(" ").map(Number))) {
+          expect(px).toBeGreaterThan(x + 4);
+          expect(px).toBeLessThan(x + w - 4);
+          expect(py).toBeGreaterThan(y + 4);
+          expect(py).toBeLessThan(y + hgt - 4);
+        }
+      }
+    }
+  });
+
   it("puts the specs in a filled container (the art sits above it), under the new headings", () => {
     const { container } = render(<HillAbout hill={hill("mt-trashmore")} />);
     expect(screen.getByRole("heading", { level: 2, name: "The hill at James Park." })).toBeInTheDocument();

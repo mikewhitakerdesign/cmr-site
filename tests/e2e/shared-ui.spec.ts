@@ -128,7 +128,7 @@ test.describe("header", () => {
 
   test("the Join the club CTA flips to black on hover and keeps a visible focus ring", async ({ page }, info) => {
     const cta = page.getByRole("banner").getByRole("link", { name: "Join the club" });
-    expect(await css(cta, "background-color")).toBe("rgba(0, 0, 0, 0)");
+    expect(await css(cta, "background-color")).toBe("rgb(255, 255, 255)"); // pure white at rest (final refinements)
     if (info.project.name === "desktop") {
       await cta.hover();
       await expect.poll(() => css(cta, "background-color")).toBe("rgb(0, 0, 0)");
@@ -269,7 +269,13 @@ test.describe("footer", () => {
     await expect(footer.getByRole("heading", { name: "Get the next run in your inbox." })).toHaveCount(0);
     const inner = await box(footer.locator(":scope > div"));
     const padLeft = parseFloat(await css(footer.locator(":scope > div"), "padding-left"));
-    expect(Math.abs(m.x - (inner.x + padLeft))).toBeLessThanOrEqual(1);
+    if (info.project.name === "desktop") {
+      // Final refinements: without the newsletter the wordmark takes the right half, the links the left.
+      const padRight = parseFloat(await css(footer.locator(":scope > div"), "padding-right"));
+      expect(Math.abs(m.x + m.width - (inner.x + inner.width - padRight))).toBeLessThanOrEqual(1);
+    } else {
+      expect(Math.abs(m.x - (inner.x + padLeft))).toBeLessThanOrEqual(1);
+    }
     void s;
   });
 
@@ -411,7 +417,7 @@ test.describe("social links (none configured in this build)", () => {
   });
 
   test("footer link row keeps its layout without social links", async ({ page }, info) => {
-    const links = page.getByRole("navigation", { name: "Footer" }).getByRole("link");
+    const links = page.getByRole("navigation", { name: "Footer" }).getByRole("link"); // the visible copy only
     await expect(links).toHaveText(["Find a Run", "About", "FAQ", "Join the club"]);
     const first = await box(links.first());
     const last = await box(links.last());
