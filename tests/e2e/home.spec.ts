@@ -474,6 +474,9 @@ test.describe("accessibility", () => {
 
   test("photo text outside the accepted exceptions stays legible at intermediate widths", async ({ page }, info) => {
     test.skip(info.project.name !== "desktop", "one sweep is enough; it sets its own widths");
+    // Photo text only: hold the contour background still. On GPU-less CI its software-rendered
+    // animation competes with this test's many screenshots (it once hit the 30s timeout).
+    await page.emulateMedia({ reducedMotion: "reduce" });
     for (const width of [320, 600, 900, 1024, 1180, 1280, 1366, 1600, 1920]) {
       await page.setViewportSize({ width, height: 1000 });
       await loadAll(page);
