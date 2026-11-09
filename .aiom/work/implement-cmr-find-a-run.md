@@ -21,7 +21,7 @@ validation_state: passed
 blocker_state: none
 current_responsibility: orchestrator
 created_at: '2026-11-09T00:00:00.000Z'
-updated_at: '2026-11-09T23:00:00.000Z'
+updated_at: '2026-11-09T23:59:00.000Z'
 ---
 ## Status
 
@@ -87,3 +87,13 @@ Heading correction (Owner, 2026-11-09): the tie-dye word belongs on "hill" / "mo
 - Intentionally deferred to post-MVP, by Owner decision: South Side hills including the Beverly incline (add only verified locations; no further research now); Playwright `@visual` baselines for the new pages; a status page for organizer cancellations (cancellations only appear if added to the run data).
 - Release dependencies unchanged: run times, places and workout details remain `provisional` until the Owner confirms them; NWS is the only external data source and is informational only.
 - Cleanup: local worktree `../cmr-site-find-a-run` and local branch `feat/cmr-find-a-run` removed after confirming they were merged; the remote branch was left in place pending Owner direction, as for earlier milestones. `plan/cmr-join-page`, its uncommitted files, PR #5 and every other branch were not touched.
+
+## Map and weather card refinement (2026-11-09, Owner-authorized, PR #9)
+
+Follow-up delivered after the original merge; the PR #6 record above is unchanged. PR #9 (`feat/cmr-run-map-refinement`) was merged as **`4ea54a9`**; GitHub CI `validate` and `browser` and the Vercel Preview passed on its head, and `main` built and deployed.
+
+- Maps: the run maps are rebuilt from OpenStreetMap zoom-18 tiles (finer detail than z17, nothing upscaled), 960x640, high-quality WebP (about 51 KB and 80 KB, down from 137 and 200 KB JPEG), by `scripts/assets/build-hill-maps.mjs --runs`. Built once under the OSMF tile policy; attribution unchanged. No free source offers true 2x labels (OSM and CARTO `@2x` both returned 256 px tiles), so Retina text remains slightly soft: the Owner accepted this for the MVP and no other provider, key or vector pipeline was pursued.
+- Exact pins unchanged: Cricket Mtn Repeats 41.962864, -87.64403; Horner Hell Repeats 41.959459, -87.69566; the same Google Maps directions links. The pin now sits at 38% / 64% of the image (`pin.anchor` in `src/lib/runs.ts`) so it stays clear of the weather card.
+- Layout: 3:2 map card, no border, subtle close shadow; image-only 1.05 hover zoom (450 ms) active only under `html[data-motion="on"]` on hover devices (Pause motion and reduced motion disable it). The existing `WeatherCompact` now floats over the map's upper-right corner (across the top edge on mobile) with a deeper shadow; alerts, unchecked-alerts, unavailable and long-text states stack below the map so safety content is never clipped or over the pin. No new weather calls.
+- Validation: lint, tokens check, build, Vitest, full Playwright (393 / 768 / 1440) pass, including placement unit tests and e2e geometry and hover / Pause-motion specs. Screenshots at 1440, 768 and 393 reviewed for normal and storm-alert states, locally and on production (both run pages: 200, WebP map, exact directions links, floating card, 1.05 hover zoom, no horizontal overflow).
+- Known limit: on a phone the z18 map labels are small (the image is shown at about 345 px).
