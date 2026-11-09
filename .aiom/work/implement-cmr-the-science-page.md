@@ -20,7 +20,7 @@ validation_state: passed
 blocker_state: none
 current_responsibility: owner
 created_at: '2026-11-09T21:00:00.000Z'
-updated_at: '2026-11-09T23:30:00.000Z'
+updated_at: '2026-11-09T21:55:00.000Z'
 ---
 ## Status
 
@@ -72,6 +72,12 @@ Limitations stated on the page: the 2026 meta-analysis found no significant pool
 ## Validation
 
 Local, on the rebased PR head (macOS, Node 24): `eslint` clean; `tsc --noEmit` clean (apart from the generated `PageProps`/`LayoutProps` that exist only after `next build`); `tokens:check` passes; `next build` passes (`/the-science` static). Vitest: 37 files, 462 tests, all pass (new: `tests/lib/science.test.tsx`, `tests/components/science/ScienceInteractives.test.tsx`). Playwright at 393 / 768 / 1440: 439 passed, 0 failed (new `tests/e2e/science.spec.ts`, 76 tests: sticky placement under every header state, one-row bar, anchors and fragment reload never covering headings, current-section tracking, keyboard and focus ring, citations, reduced motion, motion toggle, canvas drawing, the three interactives, monochrome SVG colors, no images, no sideways scroll including the header at 320px, axe WCAG 2.2 AA with contrast). `/the-science` was added to the privacy audit (no third-party requests, cookies or storage). `@visual`: the two updated header baselines pass. **Pre-existing, not caused here:** 23 full-page and footer `@visual` comparisons (home, hills, Join, FAQ, calendar, legal pages, footer at tablet/desktop) fail identically on unmodified `main` at `6f5fff5`, because PR #11 changed the footer, Join and hold UI without updating the macOS baselines (visual specs don't run in CI). Left as is (out of scope); re-baselining them belongs with that work or a separate Owner-approved step. Real-browser screenshots were reviewed at all three widths for the hero, every section, the section bar in each header state, and the figures. CI and Preview results are recorded in the PR.
+
+## CI and Preview (PR #13)
+
+- **Code head `23717ea`:** GitHub CI `validate` and `browser` pass; Vercel Preview **Ready** (`dpl_2H2GEeQCusoYFV844sEisejpe37w`, alias https://cmr-site-git-feat-cmr-the-science-mikewhitaker-projects.vercel.app). The build log shows `/the-science` prerendered as static from commit `23717ea`.
+- Two CI-only issues were found and fixed on the branch: at 320px Linux renders the four mobile links about 3% wider than macOS, so the type below 393px was tightened (`65f9e44`); one canvas test sampled before hydration on a slow runner, so it now waits for the first frame (`23717ea`, stable over 45 repeated runs).
+- **Preview access:** the Preview is behind Vercel Deployment Protection (Vercel login). `vercel curl` would create an automation bypass secret on the project when none exists, which changes the project's protection settings, so it was not used. Page-level checks were therefore run on a local production build of the same commit at 393 / 768 / 1440 (screenshots and the e2e suite) and in CI. The Owner can open the Preview while signed in to Vercel.
 
 ## Remaining for the Owner's review
 
