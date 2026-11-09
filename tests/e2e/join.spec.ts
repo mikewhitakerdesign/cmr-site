@@ -210,7 +210,7 @@ test.describe("legal pages and FAQ", () => {
     await expect(first.getByText("A free, informal running community")).toBeVisible();
     await page.keyboard.press("Enter");
     await expect(first).not.toHaveAttribute("open", "");
-    await page.getByRole("link", { name: "03 · Schedules & Safety" }).click();
+    await page.getByRole("navigation", { name: "FAQ categories" }).getByRole("link", { name: "Schedules & Safety" }).click();
     await expect(page).toHaveURL(/#schedules-and-safety$/);
     // Held: the schedule answer says meetups are on hold; nothing points at a run page.
     const where = page.locator("details", { hasText: "Where and when does CMR meet?" });

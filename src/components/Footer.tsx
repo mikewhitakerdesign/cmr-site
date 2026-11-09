@@ -58,25 +58,25 @@ export default function Footer({
 }: FooterProps) {
   const visibleLegal = legal.filter((l): l is Required<LegalLink> => Boolean(l.href));
 
-  // The link row, with the motion control inline in it (Owner direction, 2026-11-09).
+  const linkItems = links.map((item) => (
+    <li key={item.href}>
+      {item.external ? (
+        <a href={item.href} className={linkClass}>
+          {item.label}
+        </a>
+      ) : (
+        <Link href={item.href} className={linkClass}>
+          {item.label}
+        </Link>
+      )}
+    </li>
+  ));
+
+  // Newsletter variant: the horizontal link row, with the motion control inline in it.
   const linkRow = (
     <div className="flex flex-wrap items-center gap-x-5 gap-y-2 lg:gap-x-8">
       <nav aria-label="Footer">
-        <ul className="flex flex-wrap gap-x-5 gap-y-2 lg:gap-x-8">
-          {links.map((item) => (
-            <li key={item.href}>
-              {item.external ? (
-                <a href={item.href} className={linkClass}>
-                  {item.label}
-                </a>
-              ) : (
-                <Link href={item.href} className={linkClass}>
-                  {item.label}
-                </Link>
-              )}
-            </li>
-          ))}
-        </ul>
+        <ul className="flex flex-wrap gap-x-5 gap-y-2 lg:gap-x-8">{linkItems}</ul>
       </nav>
       <MotionToggle />
     </div>
@@ -128,27 +128,31 @@ export default function Footer({
     >
       <div className="mx-auto max-w-[1400px] px-6 pt-20 pb-14 md:px-12 md:pt-24 md:pb-16 lg:pt-32 lg:pb-20">
         {newsletter === false ? (
-          /* No newsletter (v1). Owner direction 2026-11-09 (final site polish): wordmark in the
-             upper right, one hairline, then two columns. Left: main links + Pause motion, with the
-             copyright beneath. Right (right-aligned): legal links with the risk notice beneath.
-             One DOM copy of each part, placed by grid area; below md it is the stacked order
-             wordmark, divider, main links + Pause motion, legal links, notice, copyright. */
+          /* No newsletter (v1). Owner direction 2026-11-09 (FAQ and footer refinements): upper area is the
+             wordmark (left) opposite a vertical "Navigate" list (right); one hairline; lower area is Pause
+             motion with the copyright (left) and legal links with the risk notice (right-aligned). Below md
+             everything stacks: wordmark, Navigate, divider, Pause motion, legal links and notice, copyright.
+             One DOM copy of each part, placed by grid area. */
           <div className="grid md:grid-cols-2 md:gap-x-12 lg:gap-x-16">
-            {wordmark("md:col-span-2 md:justify-self-end")}
+            {wordmark("md:col-start-1 md:row-start-1 md:justify-self-start")}
+            <nav aria-label="Footer" data-slot="footer-navigate" className="mt-12 md:col-start-2 md:row-start-1 md:mt-0 md:justify-self-end">
+              <p className="font-mono text-[13px] leading-5 tracking-[0.1em] uppercase">Navigate</p>
+              <ul className="mt-4 flex flex-col gap-3 md:min-w-44">{linkItems}</ul>
+            </nav>
             <div
               aria-hidden
               data-slot="footer-divider"
-              className="mt-14 border-t border-(color:--cmr-quiet-ink)/20 md:col-span-2 md:mt-16"
+              className="mt-14 border-t border-(color:--cmr-quiet-ink)/20 md:col-span-2 md:row-start-2 md:mt-16"
             />
-            <div data-slot="footer-links" className="mt-8 md:col-start-1 md:row-start-3">
-              {linkRow}
+            <div data-slot="footer-motion" className="mt-8 md:col-start-1 md:row-start-3">
+              <MotionToggle />
             </div>
             <div
               data-slot="footer-legal"
-              className="mt-8 max-w-[550px] md:col-start-2 md:row-span-2 md:row-start-3 md:justify-self-end md:text-right"
+              className="mt-8 md:col-start-2 md:row-span-2 md:row-start-3 md:justify-self-end md:text-right"
             >
               {legalList("md:justify-end")}
-              <p className={cn("text-p-mini", visibleLegal.length > 0 && "mt-4")}>{riskNotice}</p>
+              <p className={cn("max-w-[440px] text-balance text-p-mini md:ml-auto", visibleLegal.length > 0 && "mt-4")}>{riskNotice}</p>
             </div>
             {copyright("mt-3 md:col-start-1 md:row-start-4 md:mt-4")}
           </div>
