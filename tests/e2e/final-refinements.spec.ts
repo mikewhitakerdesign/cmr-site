@@ -67,7 +67,7 @@ test.describe("final refinements", () => {
     }
   });
 
-  test("footer: links and motion control left, wordmark right on desktop; stacked below; one visible link row", async ({ page }, info) => {
+  test("footer: wordmark left with Navigate right, divider, Pause motion left and legal right at tablet+; stacked on mobile", async ({ page }, info) => {
     await page.goto("/hills");
     const footer = page.locator("footer");
     const mark = footer.getByRole("link", { name: /back to top/i });
@@ -80,12 +80,30 @@ test.describe("final refinements", () => {
     for (const name of ["Privacy", "Terms", "Participation Guidelines"]) await expect(footer.getByRole("link", { name })).toBeVisible();
     const n = (await nav.boundingBox())!;
     const m = (await mark.boundingBox())!;
-    if (info.project.name === "desktop") {
-      expect(n.x + n.width).toBeLessThan(m.x); // links left of the wordmark
-      expect(Math.abs(n.y + n.height / 2 - (m.y + m.height / 2))).toBeLessThan(m.height / 2); // beside it, not below
-      expect(m.x + m.width).toBeLessThanOrEqual(page.viewportSize()!.width);
+    const legal = (await footer.getByRole("list", { name: "Legal" }).boundingBox())!;
+    const pb = (await pause.boundingBox())!;
+    const divider = (await footer.locator("[data-slot=footer-divider]").boundingBox())!;
+    const vw = page.viewportSize()!.width;
+    expect(divider.y).toBeGreaterThanOrEqual(n.y + n.height); // divider below the whole upper area
+    expect(divider.y).toBeGreaterThanOrEqual(m.y + m.height);
+    expect(pb.y).toBeGreaterThan(divider.y);
+    expect(legal.y).toBeGreaterThan(divider.y);
+    if (info.project.name === "mobile") {
+      expect(n.y).toBeGreaterThan(m.y + m.height); // Navigate stacks under the wordmark
+      expect(legal.y).toBeGreaterThan(pb.y + pb.height);
     } else {
-      expect(n.y).toBeGreaterThan(m.y + m.height); // stacked below the wordmark
+      expect(m.x + m.width).toBeLessThan(n.x); // wordmark left, Navigate right
+      expect(n.x + n.width).toBeGreaterThan(vw - 100); // Navigate block at the right edge
+      expect(legal.x + legal.width).toBeGreaterThan(vw - 100); // legal right-aligned
+      expect(pb.x).toBeLessThan(vw / 2);
+      const copy = (await footer.getByText(/© \d{4} Chicago Mountain Runners/).boundingBox())!;
+      expect(copy.y).toBeGreaterThan(pb.y + pb.height); // copyright directly below Pause motion
+      expect(Math.abs(copy.x - pb.x)).toBeLessThan(2);
+      const risk = footer.getByText(/Running carries inherent physical risk/);
+      const lines = await risk.evaluate((e) => Math.round(e.getBoundingClientRect().height / parseFloat(getComputedStyle(e).lineHeight)));
+      if (info.project.name === "desktop") expect(lines).toBe(2); // balanced two-line measure
+      const rb = (await risk.boundingBox())!;
+      expect(rb.x + rb.width).toBeGreaterThan(vw - 100);
     }
   });
 
@@ -102,5 +120,22 @@ test.describe("final refinements", () => {
     });
     expect(outer).toBe(true);
     expect(box.width).toBeGreaterThan(100);
+  });
+
+  test("\"Find what you've been looking for\" map (hill pages): borderless with the run-detail map's soft shadow; no permit-pending copy site-wide", async ({ page }) => {
+    await page.goto("/hills/cricket-hill");
+    const map = page.locator('[data-slot="hill-map"]');
+    await expect(map).toBeVisible();
+    const st = await map.evaluate((e) => {
+      const c = getComputedStyle(e);
+      return { border: c.borderTopWidth, shadow: c.boxShadow, radius: c.borderTopLeftRadius };
+    });
+    expect(st.border).toBe("0px");
+    expect(st.shadow).toContain("rgba(65, 65, 65, 0.28)");
+    expect(st.radius).not.toBe("0px");
+    for (const path of ["/", "/calendar", "/hills", "/hills/cricket-hill"]) {
+      await page.goto(path);
+      await expect(page.getByText(/on hold|park-use requirements/i)).toHaveCount(0);
+    }
   });
 });

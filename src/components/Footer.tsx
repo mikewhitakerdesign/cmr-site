@@ -22,8 +22,9 @@ export type FooterProps = {
   className?: string;
 };
 
+/** One treatment for every footer text link (main and legal); MotionToggle uses the same type, hover and focus. */
 const linkClass =
-  "rounded-xs outline-none underline-offset-4 hover:underline focus-visible:ring-3 focus-visible:ring-ring";
+  "rounded-xs text-p-sm font-medium outline-none underline-offset-4 motion-safe:transition-colors hover:underline focus-visible:ring-3 focus-visible:ring-ring";
 
 /**
  * Footer — Figma "Footer / Newsletter and legal" (Desktop 1:314, Tablet 78:359,
@@ -57,45 +58,51 @@ export default function Footer({
 }: FooterProps) {
   const visibleLegal = legal.filter((l): l is Required<LegalLink> => Boolean(l.href));
 
-  // The link row, with the motion control inline in it (Owner direction, 2026-11-09).
+  const linkItems = links.map((item) => (
+    <li key={item.href}>
+      {item.external ? (
+        <a href={item.href} className={linkClass}>
+          {item.label}
+        </a>
+      ) : (
+        <Link href={item.href} className={linkClass}>
+          {item.label}
+        </Link>
+      )}
+    </li>
+  ));
+
+  // Newsletter variant: the horizontal link row, with the motion control inline in it.
   const linkRow = (
     <div className="flex flex-wrap items-center gap-x-5 gap-y-2 lg:gap-x-8">
       <nav aria-label="Footer">
-        <ul className="flex flex-wrap gap-x-5 gap-y-2 text-p-sm font-medium lg:gap-x-8">
-          {links.map((item) => (
-            <li key={item.href}>
-              {item.external ? (
-                <a href={item.href} className={linkClass}>
-                  {item.label}
-                </a>
-              ) : (
-                <Link href={item.href} className={linkClass}>
-                  {item.label}
-                </Link>
-              )}
-            </li>
-          ))}
-        </ul>
+        <ul className="flex flex-wrap gap-x-5 gap-y-2 lg:gap-x-8">{linkItems}</ul>
       </nav>
       <MotionToggle />
     </div>
   );
 
+  const legalList = (align = "") =>
+    visibleLegal.length > 0 && (
+      <ul aria-label="Legal" className={cn("flex flex-wrap gap-x-5 gap-y-2 lg:gap-x-6", align)}>
+        {visibleLegal.map((l) => (
+          <li key={l.href}>
+            <Link href={l.href} className={linkClass}>
+              {l.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    );
+
+  const copyright = (className?: string) => <p className={cn("text-p-mini", className)}>© {year} Chicago Mountain Runners</p>;
+
+  // Newsletter variant only: legal links, notice and copyright together in one block.
   const legalBlock = (
     <div className="max-w-[550px] lg:max-w-[448px]">
-      {visibleLegal.length > 0 && (
-        <ul aria-label="Legal" className="flex flex-wrap gap-x-5 gap-y-2 text-p-sm lg:gap-x-6">
-          {visibleLegal.map((l) => (
-            <li key={l.href}>
-              <Link href={l.href} className={linkClass}>
-                {l.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+      {legalList()}
       <p className={cn("text-p-mini", visibleLegal.length > 0 && "mt-4")}>{riskNotice}</p>
-      <p className="mt-3 text-p-mini">© {year} Chicago Mountain Runners</p>
+      {copyright("mt-3")}
     </div>
   );
 
@@ -121,21 +128,33 @@ export default function Footer({
     >
       <div className="mx-auto max-w-[1400px] px-6 pt-20 pb-14 md:px-12 md:pt-24 md:pb-16 lg:pt-32 lg:pb-20">
         {newsletter === false ? (
-          /* No newsletter (v1). One copy of each part, placed by grid area: stacked wordmark, then links
-             with the motion control, then legal, below desktop; on desktop the links take the left half
-             beside the wordmark (the newsletter's old place) with the legal row under one hairline.
-             Owner direction 2026-11-09 (final refinements): restore the balance, no newsletter. */
-          <div className="grid lg:grid-cols-2 lg:items-center lg:gap-x-16">
-            {wordmark("lg:col-start-2 lg:row-start-1 lg:justify-self-end")}
+          /* No newsletter (v1). Owner direction 2026-11-09 (FAQ and footer refinements): upper area is the
+             wordmark (left) opposite a vertical "Navigate" list (right); one hairline; lower area is Pause
+             motion with the copyright (left) and legal links with the risk notice (right-aligned). Below md
+             everything stacks: wordmark, Navigate, divider, Pause motion, legal links and notice, copyright.
+             One DOM copy of each part, placed by grid area. */
+          <div className="grid md:grid-cols-2 md:gap-x-12 lg:gap-x-16">
+            {wordmark("md:col-start-1 md:row-start-1 md:justify-self-start")}
+            <nav aria-label="Footer" data-slot="footer-navigate" className="mt-12 md:col-start-2 md:row-start-1 md:mt-0 md:justify-self-end">
+              <p className="font-mono text-[13px] leading-5 tracking-[0.1em] uppercase">Navigate</p>
+              <ul className="mt-4 flex flex-col gap-3 md:min-w-44">{linkItems}</ul>
+            </nav>
             <div
-              data-slot="footer-links"
-              className={cn("mt-14 md:mt-16", rule, "lg:col-start-1 lg:row-start-1 lg:mt-0 lg:border-t-0 lg:pt-0")}
+              aria-hidden
+              data-slot="footer-divider"
+              className="mt-14 border-t border-(color:--cmr-quiet-ink)/20 md:col-span-2 md:row-start-2 md:mt-16"
+            />
+            <div data-slot="footer-motion" className="mt-8 md:col-start-1 md:row-start-3">
+              <MotionToggle />
+            </div>
+            <div
+              data-slot="footer-legal"
+              className="mt-8 md:col-start-2 md:row-span-2 md:row-start-3 md:justify-self-end md:text-right"
             >
-              {linkRow}
+              {legalList("md:justify-end")}
+              <p className={cn("max-w-[440px] text-balance text-p-mini md:ml-auto", visibleLegal.length > 0 && "mt-4")}>{riskNotice}</p>
             </div>
-            <div className={cn("mt-8 lg:col-span-2 lg:row-start-2 lg:mt-20", "lg:border-t lg:border-(color:--cmr-quiet-ink)/20 lg:pt-8")}>
-              {legalBlock}
-            </div>
+            {copyright("mt-3 md:col-start-1 md:row-start-4 md:mt-4")}
           </div>
         ) : (
           <>

@@ -272,13 +272,8 @@ test.describe("footer", () => {
     await expect(footer.getByRole("heading", { name: "Get the next run in your inbox." })).toHaveCount(0);
     const inner = await box(footer.locator(":scope > div"));
     const padLeft = parseFloat(await css(footer.locator(":scope > div"), "padding-left"));
-    if (info.project.name === "desktop") {
-      // Final refinements: without the newsletter the wordmark takes the right half, the links the left.
-      const padRight = parseFloat(await css(footer.locator(":scope > div"), "padding-right"));
-      expect(Math.abs(m.x + m.width - (inner.x + inner.width - padRight))).toBeLessThanOrEqual(1);
-    } else {
-      expect(Math.abs(m.x - (inner.x + padLeft))).toBeLessThanOrEqual(1);
-    }
+    // FAQ and footer refinements: the wordmark is left-aligned in the upper area at every size.
+    expect(Math.abs(m.x - (inner.x + padLeft))).toBeLessThanOrEqual(1);
     void s;
   });
 
@@ -419,22 +414,20 @@ test.describe("social links (none configured in this build)", () => {
     }
   });
 
-  test("footer link row keeps its layout without social links", async ({ page }, info) => {
-    const links = page.getByRole("navigation", { name: "Footer" }).getByRole("link"); // the visible copy only
-    await expect(links).toHaveText(["Find a Run", "About", "FAQ", "Join the club"]);
-    const first = await box(links.first());
-    const last = await box(links.last());
-    expect(Math.abs(first.y - last.y)).toBeLessThan(2); // still a single row
-    // Owner direction (2026-11-09): Pause motion sits in this row, to the right of "Join the club".
-    const pause = await box(page.locator("footer").getByRole("button", { name: /Pause motion|Resume motion/ }));
-    if (info.project.name === "mobile") {
-      // 345px holds the four links but not the control too: it wraps to the row's left edge, never to the legal column.
-      expect(Math.round(pause.x)).toBe(24);
-    } else {
-      expect(pause.x).toBeGreaterThanOrEqual(last.x + last.width);
-      expect(Math.abs(pause.y + pause.height / 2 - (last.y + last.height / 2))).toBeLessThan(6);
+  test("footer Navigate list: vertical, in order, with Pause motion in the lower area", async ({ page }) => {
+    const nav = page.getByRole("navigation", { name: "Footer" });
+    await expect(nav.getByText("Navigate", { exact: true })).toBeVisible();
+    const links = nav.getByRole("link"); // the visible copy only
+    await expect(links).toHaveText(["Find a Run", "Chicago Hills Mtns", "About", "FAQ", "Join the club"]);
+    await expect(nav.locator("s")).toHaveText("Hills");
+    const boxes = [];
+    for (let i = 0; i < 5; i++) boxes.push(await box(links.nth(i)));
+    for (let i = 1; i < 5; i++) {
+      expect(boxes[i].y).toBeGreaterThan(boxes[i - 1].y + boxes[i - 1].height - 1); // stacked
+      expect(Math.abs(boxes[i].x - boxes[0].x)).toBeLessThan(2); // left-aligned with each other
     }
-    expect(Math.round(first.x)).toBe(info.project.name === "mobile" ? 24 : info.project.name === "tablet" ? 48 : 68);
+    const pause = await box(page.locator("footer").getByRole("button", { name: /Pause motion|Resume motion/ }));
+    expect(pause.y).toBeGreaterThan(boxes[4].y); // lower area, below the divider
   });
 });
 

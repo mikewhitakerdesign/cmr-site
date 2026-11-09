@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Container } from "@/components/Container";
-import { FAQ_INTRO, FAQ_LABEL, FAQ_TITLE, faq } from "@/content/faq";
+import { SectionNav } from "@/components/SectionNav";
+import { FAQ_INTRO, FAQ_TITLE, faq } from "@/content/faq";
 import { FLUID_TYPE, fluidType } from "@/lib/fluid";
 import { BODY_TEXT_COLOR, DISPLAY_HEADING, displayHeading } from "@/lib/headings";
 import { cn } from "@/lib/utils";
@@ -19,28 +20,18 @@ export function Faq() {
     <>
       <section aria-labelledby="faq-heading" className="border-b border-foreground py-14 md:py-20">
         <Container>
-          <p className={cn(LABEL, "text-foreground/75")}>{FAQ_LABEL}</p>
-          <h1 id="faq-heading" style={fluidType([52, 96, 130], [50, 90, 120])} className={cn(FLUID_TYPE, "mt-4 font-black tracking-[-0.045em] text-balance")}>
+          <h1 id="faq-heading" style={fluidType([52, 96, 130], [50, 90, 120])} className={cn(FLUID_TYPE, "font-black tracking-[-0.045em] text-balance")}>
             {FAQ_TITLE}
           </h1>
           <p className={cn("mt-6 max-w-[62ch] text-[18px] leading-[27px]", BODY_TEXT_COLOR)}>{FAQ_INTRO}</p>
-          <nav aria-label="FAQ categories" className="mt-8">
-            <ul className="flex flex-wrap gap-x-6 gap-y-2 text-p-sm font-medium">
-              {faq.map((c) => (
-                <li key={c.id}>
-                  <a href={`#${c.id}`} className={cn(FOCUS, "underline underline-offset-4")}>
-                    {c.number} · {c.title}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
         </Container>
       </section>
 
-      {faq.map((c) => (
-        <section key={c.id} id={c.id} aria-labelledby={`${c.id}-heading`} className="scroll-mt-24 border-b border-foreground/30 py-12 md:py-16">
-          <Container className="grid gap-8 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-16">
+      <div data-slot="faq-body">
+        <SectionNav sections={faq.map((c) => ({ id: c.id, label: c.title }))} label="FAQ categories" slot="faq-nav" />
+        {faq.map((c) => (
+        <section key={c.id} id={c.id} aria-labelledby={`${c.id}-heading`} className="border-b border-foreground/30 py-12 md:py-16">
+          <Container className="grid gap-8 md:gap-10">
             <h2 id={`${c.id}-heading`} style={displayHeading()} className={cn(FLUID_TYPE, DISPLAY_HEADING, "text-balance")}>
               <span aria-hidden className={cn(LABEL, "mb-3 block text-foreground/75")}>
                 {c.number}
@@ -48,7 +39,7 @@ export function Faq() {
               {c.title}
               <span className="ss08">.</span>
             </h2>
-            <div className="max-w-[760px] border-t border-foreground/30">
+            <div className="max-w-[860px] border-t border-foreground/30">
               {c.items.map((item) => (
                 <details key={item.q} className="group border-b border-foreground/30">
                   <summary className={cn(FOCUS, "flex cursor-pointer list-none items-start justify-between gap-4 py-5 [&::-webkit-details-marker]:hidden")}>
@@ -70,7 +61,8 @@ export function Faq() {
             </div>
           </Container>
         </section>
-      ))}
+        ))}
+      </div>
     </>
   );
 }

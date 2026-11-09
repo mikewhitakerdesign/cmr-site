@@ -53,6 +53,7 @@ export const joinCta: NavItem = { label: "Join the club", href: "/join" };
 export function buildFooterNav(social: SocialLinks): NavItem[] {
   return [
     { label: "Find a Run", href: "/calendar" },
+    primaryNav[1],
     { label: "About", href: "/about" },
     { label: "FAQ", href: "/faq" },
     { label: "Join the club", href: "/join" },
