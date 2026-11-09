@@ -370,6 +370,18 @@ the park/landmark and say so; runs come only from `src/lib/runs.ts`.
 
 ## Delivery
 
+**Refinement pass:** commits `01f2e20` (implementation), `f14b171` (tests and
+baselines), `c91c7ea` (record and evidence), `20587b6` (CI fix). Verified head
+**`20587b6`**: GitHub CI `validate` and `browser` pass (run 42571352930); Vercel
+Preview rebuilt from it (same branch URL below, SSO-protected). The first run on
+`c91c7ea` (42570866595) failed one test: the homepage photo-text contrast sweep
+hit the 30s timeout on the Linux runner while the software-rendered contour
+animation ran; the sweep now holds the background still (reduced motion) and
+thresholds are unchanged. PR #4 description updated. Not merged; no production
+deployment.
+
+Milestone delivery (history):
+
 - **PR #4**: https://github.com/mikewhitakerdesign/cmr-site/pull/4 (open, mergeable,
   not merged).
 - Verified implementation head **`5329d58`**: GitHub CI `validate` and `browser`
