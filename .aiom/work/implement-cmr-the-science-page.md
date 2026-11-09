@@ -24,11 +24,11 @@ updated_at: '2026-11-09T23:30:00.000Z'
 ---
 ## Status
 
-**In review: PR open, not merged.** Branch `feat/cmr-the-science` (worktree `../cmr-site-science`), based on `main` at `67a2aca`. The Owner reviews the Vercel Preview next; merge, production deployment and cleanup wait for the Owner's approval.
+**In review: PR open, not merged.** Branch `feat/cmr-the-science` (worktree `../cmr-site-science`), rebased onto `main` at `6f5fff5` (after PR #11 and #12 merged during this work; no conflicts). The Owner reviews the Vercel Preview next; merge, production deployment and cleanup wait for the Owner's approval.
 
 **Authorization:** Owner instruction of 2026-11-09 (the "The Science" brief, including the updated hero-animation direction): implement end to end through a validated PR with a working Preview, without intermediate questions. Explicitly not authorized: merging, production deployment, deleting remote branches, a closeout PR before approval. No approval artifact was added; the instruction is recorded here.
 
-Not touched: `plan/cmr-join-page` and its uncommitted records in the primary worktree; PR #11 (`feat/cmr-final-join-hold-ui`, worktree `../cmr-site-final`) and PR #5.
+Not touched: `plan/cmr-join-page` and its uncommitted records in the primary worktree; PR #5. PR #11 merged while this was in progress; its header changes (Join tooltip, white CTA) are kept and the four-link spacing was re-validated on top of them.
 
 ## What was built
 
@@ -71,13 +71,14 @@ Limitations stated on the page: the 2026 meta-analysis found no significant pool
 
 ## Validation
 
-Local, on the PR head (macOS, Node 24): `eslint` clean; `tsc --noEmit` clean (apart from the generated `PageProps`/`LayoutProps` that exist only after `next build`); `tokens:check` passes; `next build` passes (`/the-science` static). Vitest: 36 files, all pass (new: `tests/lib/science.test.tsx`, `tests/components/science/ScienceInteractives.test.tsx`). Playwright at 393 / 768 / 1440: full suite passes (new `tests/e2e/science.spec.ts`, 76 tests: sticky placement under every header state, one-row bar, anchors and fragment reload never covering headings, current-section tracking, keyboard and focus ring, citations, reduced motion, motion toggle, canvas drawing, the three interactives, monochrome SVG colors, no images, no sideways scroll including the header at 320px, axe WCAG 2.2 AA with contrast). `/the-science` was added to the privacy audit (no third-party requests, cookies or storage). `@visual`: 42 pass after the two header baselines were updated. Real-browser screenshots were reviewed at all three widths for the hero, every section, the section bar in each header state, and the figures. CI and Preview results are recorded in the PR.
+Local, on the rebased PR head (macOS, Node 24): `eslint` clean; `tsc --noEmit` clean (apart from the generated `PageProps`/`LayoutProps` that exist only after `next build`); `tokens:check` passes; `next build` passes (`/the-science` static). Vitest: 37 files, 462 tests, all pass (new: `tests/lib/science.test.tsx`, `tests/components/science/ScienceInteractives.test.tsx`). Playwright at 393 / 768 / 1440: 439 passed, 0 failed (new `tests/e2e/science.spec.ts`, 76 tests: sticky placement under every header state, one-row bar, anchors and fragment reload never covering headings, current-section tracking, keyboard and focus ring, citations, reduced motion, motion toggle, canvas drawing, the three interactives, monochrome SVG colors, no images, no sideways scroll including the header at 320px, axe WCAG 2.2 AA with contrast). `/the-science` was added to the privacy audit (no third-party requests, cookies or storage). `@visual`: the two updated header baselines pass. **Pre-existing, not caused here:** 23 full-page and footer `@visual` comparisons (home, hills, Join, FAQ, calendar, legal pages, footer at tablet/desktop) fail identically on unmodified `main` at `6f5fff5`, because PR #11 changed the footer, Join and hold UI without updating the macOS baselines (visual specs don't run in CI). Left as is (out of scope); re-baselining them belongs with that work or a separate Owner-approved step. Real-browser screenshots were reviewed at all three widths for the hero, every section, the section bar in each header state, and the figures. CI and Preview results are recorded in the PR.
 
 ## Remaining for the Owner's review
 
 - The hero animation's pace and density, judged in a real browser (the screenshots are still frames).
 - The tablet header with four links (16px gaps) and the slightly smaller mobile link type below 393px.
 - Editorial voice, especially Breathing (approved opening verbatim), the founder note and The Mind.
+- The 23 stale `@visual` baselines from PR #11 (see Validation), which need a separate re-baseline.
 - Whether Workouts should later link to specific hill pages once repeat gains are verified.
 
 ## Out of scope
