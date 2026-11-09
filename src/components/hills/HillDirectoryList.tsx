@@ -5,9 +5,8 @@ import { ArrowUpRightIcon } from "@/components/icons";
 import { EYEBROW } from "@/components/hills/styles";
 import { FLUID_TYPE, fluidType } from "@/lib/fluid";
 import type { DirectoryEntry } from "@/lib/hill-directory";
-import { surfaceLabel, type HillWithPage } from "@/lib/hills";
+import type { HillWithPage } from "@/lib/hills";
 import { cn } from "@/lib/utils";
-
 
 /** "≈ 30 ft", or what to say instead when there is no measured figure. */
 export function riseLabel(hill: HillWithPage): string {
@@ -16,7 +15,7 @@ export function riseLabel(hill: HillWithPage): string {
 }
 
 /**
- * The hill directory list — /hills and each hill page's "More hills".
+ * The hill directory list — /hills.
  *
  * No Figma frame exists for the Hills directory. This extends the approved
  * homepage hill list ("Get high in the city." rows, 1:118: numbered rows on
@@ -25,10 +24,14 @@ export function riseLabel(hill: HillWithPage): string {
  * thumbnail of the approved terrain drawing, the approximate rise, the surface
  * and when CMR runs it.
  *
- *   mobile   number | name, place; drawing below; facts in a row
- *   tablet   number | drawing (200) | name, place, facts
- *   desktop  one row: number | drawing | name, place | rise | surface | with CMR | ↗
+ *   mobile   name, place; drawing below; facts in a row
+ *   tablet   drawing (200) | name, place, facts
+ *   desktop  one row: drawing | name, place | rise | surface | weekly with CMR | ↗
  *            (column labels in a header row; per-row labels are visually hidden)
+ *
+ * Refinement pass (Owner direction, 2026-11-08): no row numbers; Surface is
+ * the Owner's "Grass/dirt" for every hill; "With CMR" became "Weekly with
+ * CMR" (weekly runs only), and a hill without one reads "No set weekly run".
  *
  * The name is the row's only link; a stretched ::after makes the whole row
  * clickable without nesting interactive content. Hover greys the row,
@@ -42,7 +45,7 @@ export function HillDirectoryList({
   className,
 }: {
   entries: DirectoryEntry[];
-  /** Level of each row's name heading (h2 on /hills, h3 under "More hills"). */
+  /** Level of each row's name heading. */
   headingLevel?: "h2" | "h3";
   className?: string;
 }) {
@@ -56,32 +59,28 @@ export function HillDirectoryList({
         className={cn(
           EYEBROW,
           "hidden pb-3 text-[12px] leading-5 text-muted-foreground lg:grid",
-          "lg:grid-cols-[40px_220px_minmax(0,1fr)_110px_170px_190px_20px] lg:gap-x-8",
+          "lg:grid-cols-[220px_minmax(0,1fr)_110px_150px_190px_20px] lg:gap-x-8",
         )}
       >
-        <span className="col-start-3">Hill</span>
+        <span className="col-start-2">Hill</span>
         <span>Rise</span>
         <span>Surface</span>
-        <span>With CMR</span>
+        <span>Weekly with CMR</span>
       </div>
 
       <ol className="border-b border-foreground">
-        {entries.map(({ hill, number, cadences }) => (
+        {entries.map(({ hill, cadences }) => (
           <li
             key={hill.slug}
             data-hill={hill.slug}
             className={cn(
               "group/hill relative border-t border-foreground motion-safe:transition-colors motion-safe:duration-150 hover:bg-border",
-              "grid grid-cols-[32px_minmax(0,1fr)] gap-x-2 py-6",
-              "md:grid-cols-[24px_200px_minmax(0,1fr)] md:gap-x-6",
-              "lg:grid-cols-[40px_220px_minmax(0,1fr)_110px_170px_190px_20px] lg:items-center lg:gap-x-8",
+              "grid grid-cols-1 py-6",
+              "md:grid-cols-[200px_minmax(0,1fr)] md:gap-x-6",
+              "lg:grid-cols-[220px_minmax(0,1fr)_110px_150px_190px_20px] lg:items-center lg:gap-x-8",
             )}
           >
-            <span className="pt-2 font-mono text-[13px] leading-5 md:row-span-2 lg:row-span-1 lg:pt-0 lg:text-p lg:leading-6">
-              {String(number).padStart(2, "0")}
-            </span>
-
-            <div className="col-start-2 md:col-start-3 lg:col-start-3 lg:row-start-1">
+            <div className="md:col-start-2 lg:row-start-1">
               <Name style={name} className={cn(FLUID_TYPE, "font-semibold tracking-[-0.03em]")}>
                 <Link
                   href={`/hills/${hill.slug}`}
@@ -104,30 +103,30 @@ export function HillDirectoryList({
                 profile={hill.profile}
                 caption={false}
                 annotated={false}
-                className="col-start-2 mt-4 max-w-[260px] md:col-start-2 md:row-span-2 md:row-start-1 md:mt-0 lg:row-span-1"
+                className="mt-4 max-w-[260px] md:col-start-1 md:row-span-2 md:row-start-1 md:mt-0 lg:row-span-1"
               />
             )}
 
             <dl
               className={cn(
-                "col-start-2 mt-4 flex flex-wrap gap-x-6 gap-y-3 md:col-start-3",
+                "mt-4 flex flex-wrap gap-x-6 gap-y-3 md:col-start-2",
                 "lg:contents",
               )}
             >
-              <Fact label="Rise" className="lg:col-start-4">
+              <Fact label="Rise" className="lg:col-start-3">
                 {riseLabel(hill)}
               </Fact>
-              <Fact label="Surface" className="lg:col-start-5">
-                {surfaceLabel(hill.page) ?? "TBD"}
+              <Fact label="Surface" className="lg:col-start-4">
+                {hill.page.surfaceSummary}
               </Fact>
-              <Fact label="With CMR" className="lg:col-start-6">
-                {cadences.length > 0 ? cadences.map((c) => <span key={c} className="block">{c}</span>) : "Not yet"}
+              <Fact label="Weekly with CMR" className="lg:col-start-5">
+                {cadences.length > 0 ? cadences.map((c) => <span key={c} className="block">{c}</span>) : "No set weekly run"}
               </Fact>
             </dl>
 
             <ArrowUpRightIcon
               className={cn(
-                "hidden size-5 shrink-0 lg:col-start-7 lg:row-start-1 lg:block",
+                "hidden size-5 shrink-0 lg:col-start-6 lg:row-start-1 lg:block",
                 "motion-safe:transition-transform motion-safe:duration-150 motion-safe:group-hover/hill:translate-x-0.5 motion-safe:group-hover/hill:-translate-y-0.5",
               )}
             />

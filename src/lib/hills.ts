@@ -18,22 +18,31 @@ export type HillSource = { label: string; href: string };
  *                 hill, surface and terrain notes taken from the Figma frame.
  *                 Visibly marked while the hill's `status` is not `verified`.
  *
- * Nothing here is a measured repeat distance, elevation gain per repeat,
- * meeting point, parking advice or CMR workout recommendation.
+ *   owner         figures the Owner supplied directly (refinement pass, PR #4,
+ *                 2026-11-08): `surfaceSummary` ("Grass/dirt" for every hill) and
+ *                 Cricket Hill's route baseline (`route`).
+ *   derived       the repeat counts and miles (`routeCounts`), calculated from
+ *                 that baseline: approximate workout arithmetic, not surveyed
+ *                 elevation measurements.
+ *
+ * Nothing here is a surveyed elevation, meeting point, parking advice or CMR
+ * workout recommendation, and no repeat count comes from a hill's overall rise.
  */
 export interface HillPage {
   /** The large editorial line under the hero (provisional voice). */
   lede: string;
-  /** Optional grey line under the lede (Figma: Cricket Hill only). */
-  standfirst?: string;
   /** "The mountain at Montrose." */
   aboutHeading: string;
   /** Paragraphs: geographic context (sourced) plus a line of CMR voice. */
   about: string[];
   /** References for the geographic statements in `about`. Empty = none could be read. */
   sources: HillSource[];
-  /** Surface as recorded (provisional until verified). Unset = not recorded. */
+  /** Surface as recorded on the Figma frame (provisional until verified). Unset = not recorded. */
   surface?: { primary: string; secondary?: string };
+  /** One-line surface for the directory and spec rows (Owner, 2026-11-08: "Grass/dirt" for every hill). */
+  surfaceSummary: string;
+  /** A repeat route CMR has mapped here, with the Owner's counts. Unset = no route mapped yet. */
+  route?: HillRoute;
   /** Qualitative notes from the Figma frame (provisional). */
   exposure?: string;
   terrainCharacter?: string;
@@ -43,10 +52,24 @@ export interface HillPage {
   address: string[];
   /** Place search for the map links. Goes to the park or landmark, not a meeting point. */
   mapQuery: string;
-  /** The map placeholder's pin label. */
+  /** The map's pin label. */
   mapLabel: string;
-  /** Photograph for the hero. Unset = no approved photograph; the hero is drawn instead. */
-  hero?: { src: string; width: number; height: number; position: string };
+  /** Static map, centred on the place (scripts/assets/build-hill-maps.mjs, © OpenStreetMap contributors). */
+  mapImage: string;
+}
+
+/**
+ * The baseline of a repeat route CMR has mapped on a hill — Owner-provided
+ * (correction to the refinement pass, PR #4, 2026-11-08). Approximate, not a
+ * survey: the repeat counts on the page are derived from it (`routeCounts`).
+ */
+export interface HillRoute {
+  /** One complete repeat, up and down, in miles (approximate). */
+  distanceMi: number;
+  /** Elevation gain of one complete repeat, in feet (approximate). */
+  gainPerRepeatFt: number;
+  /** Where the baseline comes from, as given. */
+  basis: string;
 }
 
 export interface Hill {
@@ -69,6 +92,9 @@ export interface Hill {
   status: ContentStatus;
 }
 
+/** Owner, 2026-11-08: the surface for every hill in the directory. */
+const GRASS_DIRT = "Grass/dirt";
+
 const CPD = (path: string, label: string): HillSource => ({
   label,
   href: `https://www.chicagoparkdistrict.com/parks-facilities/${path}`,
@@ -87,11 +113,14 @@ const CPD = (path: string, label: string): HillSource => ({
  *   located in the data). Mt. Trashmore's approved raster printed 604 / 669 /
  *   65 ft, which the data broadly supports (≈ 605 / 670 / 60).
  * - Chicago Hills milestone (2026-11-08): detail-page content. Cricket Hill's
- *   lede, standfirst, "The mountain at Montrose." copy, surface and terrain
- *   notes are the approved Hill Details frame, verbatim (provisional), plus one
- *   sourced sentence. The other four have no frame of their own: their copy
- *   states only what the cited pages say, plus a line of CMR voice, and
- *   records no surface. Published heights differ from the terrain estimates
+ *   lede, "The mountain at Montrose." copy, surface and terrain notes are the
+ *   approved Hill Details frame, verbatim (provisional), plus one sourced
+ *   sentence. The other four have no frame of their own: their copy states
+ *   only what the cited pages say, plus a line of CMR voice.
+ * - Refinement pass (PR #4, 2026-11-08): the standfirst and the hero
+ *   photograph are gone (Owner direction); every hill's surface summary is the
+ *   Owner's "Grass/dirt"; Cricket Hill has the Owner's mapped route and counts;
+ *   each page has a static map (mapImage). Published heights differ from the terrain estimates
  *   (WBEZ: Cricket Hill is "45-foot-tall"; the data: ≈ 30 ft of rise above the
  *   surrounding ground); pages show only the approximate rise, labelled.
  */
@@ -114,7 +143,6 @@ export const hills: Hill[] = [
       "A grassy lakefront hill beside Montrose Harbor with just enough elevation to become considerably less charming after enough repeats.",
     page: {
       lede: "A grassy lakefront hill beside Montrose Harbor with just enough elevation to become considerably less charming after enough repeats.",
-      standfirst: "One of Chicago Mountain Runners' primary training hills.",
       aboutHeading: "The mountain at Montrose.",
       about: [
         "Cricket Hill sits just west of Montrose Harbor along Chicago's lakefront. In another city, it might be a pleasant little hill.",
@@ -130,13 +158,20 @@ export const hills: Hill[] = [
         },
       ],
       surface: { primary: "Grass", secondary: "Paved path" },
+      surfaceSummary: GRASS_DIRT,
+      // Owner, 2026-11-08: one repeat ≈ 0.2 mi; 25 repeats = 5 mi and ≈ 1,000 ft, so ≈ 40 ft each.
+      route: {
+        distanceMi: 0.2,
+        gainPerRepeatFt: 40,
+        basis: "Owner-confirmed route baseline: 25 complete repeats ≈ 5 miles and ≈ 1,000 ft of gain.",
+      },
       exposure: "Open",
       terrainCharacter: "Short, repeatable climb",
       locality: "Chicago",
       address: ["Cricket Hill", "Montrose Beach", "Chicago, Illinois"],
       mapQuery: "Cricket Hill, 4500 N Lake Shore Dr, Chicago, IL",
       mapLabel: "Cricket Hill · Montrose Beach",
-      hero: { src: "/hills/cricket-hill-hero.jpg", width: 1920, height: 1600, position: "50% 30%" },
+      mapImage: "/hills/maps/cricket-hill.jpg",
     },
     status: "provisional",
   },
@@ -158,6 +193,8 @@ export const hills: Hill[] = [
       address: ["Warren Park", "6601 N. Western Ave.", "Chicago, Illinois"],
       mapQuery: "Warren Park, 6601 N Western Ave, Chicago, IL",
       mapLabel: "Warren Hill · Warren Park",
+      mapImage: "/hills/maps/warren-hill.jpg",
+      surfaceSummary: GRASS_DIRT,
     },
     status: "provisional",
   },
@@ -179,6 +216,8 @@ export const hills: Hill[] = [
       address: ["Horner Park", "2741 W. Montrose Ave.", "Chicago, Illinois"],
       mapQuery: "Horner Park, 2741 W Montrose Ave, Chicago, IL",
       mapLabel: "Horner Hill · Horner Park",
+      mapImage: "/hills/maps/horner-hill.jpg",
+      surfaceSummary: GRASS_DIRT,
     },
     status: "provisional",
   },
@@ -200,6 +239,8 @@ export const hills: Hill[] = [
       address: ["Schiller Woods", "Irving Park Rd.", "Forest Preserves of Cook County"],
       mapQuery: "Schiller Woods, Irving Park Rd, Chicago, IL",
       mapLabel: "Schiller Hill · Schiller Woods",
+      mapImage: "/hills/maps/schiller-hill.jpg",
+      surfaceSummary: GRASS_DIRT,
     },
     status: "provisional",
   },
@@ -220,6 +261,8 @@ export const hills: Hill[] = [
       address: ["Robert E. James Park", "Evanston, Illinois"],
       mapQuery: "Robert E. James Park, Evanston, IL",
       mapLabel: "Mt. Trashmore · James Park",
+      mapImage: "/hills/maps/mt-trashmore.jpg",
+      surfaceSummary: GRASS_DIRT,
     },
     status: "provisional",
   },
@@ -243,25 +286,27 @@ export type HillWithPage = Hill & { page: HillPage };
 export const hillsWithPages = (all: readonly Hill[] = hills): HillWithPage[] =>
   listedHills(all).filter((h): h is HillWithPage => h.page !== undefined);
 
-/** Cumulative-gain targets for the derived repeat counts (IA decision 7). */
-export const REPEAT_TARGETS_FT = [500, 1000] as const;
+/** Cumulative-climb targets for the repeat counts (Owner, 2026-11-08; was 500 and 1,000). */
+export const REPEAT_TARGETS_FT = [500, 1000, 2500, 5000] as const;
+export type RepeatTargetFt = (typeof REPEAT_TARGETS_FT)[number];
 
 /**
- * Repeats needed to reach `targetFt` of cumulative gain, from the measured
- * elevation gain per repeat (IA decision 7: derived, never stored). Undefined
- * while the gain per repeat is unmeasured — the approximate terrain rise is
- * deliberately NOT used, because a repeat need not climb the whole hill.
+ * Repeats (rounded up to the next whole repeat) and miles to reach each
+ * target, derived from a route's Owner-provided baseline. Approximate workout
+ * arithmetic — never from a hill's overall rise, and undefined without a route.
  */
-export function repeatsTo(targetFt: number, gainPerRepeatFt: number | undefined): number | undefined {
-  if (gainPerRepeatFt === undefined || !(gainPerRepeatFt > 0)) return undefined;
-  return Math.ceil(targetFt / gainPerRepeatFt);
+export function routeCounts(route: HillRoute | undefined): Record<RepeatTargetFt, { repeats: number; miles: number }> | undefined {
+  if (!route || !(route.gainPerRepeatFt > 0) || !(route.distanceMi > 0)) return undefined;
+  const entries = REPEAT_TARGETS_FT.map((t) => {
+    const repeats = Math.ceil(t / route.gainPerRepeatFt);
+    return [t, { repeats, miles: Math.round(repeats * route.distanceMi * 10) / 10 }] as const;
+  });
+  return Object.fromEntries(entries) as Record<RepeatTargetFt, { repeats: number; miles: number }>;
 }
 
-/** "Grass / paved path", or undefined when no surface is recorded. */
-export function surfaceLabel(page: Pick<HillPage, "surface"> | undefined): string | undefined {
-  const s = page?.surface;
-  if (!s) return undefined;
-  return s.secondary ? `${s.primary} / ${s.secondary.toLowerCase()}` : s.primary;
+/** Miles as the Owner writes them: ".2", "1.5", "3". */
+export function formatMiles(mi: number): string {
+  return String(mi).replace(/^0\./, ".");
 }
 
 /** The other hills with pages, starting after `slug` and wrapping (detail-page "More hills"). */

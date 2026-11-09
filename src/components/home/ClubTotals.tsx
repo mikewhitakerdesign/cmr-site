@@ -2,24 +2,9 @@ import { Container } from "@/components/Container";
 import { Odometer } from "@/components/Odometer";
 import type { ClubTotals as ClubTotalsData } from "@/lib/club-totals";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
+import { DISPLAY_HEADING, displayHeading } from "@/lib/headings";
+import { tintVars } from "@/lib/tints";
 import { cn } from "@/lib/utils";
-
-/**
- * Tie-dye tints, in display order: mint, peach, lavender, blue (Owner
- * direction, Round 2). Each circle reads its wash, dye and a neighbor's dye as
- * an accent, so the four echo the Just show up mesh gradient without any one
- * of them turning saturated. Colors are the CMR pastel set in src/styles/cmr.css.
- */
-const TINTS = ["mint", "peach", "lavender", "blue"] as const;
-const tintVars = (i: number) => {
-  const t = TINTS[i % 4];
-  const accent = TINTS[(i + 1) % 4];
-  return {
-    "--tie-wash": `var(--cmr-tint-${t}-wash)`,
-    "--tie-dye": `var(--cmr-tint-${t}-dye)`,
-    "--tie-accent": `var(--cmr-tint-${accent}-dye)`,
-  } as React.CSSProperties;
-};
 
 /**
  * "2026 club totals." — Figma 1:243 (desktop), 78:294 (tablet), 78:412
@@ -55,7 +40,8 @@ export function ClubTotals({ totals }: { totals: ClubTotalsData | null }) {
     "--totals-circle": [162, 150, 280],
     "--totals-label-mt": [6, 6, 12],
   });
-  const heading = fluidType([32, 44, 64], [34, 46, 60.8]);
+  // Owner direction (2026-11-08): the "Get high in the city." size (was 32 / 44 / 64).
+  const heading = displayHeading();
   const value = fluidType([40, 40, 80], [40, 40, 80]);
   const label = fluidType([13, 13, 16], [18, 18, 24]);
 
@@ -67,7 +53,7 @@ export function ClubTotals({ totals }: { totals: ClubTotalsData | null }) {
       className="bg-background text-foreground pt-(--totals-pt-a) pb-(--totals-pb-a) md:pt-(--totals-pt-b) md:pb-(--totals-pb-b)"
     >
       <Container>
-        <h2 id="club-totals-heading" style={heading} className={cn(FLUID_TYPE, "text-center font-black ss08")}>
+        <h2 id="club-totals-heading" style={heading} className={cn(FLUID_TYPE, DISPLAY_HEADING, "text-center ss08")}>
           {totals.year} club totals.
         </h2>
 

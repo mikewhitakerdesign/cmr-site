@@ -2,6 +2,7 @@ import { ArrowLink } from "@/components/ArrowLink";
 import { Container } from "@/components/Container";
 import { HillsExplorer } from "@/components/home/HillsExplorer";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
+import { DISPLAY_HEADING, displayHeading } from "@/lib/headings";
 import { DEFAULT_PROFILE_SLUG, type Hill } from "@/lib/hills";
 import { cn } from "@/lib/utils";
 
@@ -38,7 +39,7 @@ export function ChicagoHills({ hills }: { hills: Hill[] }) {
     "--hills-fig-mt": [28, 14, 0],
     "--hills-list-mt": [34, 34, 48],
   });
-  const heading = fluidType([48, 54, 96], [48, 54, 88]);
+  const heading = displayHeading();
   const copy = fluidType([16, 16, 18], [24, 24, 27]);
 
   const intro = (
@@ -46,7 +47,7 @@ export function ChicagoHills({ hills }: { hills: Hill[] }) {
       <h2
         id="hills-heading"
         style={heading}
-        className={cn(FLUID_TYPE, "mt-(--hills-h2-mt-a) font-black tracking-[-0.04em] ss08 md:mt-(--hills-h2-mt-b)")}
+        className={cn(FLUID_TYPE, DISPLAY_HEADING, "mt-(--hills-h2-mt-a) ss08 md:mt-(--hills-h2-mt-b)")}
       >
         Get high in the city.
       </h2>

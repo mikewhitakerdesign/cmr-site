@@ -2,7 +2,8 @@ import Link from "next/link";
 import { ArrowLink } from "@/components/ArrowLink";
 import { Container } from "@/components/Container";
 import { ArrowUpRightIcon, ClockIcon, MapPinIcon } from "@/components/icons";
-import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
+import { FLUID_TYPE, fluidVars } from "@/lib/fluid";
+import { DISPLAY_HEADING, displayHeading } from "@/lib/headings";
 import { workoutLabel, type RunOccurrence } from "@/lib/runs";
 import { formatSlot, toDateTimeAttr } from "@/lib/schedule";
 import { onDarkSurface } from "@/lib/surfaces";
@@ -38,7 +39,8 @@ export function UpcomingRuns({ occurrences, now }: { occurrences: RunOccurrence[
     "--runs-heading-mt": [13, 13, 16],
     "--runs-list-mt": [53, 44, 56],
   });
-  const heading = fluidType([36, 48, 64], [39, 50, 60.8]);
+  // Owner direction (2026-11-08): the "Get high in the city." size (was 36 / 48 / 64).
+  const heading = displayHeading();
 
   return (
     <section
@@ -56,7 +58,7 @@ export function UpcomingRuns({ occurrences, now }: { occurrences: RunOccurrence[
           <h2
             id="upcoming-runs-heading"
             style={heading}
-            className={cn(FLUID_TYPE, "mt-(--runs-heading-mt-a) font-black tracking-[-0.03em] md:mt-(--runs-heading-mt-b)")}
+            className={cn(FLUID_TYPE, DISPLAY_HEADING, "mt-(--runs-heading-mt-a) md:mt-(--runs-heading-mt-b)")}
           >
             See you on the hill<span className="ss08">.</span>
           </h2>

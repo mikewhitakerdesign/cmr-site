@@ -21,6 +21,10 @@ const CTA = "h-14 px-7 text-[18px] leading-[27px] font-medium";
  * is not used. Variation: several runs stack with a rule between them; a hill
  * with no CMR run says so and points to the calendar. Run status stays on the
  * row as `data-status` (no visible badge, matching the homepage run list).
+ *
+ * Refinement pass (Owner direction, 2026-11-08): the run title is set at the
+ * section display size (48 / 54 / 96) with a wider measure, and a hill with no
+ * run says "No set weekly run." — the directory's wording.
  */
 export function HillRuns({ hill, runs }: { hill: HillWithPage; runs: RunOccurrence[] }) {
   return (
@@ -43,7 +47,7 @@ export function HillRuns({ hill, runs }: { hill: HillWithPage; runs: RunOccurren
                     i > 0 && "mt-10 border-t border-primary-foreground/30 pt-10",
                   )}
                 >
-                  <div className="max-w-[567px] min-w-0 md:flex-1">
+                  <div className="max-w-[860px] min-w-0 md:flex-1">
                     <h3 style={sectionHeading()} className={cn(FLUID_TYPE, SECTION_HEADING)}>
                       {o.run.title}
                     </h3>
@@ -67,9 +71,9 @@ export function HillRuns({ hill, runs }: { hill: HillWithPage; runs: RunOccurren
           </ul>
         ) : (
           <div className="flex flex-col gap-8 pt-8 md:flex-row md:items-end md:justify-between">
-            <div className="max-w-[567px] min-w-0 md:flex-1">
+            <div className="max-w-[860px] min-w-0 md:flex-1">
               <h3 style={sectionHeading()} className={cn(FLUID_TYPE, SECTION_HEADING)}>
-                No group runs here yet.
+                No set weekly run.
               </h3>
               <p className="pt-4 text-[18px] leading-[27px] text-primary-foreground/80">
                 {hill.name} isn&apos;t on the CMR calendar right now. See where we&apos;re climbing next.

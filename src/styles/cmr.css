@@ -21,6 +21,18 @@
   --cmr-quiet-edge: var(--mwd-brand-brand-neutrals-500);
 
   /*
+   * Contour lines (Chicago Hills refinement pass, Owner direction 2026-11-08:
+   * "gray lines instead of white / black"). Aliases of MWDS brand neutrals,
+   * read by ContourField as the line color.
+   *   on-dark   neutrals 600  #525252 on black (hill heroes): faint, and white
+   *             type crossing a line still measures 7.8:1
+   *   on-light  neutrals 300  #d4d4d4 on white ("Flat is a state of mind"):
+   *             black type crossing a line still measures 15:1
+   */
+  --cmr-contour-on-dark: var(--mwd-brand-brand-neutrals-600);
+  --cmr-contour-on-light: var(--mwd-brand-brand-neutrals-300);
+
+  /*
    * Pastel tints (Round 2, Owner direction 2026-11-08): very pale mint, peach,
    * lavender and blue, picked from the hues of the CMR mesh gradient
    * (public/home/mesh-gradient.png) and lifted to ~95% lightness. Each has a

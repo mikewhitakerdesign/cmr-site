@@ -1,7 +1,8 @@
+import Image from "next/image";
 import { Container } from "@/components/Container";
 import { ctaLinkVariants } from "@/components/CtaLink";
 import { MapPinIcon, NavigationIcon } from "@/components/icons";
-import { BODY, EYEBROW, SECTION_HEADING, sectionHeading } from "@/components/hills/styles";
+import { BODY, SECTION_HEADING, sectionHeading } from "@/components/hills/styles";
 import { FLUID_TYPE } from "@/lib/fluid";
 import type { HillWithPage } from "@/lib/hills";
 import { directionsUrl, mapUrl } from "@/lib/maps";
@@ -10,33 +11,35 @@ import { cn } from "@/lib/utils";
 const ACTION = "h-11 gap-2 px-5 text-[16px] leading-6 font-medium";
 
 /**
- * "Find the mountain." — Figma 1:6702: heading, address lines (18/27 at 70%),
- * "Get directions" (black, navigation icon) and "View map" (1px outline), and
- * the map placeholder. Desktop 628 | 628 (gap 48), tablet 312 | 312, mobile
- * stacked with the placeholder last. Padding 96.
+ * "Find what you've been looking for." — Figma "Find the mountain." 1:6702
+ * (address lines 18/27 at 70%, "Get directions" black with the navigation
+ * icon, "View map" outlined, the map beside them). Padding 96.
+ *
+ * Refinement pass (Owner direction, 2026-11-08):
+ *   - the heading is the new line, on two lines at the display size, so it
+ *     spans the section above the two columns (half a column is too narrow)
+ *   - the placeholder is now a real map: a static, greyscale OpenStreetMap
+ *     image centred on the place (scripts/assets/build-hill-maps.mjs), with a
+ *     pin at the centre and the required attribution. No embed and no map
+ *     service called at runtime.
+ *   - address, actions and note unchanged
  *
  * The two actions are plain outbound links to a map service (src/lib/maps.ts),
- * opened in a new tab; nothing is embedded or loaded. They target the park or
- * landmark — a note under them says so, because CMR meeting points live on
- * each run, not here.
- *
- * The placeholder is Figma's "MapPlaceholder", kept as drawn: a schematic
- * (one road curve, one straight line, a pin chip), not a map. Desktop draws it
- * light grey on muted grey; tablet and mobile draw it in black on white with a
- * black outline (each frame as drawn). It carries a "Not a map" label so no
- * one navigates by it. Decorative for assistive tech: the address is text.
+ * opened in a new tab. They and the pin target the park or landmark; the note
+ * says so, because CMR meeting points live on each run, not here.
  */
 export function FindTheMountain({ hill }: { hill: HillWithPage }) {
   const { page } = hill;
 
   return (
     <section aria-labelledby="find-heading" className="py-24">
-      <Container className="grid gap-12 md:grid-cols-2 md:items-center">
+      <Container className="grid gap-x-12 gap-y-10 md:grid-cols-2 md:items-start">
+        <h2 id="find-heading" style={sectionHeading()} className={cn(FLUID_TYPE, SECTION_HEADING, "md:col-span-2")}>
+          <span className="block">Find what you&apos;ve</span> <span className="block">been looking for.</span>
+        </h2>
+
         <div>
-          <h2 id="find-heading" style={sectionHeading()} className={cn(FLUID_TYPE, SECTION_HEADING)}>
-            Find the mountain.
-          </h2>
-          <address className={cn(BODY, "pt-6 not-italic text-foreground/70")}>
+          <address className={cn(BODY, "not-italic text-foreground/70")}>
             {page.address.map((line) => (
               <span key={line} className="block">
                 {line}
@@ -60,33 +63,35 @@ export function FindTheMountain({ hill }: { hill: HillWithPage }) {
           </p>
         </div>
 
-        <div
-          aria-hidden
-          data-slot="map-placeholder"
-          className={cn(
-            "relative h-48 overflow-hidden rounded-xl border border-foreground bg-background text-foreground md:h-44 lg:h-[353px]",
-            "lg:border-border lg:bg-muted lg:text-border",
-          )}
-        >
-          {/* Figma's two schematic lines (1:6601, 1:6602), redrawn in currentColor so each frame's color applies. */}
-          <svg viewBox="0 0 626 351" preserveAspectRatio="none" className="absolute inset-0 size-full">
-            <path
-              d="M-16 231C93.8 216.4 210.9 220 335.3 242C459.7 264 562.2 260.3 642.6 231"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.2}
-              vectorEffect="non-scaling-stroke"
-            />
-            <path d="M115.4 0L181.3 351" fill="none" stroke="currentColor" strokeOpacity={0.6} strokeWidth={0.9} vectorEffect="non-scaling-stroke" />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center p-4">
-            <p className="flex items-center gap-2 rounded-full border border-foreground bg-background px-3 py-1.5 text-[14px] leading-5 font-medium text-foreground lg:border-border">
+        <figure data-slot="hill-map" className="relative aspect-[16/9] overflow-hidden rounded-xl border border-foreground bg-muted">
+          <Image
+            src={page.mapImage}
+            alt={`Street map around ${page.address[0]}. The pin marks the park, not a meeting point.`}
+            fill
+            sizes="(min-width: 768px) 50vw, 100vw"
+            className="object-cover"
+          />
+          {/* The image is centred on the place, so the pin sits at the centre. */}
+          <div aria-hidden className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-full flex-col items-center">
+            <span className="flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-[13px] leading-4 font-medium whitespace-nowrap text-primary-foreground md:text-[14px] md:leading-5">
               <MapPinIcon className="size-4 shrink-0" />
               {page.mapLabel}
-            </p>
+            </span>
+            <span className="h-2.5 w-px bg-primary" />
+            <span className="-mb-1 size-2 rounded-full border-2 border-background bg-primary box-content" />
           </div>
-          <p className={cn(EYEBROW, "absolute bottom-3 left-4 text-[11px] leading-4 text-muted-foreground")}>Not a map</p>
-        </div>
+          <figcaption className="absolute right-0 bottom-0 rounded-tl-md bg-background/90 px-2 py-0.5 text-[11px] leading-4 text-foreground">
+            ©{" "}
+            <a
+              href="https://www.openstreetmap.org/copyright"
+              rel="noopener noreferrer"
+              className="rounded-xs underline underline-offset-2 outline-none focus-visible:ring-3 focus-visible:ring-ring"
+            >
+              OpenStreetMap
+            </a>{" "}
+            contributors
+          </figcaption>
+        </figure>
       </Container>
     </section>
   );

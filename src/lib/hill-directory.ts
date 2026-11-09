@@ -1,20 +1,19 @@
 import { hillsWithPages, type HillWithPage } from "@/lib/hills";
-import { getRunsAtHill } from "@/lib/runs";
+import { getRunsAtHill, runs as allRuns } from "@/lib/runs";
 import { describeCadence } from "@/lib/schedule";
 
 export type DirectoryEntry = {
   hill: HillWithPage;
-  /** Place in the full list (01–05), kept when a page shows a subset. */
-  number: number;
-  /** When CMR runs it ("Saturdays · 5:30 AM"), one per upcoming run. */
+  /** When CMR runs it each week ("Saturdays · 5:30 AM"), one per weekly run. One-off runs aren't listed. */
   cadences: string[];
 };
 
-/** Every hill with a page, numbered in display order, with when CMR runs it as of `now`. */
-export function directoryEntries(now: Date): DirectoryEntry[] {
-  return hillsWithPages().map((hill, i) => ({
+/** Every hill with a page, in display order, with when CMR runs it each week as of `now`. */
+export function directoryEntries(now: Date, runs: Parameters<typeof getRunsAtHill>[2] = allRuns): DirectoryEntry[] {
+  return hillsWithPages().map((hill) => ({
     hill,
-    number: i + 1,
-    cadences: getRunsAtHill(hill.slug, now).map((o) => describeCadence(o.run.schedule)),
+    cadences: getRunsAtHill(hill.slug, now, runs)
+      .filter((o) => o.run.schedule.kind === "weekly")
+      .map((o) => describeCadence(o.run.schedule)),
   }));
 }

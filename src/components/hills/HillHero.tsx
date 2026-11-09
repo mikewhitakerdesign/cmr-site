@@ -1,92 +1,105 @@
-import Image from "next/image";
 import Link from "next/link";
+import { Fragment } from "react";
 import { Container } from "@/components/Container";
+import { ContourField } from "@/components/ContourField";
 import { TopoPattern } from "@/components/home/TopoPattern";
 import { EYEBROW } from "@/components/hills/styles";
-import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
+import { fluidType, fluidVars } from "@/lib/fluid";
 import type { HillWithPage } from "@/lib/hills";
 import { onDarkSurface } from "@/lib/surfaces";
 import { cn } from "@/lib/utils";
 
+/** A stable per-hill seed, so each hill gets its own terrain in the background. */
+const seedFor = (slug: string) => [...slug].reduce((n, c) => (n * 31 + c.charCodeAt(0)) % 997, 7) / 13;
+
 /**
  * Hill hero — Figma "Hero / Cricket Hill original photo" 1:6673 (desktop),
- * 1:7007 (tablet), 1:7336 (mobile). Measured below the sticky header (Figma
- * draws the navigation over the hero):
+ * 1:7007 (tablet), 1:7336 (mobile), for its height (540 / 697 / 844 below the
+ * sticky header) and its bottom-anchored display name.
  *
- *            height  eyebrow          h1          gradient
- *   mobile   540     white            48/46.8     0 → 70% black
- *   tablet   697     white            73/65.7     0 → 70% black
- *   desktop  844     mint (#ddffea)   144/129.6   40 → 70% black
+ * Chicago Hills refinement pass (Owner direction, 2026-11-08), the same for
+ * all five hills:
+ *   - background: slow animated contour lines in grey on black (ContourField,
+ *     `--cmr-contour-on-dark`), seeded per hill; one still frame under reduced
+ *     motion; the static pattern without WebGL2. Replaces the photograph and
+ *     the static pattern.
+ *   - no eyebrow; the name larger (60 / 104 / 176, was 48 / 73 / 144) and on
+ *     two lines, one word per line ("WARREN / HILL", "MT. / TRASHMORE"); on
+ *     phones capped to the column so "TRASHMORE" never clips (≈ 54px at 393)
+ *   - the breadcrumb moves below the hero (HillBreadcrumb)
  *
- * Variation: only Cricket Hill has an approved photograph (the Owner's own,
- * public/hills/cricket-hill-hero.jpg). The other hills get a shorter black
- * hero with the site's static topographic pattern — no stock or generated
- * imagery stands in for a hill nobody has photographed for CMR yet.
- *
- * Added (not in Figma): a breadcrumb back to /hills at the top, so the page
- * can be left without the header.
+ * Legibility: white type over black, crossing at most a hairline of #525252
+ * (7.8:1 at worst).
  */
 export function HillHero({ hill }: { hill: HillWithPage }) {
-  const photo = hill.page.hero;
-  const layout = fluidVars(photo ? { "--hero-h": [540, 697, 844] } : { "--hero-h": [380, 460, 560] });
-  const heading = fluidType([48, 72.96, 144], [46.8, 65.66, 129.6]);
-  const eyebrow = [hill.neighborhood, hill.page.locality].filter(Boolean).join(" · ");
+  const layout = fluidVars({ "--hero-h": [540, 697, 844] });
+  // Line height 0.9 at every size, so the mobile cap below scales it too.
+  const heading = fluidType([60, 104, 176], [54, 93.6, 158.4]);
 
   return (
     <section
       aria-labelledby="hill-heading"
       style={layout}
-      data-hero={photo ? "photo" : "drawn"}
       className={cn(
         "relative isolate flex flex-col bg-primary text-primary-foreground",
         "min-h-(--hero-h-a) md:min-h-(--hero-h-b)",
         onDarkSurface,
       )}
     >
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        {photo ? (
-          <>
-            <Image
-              src={photo.src}
-              alt=""
-              fill
-              sizes="100vw"
-              loading="eager"
-              fetchPriority="high"
-              className="object-cover"
-              style={{ objectPosition: photo.position }}
-            />
-            <div className="absolute inset-0 bg-linear-to-b from-primary/0 to-primary/70 lg:from-primary/40" />
-            {/* Added for the breadcrumb (not in Figma): a short shade under it, so it reads over pale sky. */}
-            <div className="absolute inset-x-0 top-0 h-28 bg-linear-to-b from-primary/60 to-primary/0" />
-          </>
-        ) : (
-          <TopoPattern className="text-primary-foreground/15" />
-        )}
+      <div className="absolute inset-0 -z-10">
+        <ContourField
+          className="bg-primary text-(--cmr-contour-on-dark)"
+          seed={seedFor(hill.slug)}
+          fallback={<TopoPattern className="text-(--cmr-contour-on-dark)" />}
+        />
       </div>
 
-      <Container className="flex flex-1 flex-col pt-6 pb-16 md:pt-8">
-        <nav aria-label="Breadcrumb">
-          <ol className={cn(EYEBROW, "flex flex-wrap gap-x-2 text-[12px] leading-5 md:text-[13px]")}>
-            <li>
-              <Link href="/hills" className="rounded-xs underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring">
-                Chicago Mtns
-              </Link>
-            </li>
-            <li aria-hidden>/</li>
-            <li aria-current="page" className="opacity-80">
-              {hill.name}
-            </li>
-          </ol>
-        </nav>
-
-        <div className="mt-auto pt-16">
-          <p className={cn(EYEBROW, "max-w-[315px] lg:text-(color:--cmr-tint-mint-dye)")}>{eyebrow}</p>
-          <h1 id="hill-heading" style={heading} className={cn(FLUID_TYPE, "pt-4 font-black tracking-[-0.045em] uppercase text-balance")}>
-            {hill.name}
-          </h1>
-        </div>
+      <Container className="mt-auto pt-24 pb-14 md:pb-16 lg:pb-20">
+        <h1
+          id="hill-heading"
+          style={heading}
+          className={cn(
+            // Below tablet, never wider than the column: the longest word ("TRASHMORE") is ≈ 6.2em.
+            "text-[min(var(--fs-a),calc((100vw-48px)/6.4))] leading-[0.9] md:text-(length:--fs-b)",
+            "font-black tracking-[-0.045em] uppercase",
+          )}
+        >
+          {/* One word per line; the spaces stay in the text so the name reads "Warren Hill". */}
+          {hill.name.split(" ").map((word, i) => (
+            <Fragment key={i}>
+              {i > 0 && " "}
+              <span className="block">{word}</span>
+            </Fragment>
+          ))}
+        </h1>
       </Container>
     </section>
+  );
+}
+
+/**
+ * Breadcrumb back to the directory — added in the milestone (not in Figma) and
+ * moved below the hero in the refinement pass (Owner direction, 2026-11-08).
+ * Geist Mono, quiet (75% black: small mono type needs more than the 4.7:1 of
+ * muted-foreground to measure ≥ 4.5:1 once anti-aliased), on a hairline rule.
+ */
+export function HillBreadcrumb({ hill }: { hill: HillWithPage }) {
+  return (
+    <nav aria-label="Breadcrumb" className="border-b border-border">
+      <Container>
+        <ol className={cn(EYEBROW, "flex flex-wrap gap-x-2 py-4 text-[12px] leading-5 text-foreground/75 md:py-5 md:text-[13px]")}>
+          <li>
+            <Link
+              href="/hills"
+              className="rounded-xs text-foreground underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring"
+            >
+              Chicago Mountains
+            </Link>
+          </li>
+          <li aria-hidden>/</li>
+          <li aria-current="page">{hill.name}</li>
+        </ol>
+      </Container>
+    </nav>
   );
 }
