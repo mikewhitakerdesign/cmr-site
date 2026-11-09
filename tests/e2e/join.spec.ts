@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { OFFICIAL_RUNS_ON_HOLD } from "../../src/lib/permit-hold";
 
 /**
  * The Join page (/join) at 393 / 768 / 1440. Formspree is always intercepted:
@@ -59,7 +60,7 @@ test.describe("content and layout", () => {
     await expect(main).toContainText("No membership fees, minimum mileage, or attendance requirements.");
     await expect(main).toContainText("All club membership and organized runs are for adults 18 and older.");
     await expect(main).toContainText("Unsubscribe whenever you choose.");
-    await expect(main).toContainText("Official CMR meetups are on hold while we review park-use requirements.");
+    await expect(main).toContainText(OFFICIAL_RUNS_ON_HOLD ? "Official CMR meetups are on hold while we review park-use requirements." : "You don't have to join before attending an organized run.");
     await expect(main).not.toContainText(/permit(ted)?|insured|insurance|park district|affiliat|waiver/i);
   });
 
@@ -118,7 +119,7 @@ test.describe("form behavior", () => {
     await expect(done).toContainText("We've received your signup. You'll hear from us when there's something worth sharing.");
     await expect(done).toContainText("In the meantime, there's a hill with your name on it.");
     await expect(done).toBeFocused();
-    await expect(done.getByRole("link", { name: "Explore the hills" })).toHaveAttribute("href", "/hills");
+    await expect(done.getByRole("link", { name: OFFICIAL_RUNS_ON_HOLD ? "Explore the hills" : "Find a Run" })).toHaveAttribute("href", OFFICIAL_RUNS_ON_HOLD ? "/hills" : "/calendar");
     expect(posted).toEqual([JOIN_URL]);
     expect(await axe(page)).toEqual([]);
     expect(await noHScroll(page)).toBe(true);
@@ -214,7 +215,7 @@ test.describe("legal pages and FAQ", () => {
     // Held: the schedule answer says meetups are on hold; nothing points at a run page.
     const where = page.locator("details", { hasText: "Where and when does CMR meet?" });
     await where.locator("summary").click();
-    await expect(where).toContainText("official meetups are on hold while we review park-use requirements");
+    await expect(where).toContainText(OFFICIAL_RUNS_ON_HOLD ? "official meetups are on hold while we review park-use requirements" : "The Running Calendar is the official source");
     expect(await axe(page)).toEqual([]);
     expect(await noHScroll(page)).toBe(true);
   });

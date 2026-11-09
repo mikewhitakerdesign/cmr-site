@@ -17,6 +17,7 @@ const forceMotion = (page: Page) => page.addInitScript(() => ((window as unknown
 const field = (page: Page) => page.locator('[data-slot="contour-field"]').first();
 
 test.describe("run map hover zoom", () => {
+  test.skip(OFFICIAL_RUNS_ON_HOLD, "Run pages are not served while official runs are on hold.");
   test("zooms the image only, and not when motion is paused", async ({ page }, info) => {
     test.skip(info.project.name !== "desktop", "hover is a desktop behaviour");
     await page.goto("/calendar/cricket-mtn-repeats");

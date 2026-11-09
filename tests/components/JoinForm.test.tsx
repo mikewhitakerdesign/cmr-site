@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { JoinForm } from "@/components/join/JoinForm";
 import { JOIN_FORM_ID, validateJoin } from "@/lib/join";
+import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
 import { QUESTIONS_FORM_ID } from "@/lib/questions";
 import { axeViolations } from "../axe";
 
@@ -123,7 +124,8 @@ describe("JoinForm", () => {
     expect(done).toHaveTextContent("We've received your signup. You'll hear from us when there's something worth sharing.");
     expect(done).toHaveTextContent("In the meantime, there's a hill with your name on it.");
     await waitFor(() => expect(done).toHaveFocus());
-    expect(screen.getByRole("link", { name: "Explore the hills" })).toHaveAttribute("href", "/hills");
+    // Held: the Hills directory, never an unavailable event. Lifted: Find a Run.
+    expect(screen.getByRole("link", { name: OFFICIAL_RUNS_ON_HOLD ? "Explore the hills" : "Find a Run" })).toHaveAttribute("href", OFFICIAL_RUNS_ON_HOLD ? "/hills" : "/calendar");
     expect(screen.queryByLabelText("Email address")).not.toBeInTheDocument();
     expect(done).not.toHaveTextContent("sam@example.com");
   });
