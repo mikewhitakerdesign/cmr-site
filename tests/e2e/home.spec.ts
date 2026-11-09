@@ -544,11 +544,43 @@ test.describe("Round 2 interactions", () => {
     expect(settled).toEqual([true, true, true, true]);
   });
 
+  test("moon line: the distance counts down from 1,261,154,400 to 1,261,022,400 with the totals, once", async ({ page }) => {
+    const totals = page.locator("section[aria-labelledby=club-totals-heading]");
+    const moon = totals.locator("[data-slot=moon]");
+    await expect(moon.getByRole("heading", { level: 3 })).toHaveText("We're going to the moon!");
+    const odo = moon.locator("[data-odometer]");
+    const metric = totals.locator("[data-slot=total] [data-odometer]").first();
+    // Off screen at load: parked on the starting distance, figures parked at zero.
+    await expect(odo).toHaveAttribute("data-odometer", "armed");
+    const visible = () =>
+      odo.evaluate((el) =>
+        [...el.querySelectorAll<HTMLElement>("[aria-hidden] > span")]
+          .map((cell) => {
+            const strip = cell.querySelector<HTMLElement>("[style*=translateY]");
+            if (!strip) return cell.textContent;
+            const i = Number(/translateY\(-?(\d+)em\)/.exec(strip.style.transform)?.[1]);
+            return strip.children[i]?.textContent;
+          })
+          .join(""),
+      );
+    expect(await visible()).toBe("1,261,154,400");
+    await totals.scrollIntoViewIfNeeded();
+    // Starts with the four figures, and lands on the remaining distance.
+    await expect(odo).toHaveAttribute("data-odometer", "rolling");
+    await expect(metric).toHaveAttribute("data-odometer", "rolling");
+    expect(await visible()).toBe("1,261,022,400");
+    await expect(moon.locator("strong .sr-only")).toHaveText("1,261,022,400");
+    const strong = moon.locator("strong");
+    expect(await css(strong, "font-weight")).toBe("700");
+    expect(parseFloat(await css(strong, "font-size"))).toBeGreaterThan(parseFloat(await css(moon.locator("p"), "font-size")));
+  });
+
   test("reduced motion: figures and topography stay static", async ({ browser, page }) => {
     const reduced = await browser.newPage({ reducedMotion: "reduce", viewport: page.viewportSize()! });
     await reduced.goto("/");
     await reduced.locator("section[aria-labelledby=club-totals-heading]").scrollIntoViewIfNeeded();
     for (const o of await reduced.locator("[data-odometer]").all()) await expect(o).toHaveAttribute("data-odometer", "settled");
+    await expect(reduced.locator("[data-slot=moon] strong .sr-only")).toHaveText("1,261,022,400");
     const field = flat(reduced).locator("[data-slot=contour-field]");
     await field.scrollIntoViewIfNeeded();
     await expect(field).toHaveAttribute("data-state", "still");

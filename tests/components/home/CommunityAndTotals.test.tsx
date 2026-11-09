@@ -87,6 +87,30 @@ describe("ClubTotals", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  it("adds the moon line: a small h3 with an outlined rocket, and the remaining distance in bold", () => {
+    const { container } = render(<ClubTotals totals={clubTotals} />);
+    const moon = container.querySelector("[data-slot=moon]")!;
+    const h3 = screen.getByRole("heading", { level: 3, name: "We're going to the moon!" });
+    expect(h3.querySelector("svg[aria-hidden=true]")).not.toBeNull();
+    // What assistive tech reads (the rolling digit strips are aria-hidden).
+    const spoken = (el: Element) => {
+      const copy = el.cloneNode(true) as Element;
+      copy.querySelectorAll("[aria-hidden=true]").forEach((n) => n.remove());
+      return copy.textContent!.replace(/\s+/g, " ").trim();
+    };
+    expect(spoken(moon.querySelector("p")!)).toBe("Join the club and help us get there. We're only 1,261,022,400 feet away.");
+    // Only the distance is bold.
+    expect(spoken(moon.querySelector("strong")!)).toBe("1,261,022,400 feet away");
+    expect(moon.querySelector("strong .sr-only")).toHaveTextContent("1,261,022,400");
+    // The countdown is the 132K ft vertical: 1,261,154,400 − 132,000.
+    expect(clubTotals!.moon!.startFt - clubTotals!.moon!.remainingFt).toBe(132_000);
+  });
+
+  it("hides the moon line when there is none", () => {
+    render(<ClubTotals totals={{ ...clubTotals!, moon: undefined }} />);
+    expect(screen.queryByText(/going to the moon/)).toBeNull();
+  });
+
   it("has no axe violations", async () => {
     const { container } = render(<ClubTotals totals={clubTotals} />);
     expect(await axeViolations(container)).toEqual([]);

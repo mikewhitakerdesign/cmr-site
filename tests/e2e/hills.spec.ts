@@ -17,9 +17,10 @@ const NAMES = ["Cricket Hill", "Warren Hill", "Horner Hill", "Schiller Hill", "M
  * column: (393 − 48) / 6.4 ≈ 53.9). Display = "Get high in the city.".
  */
 const FIGMA = {
-  mobile: { heroH: 540, h1: 53.9, lede: 36, display: 48 },
-  tablet: { heroH: 697, h1: 104, lede: 36, display: 54 },
-  desktop: { heroH: 844, h1: 176, lede: 64, display: 96 },
+  // Hero 25% under Figma's 540 / 697 / 844 (PR #4 final pass).
+  mobile: { heroH: 405, h1: 53.9, lede: 36, display: 48 },
+  tablet: { heroH: 522.75, h1: 104, lede: 36, display: 54 },
+  desktop: { heroH: 633, h1: 176, lede: 64, display: 96 },
 } as const;
 const spec = (name: string) => FIGMA[name as keyof typeof FIGMA];
 
@@ -65,7 +66,7 @@ test.describe("/hills directory", () => {
   });
 
   test("title, heading and the five hills in order, each linked", async ({ page }) => {
-    await expect(page).toHaveTitle("Chicago Hills — Chicago Mountain Runners");
+    await expect(page).toHaveTitle("Chicago Hills | Chicago Mountain Runners");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Chicago Hills Mountains");
     const rows = page.locator("main ol > li");
     await expect(rows).toHaveCount(5);
@@ -73,9 +74,13 @@ test.describe("/hills directory", () => {
       await expect(rows.nth(i).getByRole("link")).toHaveAttribute("href", `/hills/${slug}`);
       await expect(rows.nth(i).getByRole("heading", { level: 2 })).toHaveText(NAMES[i]);
     }
-    // The rise footnote is gone (Owner direction); the one-line status note stays.
+    // The rise footnote, the provisional tag and the status note are gone (Owner direction);
+    // the status stays in the markup.
     await expect(page.getByText(/USGS 3DEP/)).toHaveCount(0);
-    await expect(page.locator("[data-slot=content-status]")).toContainText("Provisional");
+    await expect(page.locator("main [data-provisional], main [data-slot=content-status]")).toHaveCount(0);
+    await expect(page.getByText("Hill details are unconfirmed. Rise figures are approximate.")).toHaveCount(0);
+    await expect(rows.first()).toHaveAttribute("data-status", "provisional");
+    await expect(page.locator("main ol [data-hill-profile]")).toHaveCount(0);
   });
 
   test("headline: no eyebrow, “Chicago H̶i̶l̶l̶s̶” on one line and “Mountains” alone on the second", async ({ page }) => {
@@ -104,36 +109,72 @@ test.describe("/hills directory", () => {
     await expect(page.locator("header").getByRole("link", { name: /Chicago.*Mtns/ })).toHaveAttribute("aria-current", "page");
   });
 
-  test("the whole row is clickable (clicking the drawing opens the hill)", async ({ page }) => {
-    // A real click at the drawing's center: the row link's ::after must be what receives it.
-    const drawing = page.locator("main ol > li").nth(2).locator("[data-hill-profile]");
-    await drawing.scrollIntoViewIfNeeded();
-    const b = await box(drawing);
-    await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  test("the whole row is clickable (clicking empty row space opens the hill)", async ({ page }) => {
+    // A real click away from the name: the row link's ::after must be what receives it.
+    const row = page.locator("main ol > li").nth(2);
+    await row.scrollIntoViewIfNeeded();
+    const b = await box(row);
+    await page.mouse.click(b.x + b.width - 60, b.y + 8);
     await expect(page).toHaveURL(/\/hills\/horner-hill$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Horner Hill");
   });
 
-  test("hover greys the row; keyboard focus rings the whole row", async ({ page }, info) => {
-    const row = page.locator("main ol > li").first();
-    const link = row.getByRole("link");
+  test("hover and keyboard focus reveal one shared contour layer through the active row; focus rings the row", async ({ page }, info) => {
+    await page.addInitScript(() => Object.assign(window, { __CMR_CONTOUR_FORCE_MOTION__: true }));
+    await page.reload();
+    const rows = page.locator("main ol > li");
+    const layer = page.locator("[data-slot=directory-hover-field]");
+    await expect(layer).toHaveCount(1);
+    await expect(page.locator("main canvas")).toHaveCount(0); // nothing until a row is active
+    const clipMatchesRow = async (i: number) => {
+      const [r, w, clip] = await Promise.all([
+        box(rows.nth(i)),
+        box(layer),
+        layer.evaluate((el) => (el as HTMLElement).style.clipPath),
+      ]);
+      const top = Number(/inset\(([\d.]+)px/.exec(clip)?.[1]);
+      expect(Math.abs(top - (r.y - w.y))).toBeLessThanOrEqual(1);
+    };
     if (info.project.name === "desktop") {
-      await row.hover();
-      await expect.poll(() => css(row, "background-color")).toBe("rgb(236, 236, 236)") // MWDS `border` (#ececec), as the homepage rows;
+      await rows.nth(0).hover();
+      await expect(layer).toHaveAttribute("data-active");
+      await clipMatchesRow(0);
+      await rows.nth(3).hover();
+      await clipMatchesRow(3);
+      // Still one WebGL canvas after hovering several rows, animating while shown.
+      await expect(page.locator("main canvas")).toHaveCount(1);
+      await expect(layer.locator("[data-slot=contour-field]")).toHaveAttribute("data-state", "animating");
+      // No hover background colour on the row itself.
+      expect(await css(rows.nth(3), "background-color")).toBe("rgba(0, 0, 0, 0)");
+      // Leaving the list hides it and pauses the animation.
+      await page.mouse.move(5, 5);
+      await expect(layer).not.toHaveAttribute("data-active");
+      await expect(layer.locator("[data-slot=contour-field]")).toHaveAttribute("data-state", "paused");
     }
+    const link = rows.first().getByRole("link");
     await link.focus();
     await page.keyboard.press("Shift+Tab");
     await page.keyboard.press("Tab");
     await expect(link).toBeFocused();
+    await expect(layer).toHaveAttribute("data-active");
+    await clipMatchesRow(0);
     expect(await css(link, "box-shadow", "::after")).toMatch(/0px 0px 0px 3px/);
-    const rowBox = await box(row);
+    const rowBox = await box(rows.first());
     const after = await link.evaluate((el) => {
-      const r = el.getBoundingClientRect();
       const s = getComputedStyle(el, "::after");
-      return { position: s.position, w: s.width, h: s.height, linkW: r.width };
+      return { position: s.position, w: s.width };
     });
     expect(after.position).toBe("absolute");
     expect(parseFloat(after.w)).toBeCloseTo(rowBox.width, 0);
+  });
+
+  test("the intro uses the Cricket Hill description's body-text color", async ({ page }) => {
+    const intro = await css(page.locator("main section").first().locator("p").first(), "color");
+    await page.goto("/hills/cricket-hill");
+    const cricket = await css(page.locator("section[aria-labelledby=about-heading] p").first(), "color");
+    expect(intro).toBe(cricket);
+    await page.goto("/");
+    expect(await css(page.locator("section[aria-labelledby=hills-heading] h2 + p"), "color")).toBe(cricket);
   });
 
   test("comparison columns line up on desktop", async ({ page }, info) => {
@@ -173,7 +214,7 @@ test.describe("hill detail pages", () => {
     test(`${slug}: renders, has metadata, and passes axe`, async ({ page }) => {
       const res = await page.goto(`/hills/${slug}`);
       expect(res?.status()).toBe(200);
-      await expect(page).toHaveTitle(`${NAMES[i]} — Chicago Mountain Runners`);
+      await expect(page).toHaveTitle(`${NAMES[i]} | Chicago Mountain Runners`);
       expect(await page.locator('meta[name="description"]').getAttribute("content")).toBeTruthy();
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(NAMES[i]);
       await expect(page.locator("header").getByRole("link", { name: /Chicago.*Mtns/ })).toHaveAttribute("aria-current", "page");
@@ -290,7 +331,7 @@ test.describe("hill detail pages", () => {
     }
   });
 
-  test("repeats: four circles in a 2 × 2 quadrant with Cricket Hill's derived counts and miles, beside the copy on desktop", async ({ page }, info) => {
+  test("repeats: wide support copy, then four circles on one row (2 × 2 on phones), Cricket Hill's derived counts and miles", async ({ page }, info) => {
     await page.goto("/hills/cricket-hill");
     const section = page.locator("section[aria-labelledby=repeats-heading]");
     const circles = section.locator("[data-slot=repeat-circle]");
@@ -302,15 +343,26 @@ test.describe("hill detail pages", () => {
       "125 repeats, about 25 miles",
     ]);
     await expect(section.locator("[data-slot=repeat-miles]")).toHaveText(["2.6 miles", "5 miles", "12.6 miles", "25 miles"]);
-    await expect(section).toContainText("The Cricket Hill route is .2 miles up and down.");
+    // The Owner's route language, verbatim.
+    await expect(section.locator("p").first()).toHaveText(
+      "One repeat isn't much of a mountain. That's what the next repeat is for. The following number of repeats are approximations only and based on specific routes mapped by CMR. The Cricket Hill route is .2 miles up and down.",
+    );
     await expect(section.locator("img")).toHaveCount(0);
+    const copy = await box(section.locator("p").first());
+    if (info.project.name === "desktop") expect(copy.width).toBeGreaterThan(560); // the run line / footer sentence measure
     const boxes = await circles.evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).map((r) => ({ x: Math.round(r.x), y: Math.round(r.y), w: r.width, h: r.height })));
-    expect(new Set(boxes.map((b) => b.x)).size).toBe(2);
-    expect(new Set(boxes.map((b) => b.y)).size).toBe(2);
-    for (const b of boxes) expect(Math.abs(b.w - b.h)).toBeLessThanOrEqual(1);
-    if (info.project.name !== "mobile") {
-      const copy = await box(section.locator("p").first());
-      expect(boxes[0].x).toBeGreaterThan(copy.x + copy.width);
+    for (const b of boxes) {
+      expect(Math.abs(b.w - b.h)).toBeLessThanOrEqual(1);
+      expect(b.y).toBeGreaterThan(copy.y + copy.height); // under the copy
+    }
+    if (info.project.name === "mobile") {
+      expect(new Set(boxes.map((b) => b.y)).size).toBe(2);
+    } else {
+      expect(new Set(boxes.map((b) => b.y)).size).toBe(1);
+      const container = await box(section.locator(":scope > div"));
+      const pad = parseFloat(await css(section.locator(":scope > div"), "padding-left"));
+      expect(Math.abs(boxes[0].x - (container.x + pad))).toBeLessThanOrEqual(1); // spread edge to edge
+      expect(Math.abs(boxes[3].x + boxes[3].w - (container.x + container.width - pad))).toBeLessThanOrEqual(1);
     }
   });
 
@@ -359,6 +411,32 @@ test.describe("hill detail pages", () => {
     await expect(map.locator("img")).toHaveJSProperty("complete", true);
     expect(await map.locator("img").evaluate((i: HTMLImageElement) => i.naturalWidth)).toBeGreaterThan(0);
     await expect(map.getByRole("link", { name: "OpenStreetMap" })).toHaveAttribute("href", "https://www.openstreetmap.org/copyright");
+  });
+
+  test("the map eases in slightly on hover, about its centre; not under reduced motion", async ({ browser, page }, info) => {
+    test.skip(info.project.name !== "desktop", "hover");
+    await page.goto("/hills/horner-hill");
+    const map = page.locator("[data-slot=hill-map]");
+    const img = map.locator("img");
+    await map.scrollIntoViewIfNeeded();
+    // Tailwind v4 scales with the individual `scale` property.
+    expect(await css(img, "scale")).toBe("none");
+    await map.hover();
+    await expect.poll(() => css(img, "scale"), { timeout: 3000 }).toBe("1.06");
+    // About the centre, so the pin (drawn at the centre) stays on the place.
+    const [ox, oy] = (await css(img, "transform-origin")).split(" ").map(parseFloat);
+    const ib = await box(img);
+    expect(Math.abs(ox - ib.width / 1.06 / 2)).toBeLessThanOrEqual(2);
+    expect(Math.abs(oy - ib.height / 1.06 / 2)).toBeLessThanOrEqual(2);
+
+    const reduced = await browser.newPage({ reducedMotion: "reduce", viewport: page.viewportSize()! });
+    await reduced.goto("/hills/horner-hill");
+    const rMap = reduced.locator("[data-slot=hill-map]");
+    await rMap.scrollIntoViewIfNeeded();
+    await rMap.hover();
+    await reduced.waitForTimeout(400);
+    expect(await css(rMap.locator("img"), "scale")).toBe("none");
+    await reduced.close();
   });
 
   test("breadcrumb and More hills lead back into the directory", async ({ page }) => {

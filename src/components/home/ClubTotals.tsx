@@ -1,4 +1,5 @@
 import { Container } from "@/components/Container";
+import { RocketIcon } from "@/components/icons";
 import { Odometer } from "@/components/Odometer";
 import type { ClubTotals as ClubTotalsData } from "@/lib/club-totals";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
@@ -82,7 +83,7 @@ export function ClubTotals({ totals }: { totals: ClubTotalsData | null }) {
               </dt>
               <dd style={value} className={cn(FLUID_TYPE, "order-1 font-black tracking-[-0.02em] whitespace-nowrap")}>
                 <span className="inline-flex items-end leading-none">
-                  <Odometer value={item.value} srLabel={item.unit ? `${item.value} ${item.unit}` : item.value} />
+                  <Odometer watch="section" value={item.value} srLabel={item.unit ? `${item.value} ${item.unit}` : item.value} />
                   {item.unit && (
                     <span aria-hidden className="mb-[0.12em] ml-[0.04em] text-[0.3em] leading-none tracking-[-0.02em]">
                       {item.unit}
@@ -93,7 +94,43 @@ export function ClubTotals({ totals }: { totals: ClubTotalsData | null }) {
             </div>
           ))}
         </dl>
+
+        {totals.moon && <MoonLine moon={totals.moon} />}
       </Container>
     </section>
+  );
+}
+
+const feet = (n: number) => n.toLocaleString("en-US");
+
+/**
+ * "We're going to the moon!" — a small editorial aside under the totals (PR #4
+ * final pass, Owner direction 2026-11-09). Centred, much smaller than the
+ * circles: an outlined rocket and a short heading, then one sentence whose
+ * distance is bold and a touch larger. The distance counts down, odometer
+ * style, from the full Earth–Moon distance to what's left, starting with the
+ * totals when the section comes into view (once per page load; still under
+ * reduced motion; assistive tech reads the final figure).
+ */
+function MoonLine({ moon }: { moon: NonNullable<ClubTotalsData["moon"]> }) {
+  return (
+    <div data-slot="moon" className="mx-auto mt-14 max-w-[680px] text-center md:mt-16 lg:mt-24">
+      <h3 className="inline-flex items-center gap-2 text-[20px] leading-7 font-black tracking-[-0.02em] lg:text-[24px] lg:leading-8">
+        <RocketIcon className="size-5 shrink-0 lg:size-6" />
+        We&apos;re going to the moon!
+      </h3>
+      <p className="mt-2 text-p text-foreground/70 lg:text-p-lg">
+        Join the club and help us get there. We&apos;re only{" "}
+        <strong className="text-[1.15em] font-bold whitespace-nowrap text-foreground tabular-nums">
+          <Odometer
+            watch="section"
+            value={feet(moon.remainingFt)}
+            from={feet(moon.startFt)}
+          />{" "}
+          feet away
+        </strong>
+        .
+      </p>
+    </div>
   );
 }

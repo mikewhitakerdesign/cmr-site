@@ -37,6 +37,15 @@ const lum = (rgb: string) => {
   });
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 };
+/** Any computed CSS color (rgb(), color(srgb …) from color-mix, …) as "rgb(r, g, b)". */
+const toRgb = (page: Page, color: string) =>
+  page.evaluate((c) => {
+    const x = document.createElement("canvas").getContext("2d")!;
+    x.fillStyle = c;
+    x.fillRect(0, 0, 1, 1);
+    const [r, g, b] = x.getImageData(0, 0, 1, 1).data;
+    return `rgb(${r}, ${g}, ${b})`;
+  }, color);
 const contrast = (a: string, b: string) => {
   const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
   return (hi + 0.05) / (lo + 0.05);
@@ -175,15 +184,20 @@ test.describe("footer", () => {
     const s = spec(info.project.name);
     const footer = page.locator("footer");
     expect(await css(footer, "background-color")).toBe("rgb(245, 245, 245)"); // MWDS muted (neutrals 100)
-    expect(await css(footer, "color")).toBe("rgb(64, 64, 64)"); // neutrals 700, 9.4:1 on the surface
-    expect(contrast("rgb(64, 64, 64)", "rgb(245, 245, 245)")).toBeGreaterThanOrEqual(7);
+    // PR #4 final pass: a couple of shades lighter than neutrals 700 (#404040, 9.4:1) and only
+    // just accessible: 80% neutrals 500 + 20% neutrals 600 ≈ #6c6c6c, 4.8:1 on the surface.
+    const ink = await toRgb(page, await css(footer, "color"));
+    expect(ink).toBe("rgb(108, 108, 108)");
+    const ratio = contrast(ink, "rgb(245, 245, 245)");
+    expect(ratio).toBeGreaterThanOrEqual(4.5);
+    expect(ratio).toBeLessThan(5.5);
     expect(await css(footer, "border-top-width")).toBe("1px");
     // Refinement pass (Owner direction, 2026-11-08): one large wordmark, in the footer ink,
     // in the right half beside the newsletter (below it on mobile). The small badge is gone.
     const mark = footer.locator("[data-slot=cmr-wordmark]");
     await expect(footer.getByRole("img", { name: "Chicago Mountain Runners" })).toHaveCount(1);
     await expect(mark).toBeVisible();
-    expect(await css(mark, "background-color")).toBe("rgb(64, 64, 64)");
+    expect(await toRgb(page, await css(mark, "background-color"))).toBe(ink);
     const m = await box(mark);
     expect(m.width / m.height).toBeCloseTo(1858 / 888, 1);
     const news = await box(footer.locator("section").first());

@@ -23,6 +23,8 @@ const ACTION = "h-11 gap-2 px-5 text-[16px] leading-6 font-medium";
  *     pin at the centre and the required attribution. No embed and no map
  *     service called at runtime.
  *   - address, actions and note unchanged
+ *   - final pass (2026-11-09): the map eases in 6% on hover (1 s, about the
+ *     centre, so the pin stays put); none under reduced motion
  *
  * The two actions are plain outbound links to a map service (src/lib/maps.ts),
  * opened in a new tab. They and the pin target the park or landmark; the note
@@ -63,13 +65,14 @@ export function FindTheMountain({ hill }: { hill: HillWithPage }) {
           </p>
         </div>
 
-        <figure data-slot="hill-map" className="relative aspect-[16/9] overflow-hidden rounded-xl border border-foreground bg-muted">
+        <figure data-slot="hill-map" className="group/map relative aspect-[16/9] overflow-hidden rounded-xl border border-foreground bg-muted">
           <Image
             src={page.mapImage}
             alt={`Street map around ${page.address[0]}. The pin marks the park, not a meeting point.`}
             fill
             sizes="(min-width: 768px) 50vw, 100vw"
-            className="object-cover"
+            // A slow, slight zoom on hover, about the centre so the pin stays on the place.
+            className="object-cover motion-safe:transition-transform motion-safe:duration-1000 motion-safe:ease-out motion-safe:group-hover/map:scale-[1.06]"
           />
           {/* The image is centred on the place, so the pin sits at the centre. */}
           <div aria-hidden className="absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-full flex-col items-center">

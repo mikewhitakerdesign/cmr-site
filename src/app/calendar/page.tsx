@@ -3,7 +3,7 @@ import { ProvisionalBadge } from "@/components/ProvisionalBadge";
 import { runs } from "@/lib/runs";
 import { describeSchedule } from "@/lib/schedule";
 
-export const metadata = { title: "Calendar — Chicago Mountain Runners" };
+export const metadata = { title: "Calendar | Chicago Mountain Runners" };
 
 // Scaffold page (not yet designed). Lists every run with its schedule; records
 // that are not verified say so.

@@ -14,8 +14,9 @@ const seedFor = (slug: string) => [...slug].reduce((n, c) => (n * 31 + c.charCod
 
 /**
  * Hill hero — Figma "Hero / Cricket Hill original photo" 1:6673 (desktop),
- * 1:7007 (tablet), 1:7336 (mobile), for its height (540 / 697 / 844 below the
- * sticky header) and its bottom-anchored display name.
+ * 1:7007 (tablet), 1:7336 (mobile): a bottom-anchored display name. Height is
+ * 25% under the frame's 540 / 697 / 844 since the PR #4 final pass (405 /
+ * 523 / 633 below the sticky header).
  *
  * Chicago Hills refinement pass (Owner direction, 2026-11-08), the same for
  * all five hills:
@@ -32,7 +33,8 @@ const seedFor = (slug: string) => [...slug].reduce((n, c) => (n * 31 + c.charCod
  * (7.8:1 at worst).
  */
 export function HillHero({ hill }: { hill: HillWithPage }) {
-  const layout = fluidVars({ "--hero-h": [540, 697, 844] });
+  // PR #4 final pass (Owner direction): 25% shorter than Figma's 540 / 697 / 844.
+  const layout = fluidVars({ "--hero-h": [405, 522.75, 633] });
   // Line height 0.9 at every size, so the mobile cap below scales it too.
   const heading = fluidType([60, 104, 176], [54, 93.6, 158.4]);
 

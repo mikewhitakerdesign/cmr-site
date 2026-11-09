@@ -81,7 +81,10 @@ describe("hill detail page (refinement pass, PR #4)", () => {
     expect(sr).toEqual(["13 repeats, about 2.6 miles", "25 repeats, about 5 miles", "63 repeats, about 12.6 miles", "125 repeats, about 25 miles"]);
     expect([...document.querySelectorAll("[data-slot=repeat-miles]")].map((e) => e.textContent)).toEqual(["2.6 miles", "5 miles", "12.6 miles", "25 miles"]);
     expect(screen.getByText(/The Cricket Hill route is \.2 miles up and down\./)).toBeInTheDocument();
-    expect(screen.getByText(/approximations only and based on specific routes mapped by CMR/)).toBeInTheDocument();
+    // The Owner's approved route language, verbatim.
+    expect(document.querySelector("section[aria-labelledby=repeats-heading] p")).toHaveTextContent(
+      "One repeat isn't much of a mountain. That's what the next repeat is for. The following number of repeats are approximations only and based on specific routes mapped by CMR. The Cricket Hill route is .2 miles up and down.",
+    );
     expect(document.querySelector("img")).toBeNull();
   });
 

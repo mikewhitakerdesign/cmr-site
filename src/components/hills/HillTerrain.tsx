@@ -2,6 +2,7 @@ import { Container } from "@/components/Container";
 import { Odometer } from "@/components/Odometer";
 import { BODY, EYEBROW, SECTION_HEADING, sectionHeading } from "@/components/hills/styles";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
+import { BODY_TEXT_COLOR } from "@/lib/headings";
 import { REPEAT_TARGETS_FT, formatMiles, routeCounts, type HillWithPage } from "@/lib/hills";
 import { tintVars } from "@/lib/tints";
 import { cn } from "@/lib/utils";
@@ -37,7 +38,7 @@ export function HillAbout({ hill }: { hill: HillWithPage }) {
           <h2 id="about-heading" style={sectionHeading()} className={cn(FLUID_TYPE, SECTION_HEADING)}>
             {page.aboutHeading}
           </h2>
-          <div className={cn(BODY, "max-w-[448px] space-y-5 pt-8 text-foreground/70")}>
+          <div className={cn(BODY, BODY_TEXT_COLOR, "max-w-[448px] space-y-5 pt-8")}>
             {page.about.map((p) => (
               <p key={p}>{p}</p>
             ))}
@@ -97,23 +98,24 @@ export function HillAbout({ hill }: { hill: HillWithPage }) {
  * dashed outlines reading "TBD" for repeats and miles, and the copy says no
  * route is mapped yet. Nothing is calculated from a hill's overall rise.
  *
- *                 layout                                      circle
- *   mobile 393    heading, copy, quadrant (stacked)            ≤ 162
- *   tablet 768    heading; copy | quadrant                     ≤ 150
- *   desktop 1400  heading; copy | quadrant (beside the copy)   ≤ 248
+ * Final pass (Owner direction, 2026-11-09): one column. The support copy is
+ * wider (max 620, the measure of the run line and the footer sentence) and
+ * the four circles sit on one row beneath it, spread across the container,
+ * the club-totals sizes (2 × 2 on phones):
  *
- * The heading spans the section: it must be two lines at the display size,
- * which is wider than the space left of a quadrant.
+ *                 circles                        figure
+ *   mobile 393    2 × 2, ≤ 162, gap 16            48
+ *   tablet 768    4 across, 150, spread           40
+ *   desktop 1400  4 across, 280, spread           96
  */
 export function HillRepeats({ hill }: { hill: HillWithPage }) {
   const { route } = hill.page;
   const counts = routeCounts(route);
   const layout = fluidVars({
     "--repeats-py": [96, 128, 144],
-    "--repeats-circle": [162, 150, 248],
-    "--repeats-gap": [16, 20, 28],
+    "--repeats-circle": [162, 150, 280],
   });
-  const value = fluidType([48, 40, 88], [48, 40, 88]);
+  const value = fluidType([48, 40, 96], [48, 40, 96]);
 
   return (
     <section
@@ -122,12 +124,12 @@ export function HillRepeats({ hill }: { hill: HillWithPage }) {
       style={layout}
       className="border-t border-border py-(--repeats-py-a) md:py-(--repeats-py-b)"
     >
-      <Container className="grid gap-x-12 gap-y-10 md:grid-cols-[minmax(0,1fr)_auto] md:items-start lg:gap-x-16">
-        <h2 id="repeats-heading" style={sectionHeading()} className={cn(FLUID_TYPE, SECTION_HEADING, "md:col-span-2")}>
+      <Container>
+        <h2 id="repeats-heading" style={sectionHeading()} className={cn(FLUID_TYPE, SECTION_HEADING)}>
           <span className="block">How tall is it?</span> <span className="block">How tall you need it?</span>
         </h2>
 
-        <p className={cn(BODY, "max-w-[448px] text-muted-foreground")}>
+        <p className={cn(BODY, "max-w-[620px] pt-8 text-muted-foreground md:pt-10")}>
           One repeat isn&apos;t much of a mountain. That&apos;s what the next repeat is for.{" "}
           {route ? (
             <>
@@ -139,7 +141,7 @@ export function HillRepeats({ hill }: { hill: HillWithPage }) {
           )}
         </p>
 
-        <dl className="grid grid-cols-2 gap-(--repeats-gap-a) md:gap-(--repeats-gap-b)">
+        <dl className="mt-10 grid grid-cols-2 gap-4 md:mt-14 md:flex md:justify-between lg:mt-16">
           {REPEAT_TARGETS_FT.map((target, i) => {
             const count = counts?.[target];
             return (

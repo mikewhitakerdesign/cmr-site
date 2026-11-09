@@ -22,7 +22,7 @@ validation_state: passed
 blocker_state: awaiting-owner-review
 current_responsibility: owner
 created_at: '2026-11-08T23:30:00.000Z'
-updated_at: '2026-11-09T06:00:00.000Z'
+updated_at: '2026-11-09T09:00:00.000Z'
 ---
 ## Status
 
@@ -35,6 +35,41 @@ mechanical passes. See "Delivery" for the PR, head commits, CI runs and Preview.
 
 Sections below "Refinement pass" record the first milestone delivery as it was;
 where the refinement pass changed something, the refinement section governs.
+
+## Final refinement pass (Owner direction, 2026-11-09)
+
+Brief "CMR: Final refinement pass for PR #4", plus two clarifications from the
+Owner (route language, shared hover layer, body-text color). Same constraints:
+no merge, no deploy, Join untouched, static OpenStreetMap maps and the Cricket
+Hill calculation kept.
+
+| # | Item | What changed |
+|---|---|---|
+| F1 | Footer ink | `--cmr-quiet-ink` is now 80% neutrals 500 + 20% neutrals 600 (≈ #6c6c6c): 4.8:1 on #f5f5f5, "only barely accessible" (was neutrals 700, 9.4:1). Neutrals 500 alone is 4.4:1, under AA. The placeholder now uses the full ink (80% of it would fail). Layout unchanged |
+| F2 | Motion timing | `ContourField` default speed 0.045 → 0.036 (20% slower) for the hill heroes and "Flat is a state of mind". Reduced motion and the software-renderer still frame unchanged |
+| F3 | Body-text color | One name, `BODY_TEXT_COLOR` (src/lib/headings.ts) = the approved Cricket Hill description's color (70% black, ≈ #4d4d4d, 8.4:1). Used by that description, the homepage "Get high in the city." copy and the /hills intro, so they are identical by construction. Not applied site-wide |
+| F4 | Moon line | Under the club totals: an outlined rocket (Lucide geometry, ISC; not in Figma) and h3 "We're going to the moon!", then "Join the club and help us get there. We're only **1,261,022,400 feet away**." (bold, 1.15×). The distance counts down, odometer style, from 1,261,154,400 ft (238,855 mi, the average distance from Earth to the Moon) to 1,261,022,400 ft: exactly the 132K ft "Vertical climbed". Static data (`clubTotals.moon`); no Strava logic |
+| F5 | Totals animation | `Odometer`: rolls a little slower (first digit 1.5 s, was 1.1 s; +200 ms per digit). New `from` (count down: each changed digit starts a turn above and spins down; others stay) and `watch="section"` (start with the section, 25% visible), used by the four figures and the moon distance so they roll together, once per page load. Reduced motion: final values, no motion. Assistive tech reads the final figure |
+| F6 | Em dashes | None left in visible copy or metadata in this PR's pages: titles use "Name \| Chicago Mountain Runners"; About scaffold, Questions widget ("Thanks, your question is on its way."), the Cricket run description and the placeholder hill rewritten with commas or full stops. **Not changed:** `src/app/join/page.tsx` (paused Join, off limits) still has two |
+| F7 | Copy | Warren and Schiller no longer mention "the drawing on this page" (that section was removed); Horner "Not tall. Not nothing." → "It isn't tall, but it isn't nothing either."; Mt. Trashmore "This one's is municipal waste." → "This one's happens to be municipal waste." The route sentence ("…based on specific routes mapped by CMR. The Cricket Hill route is .2 miles up and down.") is the Owner's approved language, unchanged and now asserted verbatim: the Owner, CMR's founder, mapped the route |
+| F8 | /hills | Provisional tag and "Hill details are unconfirmed. Rise figures are approximate." removed (rows keep `data-status="provisional"`). Drawing thumbnails removed; desktop columns rebalanced to 5 : 2 : 2 : 3 + ↗ |
+| F9 | Row hover | The grey fill is replaced by **one shared** WebGL contour layer behind the list (`DirectoryHoverField`), revealed only through the active row with `clip-path: inset(…)` that glides between rows; fades in and out. Created on the first hover or keyboard focus; paused (no frames drawn) whenever no row is active; one canvas no matter how many rows are hovered. Lighter than the homepage: the same grey lines at 60% opacity, smaller landforms. Reduced motion: still frame, no glide or fade. Software WebGL: still frame. Decorative (aria-hidden, no pointer events); link, underline, ↗ nudge and focus ring unchanged. `ContourField` gained `paused` |
+| F10 | Hill hero | 25% shorter: 405 / 523 / 633 (was 540 / 697 / 844). Name size, contrast and the contour background unchanged |
+| F11 | "How tall is it?" | One column: support copy widened to 620 (the measure of the run line and the footer sentence); the four circles on one row beneath it, spread edge to edge at the club-totals sizes (280 desktop, 150 tablet), 2 × 2 on phones |
+| F12 | Map | Eases in 6% over 1 s on hover, about the centre so the pin stays on the place; none under reduced motion |
+
+Validation (2026-11-09, macOS, Chromium): lint, `tsc`, `tokens:check`, build
+pass; Vitest **270 pass**; Playwright **231 pass, 12 skipped** (new: shared
+hover layer, one canvas, clip follows the row, paused when hidden, focus
+reveals it; whole-row click away from the name; no drawings or provisional
+markers; body-text color identical across the three paragraphs; route sentence
+verbatim; one-row circles spread edge to edge; hero 25% shorter; map zoom and
+its reduced-motion opt-out; moon countdown 1,261,154,400 → 1,261,022,400 with
+the figures; footer ink ≈ #6c6c6c between 4.5:1 and 5.5:1; titles without em dashes);
+visual **21 pass**, 18 baselines updated (hills pages, homepage, footer), stable
+on re-run. Note: the footer-only baselines would have passed unchanged (the ink
+change is under the screenshot comparison's per-pixel threshold), so they were
+refreshed explicitly. Evidence in `docs/review/cmr-hills/`.
 
 ## Refinement pass (Owner direction, 2026-11-08 / 09)
 
@@ -404,13 +439,22 @@ Milestone delivery (history):
 
 ## Decisions needed before merging
 
-Refinement pass (current):
+Final pass (current):
+
+- **F-a. Join page em dashes:** `src/app/join/page.tsx` (paused Join scaffold) still
+  has two em dashes (title and body). Fix when Join resumes, or allow a one-line
+  change now.
+- **F-b. Moon line:** "Join the club" is plain text (Join is paused); link it to
+  `/join` when Join ships? The distance is static and must be updated with the
+  "Vertical climbed" total.
+- **F-c. Copy edits:** confirm the four rewritten hill lines (F7).
+
+Refinement pass (still open unless noted):
 
 - **R-a. Two-line headings on phones** (R1): accept wrapping at 393, or allow a
   smaller phone size for those two headings only.
 - **R-b. Footer** (R5): confirm removing the small CMR badge.
-- **R-c. Directory status note** (R4): keep or remove "Hill details are
-  unconfirmed. Rise figures are approximate."
+- ~~R-c. Directory status note~~: removed in the final pass (F8).
 - **R-d. Maps:** OpenStreetMap static images (attribution required, ODbL/
   CC BY-SA) — confirm, and confirm the pins for Horner Park and Schiller Woods
   (park/woods centres, not the hills).

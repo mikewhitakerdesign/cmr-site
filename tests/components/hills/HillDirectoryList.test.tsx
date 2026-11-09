@@ -38,18 +38,21 @@ describe("HillDirectoryList (/hills)", () => {
     expect(facts(horner)).toEqual({ Rise: "≈ 20 ft", Surface: "Grass/dirt", "Weekly with CMR": "Wednesdays · 5:30 AM" });
   });
 
-  it("shows each approved drawing without labels, as a thumbnail", () => {
+  it("has no drawings and no visible provisional marker; status stays on each row (final pass)", () => {
     const { container } = render(<HillDirectoryList entries={directoryEntries(NOW)} />);
-    const imgs = [...container.querySelectorAll("[data-hill-profile] img")].map((i) => i.getAttribute("src"));
-    expect(imgs).toEqual([
-      "/hills/cricket-hill-profile.svg",
-      "/hills/warren-hill-profile.svg",
-      "/hills/horner-hill-profile.svg",
-      "/hills/schiller-hill-profile.svg",
-      "/hills/mt-trashmore-profile.svg",
-    ]);
-    expect(container.querySelector("[data-slot=rise-legend]")).toBeNull();
-    expect(container.querySelector("figcaption")).toBeNull();
+    expect(container.querySelector("[data-hill-profile], img, svg[role=img]")).toBeNull();
+    expect(screen.queryByText(/provisional/i)).toBeNull();
+    for (const r of rows()) expect(r).toHaveAttribute("data-status", "provisional");
+  });
+
+  it("has one shared, decorative hover layer for all rows, not one per row", () => {
+    const { container } = render(<HillDirectoryList entries={directoryEntries(NOW)} />);
+    const layers = container.querySelectorAll("[data-slot=directory-hover-field]");
+    expect(layers).toHaveLength(1);
+    expect(layers[0]).toHaveAttribute("aria-hidden", "true");
+    expect(layers[0].closest("li")).toBeNull();
+    // Nothing is created until a row is hovered or focused.
+    expect(container.querySelector("canvas")).toBeNull();
   });
 
   it("supports h3 names", () => {

@@ -132,7 +132,7 @@ export const hills: Hill[] = [
     elevationGainFt: 40,
     repeatDistanceMi: 0.2,
     description:
-      "Placeholder hill profile. Swap in a real Chicago hill (Cricket Hill, a flyover ramp, a parking garage — you know the ones) with real elevation and repeat numbers.",
+      "Placeholder hill profile. Swap in a real Chicago hill (Cricket Hill, a flyover ramp, a parking garage, you know the ones) with real elevation and repeat numbers.",
     status: "placeholder",
   },
   {
@@ -186,7 +186,7 @@ export const hills: Hill[] = [
       aboutHeading: "The hill at Warren Park.",
       about: [
         "Warren Park covers about 89 acres on Western Avenue, with a nine-hole golf course and an ice rink.",
-        "We haven't located the hill in elevation data yet. The drawing on this page is a stand-in, not a survey, so it carries no numbers.",
+        "We haven't found the hill in elevation data yet, so this page doesn't give it a height.",
       ],
       sources: [CPD("warren-laurence-park", "Chicago Park District: Warren (Laurence) Park")],
       locality: "Chicago",
@@ -209,7 +209,7 @@ export const hills: Hill[] = [
       aboutHeading: "The hill at Horner Park.",
       about: [
         "Horner Park sits at Montrose and California Avenues in Irving Park. The Park District's history says its clay pits became a garbage dump before the land was filled and graded into a park, and that by the early 1950s it had a large tobogganing hill.",
-        "Not tall. Not nothing.",
+        "It isn't tall, but it isn't nothing either.",
       ],
       sources: [CPD("horner-henry-park", "Chicago Park District: Horner (Henry) Park")],
       locality: "Chicago",
@@ -231,7 +231,7 @@ export const hills: Hill[] = [
       lede: "A forest preserve sledding hill on the city's northwest edge. Modest, as mountains go. That's what repeats are for.",
       aboutHeading: "The hill at Schiller Woods.",
       about: [
-        "Schiller Woods is a Forest Preserves of Cook County site along Irving Park Road. The hill's exact spot still needs confirming: the drawing on this page comes from the highest ground the elevation data could find in the woods.",
+        "Schiller Woods is a Forest Preserves of Cook County site along Irving Park Road. The hill's exact spot in the woods still needs confirming.",
         "Bring your own sense of scale.",
       ],
       // The Forest Preserves pages refused automated reads (2026-11-08), so no source is cited.
@@ -255,7 +255,7 @@ export const hills: Hill[] = [
       aboutHeading: "The mountain at James Park.",
       about: [
         "Mt. Trashmore rises in Robert E. James Park in Evanston. It was a solid-waste landfill until 1965, when it was closed and turned into a park, and it has been a popular sledding hill since. From 1973 it was briefly a ski slope, tow rope included.",
-        "Every mountain range needs a backstory. This one's is municipal waste.",
+        "Every mountain range needs a backstory. This one's happens to be municipal waste.",
       ],
       sources: [{ label: "Wikipedia: Mount Trashmore (Illinois)", href: "https://en.wikipedia.org/wiki/Mount_Trashmore_(Illinois)" }],
       address: ["Robert E. James Park", "Evanston, Illinois"],

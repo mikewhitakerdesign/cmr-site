@@ -24,7 +24,8 @@ const linkClass =
  * Mobile 78:477), revised in homepage Round 2 (Owner direction, 2026-11-08):
  *
  *   - very light neutral surface (MWDS `muted`, #f5f5f5) instead of mint
- *   - everything in one darker neutral ink (`--cmr-quiet-ink`, #404040, 9.4:1),
+ *   - everything in one neutral ink (`--cmr-quiet-ink`, ≈ #6c6c6c, 4.8:1 since the
+ *     PR #4 final pass; it was #404040),
  *     including the newsletter input's text and its border (`--cmr-quiet-edge`,
  *     4.4:1 — a UI boundary needs 3:1); the submit stays the MWDS primary button
  *   - a tone-on-tone CMR logo above the newsletter heading, left-aligned
@@ -65,7 +66,7 @@ export default function Footer({
               {...newsletter}
               className={newsletter.className}
               inputClassName={cn(
-                "border-(color:--cmr-quiet-edge) text-(color:--cmr-quiet-ink) placeholder:text-(color:--cmr-quiet-ink)/80",
+                "border-(color:--cmr-quiet-edge) text-(color:--cmr-quiet-ink) placeholder:text-(color:--cmr-quiet-ink)",
                 newsletter.inputClassName,
               )}
             />

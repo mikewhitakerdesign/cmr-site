@@ -47,9 +47,11 @@ export type ContourFieldProps = {
   seed?: number;
   /** Static stand-in when WebGL2 is unavailable. */
   fallback?: ReactNode;
+  /** Hold the current frame (e.g. a hover fill that isn't showing). */
+  paused?: boolean;
 };
 
-type State = "pending" | "animating" | "still" | "unsupported";
+type State = "pending" | "animating" | "paused" | "still" | "unsupported";
 type StillReason = "reduced-motion" | "software";
 
 /** True when WebGL is drawn on the CPU (no GPU, or a blocklisted one). */
@@ -64,11 +66,15 @@ export function ContourField({
   scale = 520,
   levels = 9,
   lineWidth = 1,
-  speed = 0.045,
+  // PR #4 final pass (Owner direction): a little slower, 0.045 → 0.036.
+  speed = 0.036,
   seed = 0,
   fallback,
+  paused = false,
 }: ContourFieldProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const pausedRef = useRef(paused);
+  const restartRef = useRef<() => void>(undefined);
   const [state, setState] = useState<State>("pending");
   const [still, setStill] = useState<StillReason | undefined>();
 
@@ -131,7 +137,7 @@ export function ContourField({
 
     const frame = (now: number) => {
       raf = 0;
-      if (!visible || document.hidden || reduce.matches || software) return;
+      if (!visible || document.hidden || reduce.matches || software || pausedRef.current) return;
       if (now - last >= 1000 / 30) {
         if (Number.isFinite(last)) elapsed += Math.min(now - last, 100) / 1000;
         last = now;
@@ -149,8 +155,12 @@ export function ContourField({
         setStill(reduce.matches ? "reduced-motion" : "software");
         return;
       }
-      setState("animating");
       setStill(undefined);
+      if (pausedRef.current) {
+        setState("paused");
+        return;
+      }
+      setState("animating");
       if (visible && !document.hidden) {
         last = -Infinity;
         raf = requestAnimationFrame(frame);
@@ -161,6 +171,7 @@ export function ContourField({
     readColors();
     draw();
     start();
+    restartRef.current = start;
 
     const ro = new ResizeObserver(() => {
       resize();
@@ -176,6 +187,7 @@ export function ContourField({
     reduce.addEventListener("change", start);
 
     return () => {
+      restartRef.current = undefined;
       cancelAnimationFrame(raf);
       ro.disconnect();
       io.disconnect();
@@ -184,6 +196,11 @@ export function ContourField({
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
   }, [scale, levels, lineWidth, speed, seed]);
+
+  useEffect(() => {
+    pausedRef.current = paused;
+    restartRef.current?.();
+  }, [paused]);
 
   return (
     <div aria-hidden data-slot="contour-field" data-state={state} data-still={still} className="pointer-events-none absolute inset-0 overflow-hidden">

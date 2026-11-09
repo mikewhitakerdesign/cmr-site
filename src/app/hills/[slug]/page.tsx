@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: PageProps<"/hills/[slug]">): 
   const hill = pageHill((await params).slug);
   if (!hill) return {};
   return {
-    title: `${hill.name} — Chicago Mountain Runners`,
+    title: `${hill.name} | Chicago Mountain Runners`,
     description: hill.page.lede,
     openGraph: { title: hill.name, description: hill.page.lede },
   };
