@@ -78,7 +78,10 @@ describe(".ics export", () => {
     const folded = fold("DESCRIPTION:" + "é".repeat(80));
     for (const line of folded.split("\r\n")) expect(new TextEncoder().encode(line).length).toBeLessThanOrEqual(75);
     expect(unfold(folded)).toBe("DESCRIPTION:" + "é".repeat(80));
-    expect(escapeText("a,b;c\\d\ne")).toBe("a\\,b\;c\\\\d\\ne");
+    // Input: a , b ; c \ d <newline> e. Output must hold literal backslash sequences (RFC 5545 3.3.11).
+    expect(escapeText("a,b;c\\d\ne")).toBe(String.raw`a\,b\;c\\d\ne`);
+    expect(escapeText("x;y")).toHaveLength(4);
+    expect(escapeText("x;y").charAt(1)).toBe("\\");
   });
 
   it("names files", () => {

@@ -48,7 +48,7 @@ const VTIMEZONE = [
 
 /** Escape a TEXT value (RFC 5545 §3.3.11). */
 export const escapeText = (s: string) =>
-  s.replace(/\\/g, "\\\\").replace(/;/g, "\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+  s.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
 
 /** Fold a content line at 75 octets (RFC 5545 §3.1), never splitting a UTF-8 character. */
 export function fold(line: string): string {
