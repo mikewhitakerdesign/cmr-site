@@ -45,7 +45,7 @@ untouched, approved heroes, directory, calculations and maps unchanged.
 | # | Item | What changed |
 |---|---|---|
 | M1 | Mobile header (`Header`, `HeaderShell`) | Below 768: top row (logo + "Join the club", 64px), a 1px rule, then the link row. Links 15px (was 13); each link is its whole cell, 48px tall, cells sharing the full width (`flex-auto`, so a fourth link, "The Science", fits by adding it to `primaryNav`). Scrolling down past the top row slides it away (`data-hide-top`, a transform on the bar) and the link row stays pinned; scrolling up (more than 6px) brings it back; focus on the logo or CTA brings it back. The header's layout box keeps 114px, so content never shifts or jumps. Reduced motion: no slide. Tablet and desktop unchanged (no compact shrink on mobile; the slide replaces it) |
-| M2 | Mobile hero headline | Fills the content width: `(100vw − 48px) / 6.12` (each line ≈ 6.1em; 44px at 320, 56px at 393, 62px at 430) |
+| M2 | Mobile hero headline | Fills the content width: `(100vw − 48px) / 6.24` (each line ≈ 6.1em; 44px at 320, 55px at 393, 61px at 430), lines never wrap. The 2% margin covers Linux's slightly wider rendering: at `/ 6.12` "MAKE YOUR" wrapped at 320 on the CI runner (run 42589462068) |
 | M3 | Mobile hero CTAs | Stacked, full width: Find a Run, then Join the club; colours and hovers unchanged |
 | M4 | Next-run card | 8px radius at every size; mobile: at the bottom of the hero, hanging 96px into the white page (hero `mb-24` holds the space; 64px before the statement); a static contour pattern inside at every size (TopoPattern, `--cmr-contour-on-dark` at 45%, ≈ #262626 on black; no canvas) |
 | M5 | Mobile club totals | The grid bleeds 12px into the margins, gap 24 both ways: circles ≈ 136 / 159 / 172 / 191 at 320 / 375 / 393 / 430 (were ≤ 162, 126 at 320); labels on one line (no wrap, 4% padding) |
@@ -70,6 +70,12 @@ link, instant under reduced motion; Find layout on all five pages, three lines
 on desktop); visual **21 pass**, 10 baselines updated (mobile header, mobile
 homepage, mobile footer focus, /hills mobile, Cricket and Warren at three
 widths), stable on re-run. Evidence in `docs/review/cmr-hills/`.
+
+CI note: run 42589462068 (`9f70447`) failed two tests on Linux at 320px: the
+headline wrap above, and the homepage photo-text contrast sweep measuring the
+now full-width "Find a Run" while the pointer rested on it (hover inverts its
+colours mid-transition). The sweep now parks the pointer before each
+measurement; thresholds unchanged.
 
 ## Final refinement pass (Owner direction, 2026-11-09)
 

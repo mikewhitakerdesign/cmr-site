@@ -32,8 +32,9 @@ import { cn } from "@/lib/utils";
  *     matches line one's width on desktop).
  *
  * Mobile (PR #4 final refinements, Owner direction 2026-11-09), below 768:
- *   - the headline fills the content width: font size (100vw − 48px) / 6.12,
- *     each line being ≈ 6.1em wide (≈ 56px at 393, 44px at 320, 62px at 430)
+ *   - the headline fills the content width: font size (100vw − 48px) / 6.24,
+ *     each line being ≈ 6.1em wide (≈ 55px at 393, 44px at 320, 61px at 430);
+ *     the 2% margin and no-wrap cover Linux's slightly wider rendering
  *   - the CTAs stack, full width: Find a Run, then Join the club
  *   - the next-run card sits at the bottom of the hero and hangs 96px below
  *     it, over the white page (the section's bottom margin holds that space)
@@ -99,8 +100,8 @@ export function HomeHero({ next, now }: { next: RunOccurrence | null; now: Date 
           className={cn(
             FLUID_TYPE,
             "text-center font-black",
-            // Mobile: fill the content width (each line is ≈ 6.1em wide).
-            "max-md:text-[calc((100vw-48px)/6.12)] max-md:leading-[1.08]",
+            // Mobile: fill the content width (each line is ≈ 6.1em wide), never wrapping a line.
+            "max-md:text-[calc((100vw-48px)/6.24)] max-md:leading-[1.08] max-md:whitespace-nowrap",
           )}
         >
           {/* The space keeps the accessible name "MAKE YOUR OWN MTNS" (blocks don't add one). */}
