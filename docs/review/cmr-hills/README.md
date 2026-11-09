@@ -1,20 +1,24 @@
 # Chicago Hills: review evidence
 
 Screenshots of the production build (`next build && next start`, Chromium,
-macOS, 1× DPR, full page) taken 2026-11-08 for the Chicago Hills milestone.
-See `.aiom/work/implement-cmr-chicago-hills.md` for the record.
+macOS, 1× DPR, full page), refinement pass of PR #4, taken 2026-11-09. See
+`.aiom/work/implement-cmr-chicago-hills.md` ("Refinement pass") for the record.
 
 | File | What |
 |---|---|
-| `build-hills-{393,768,1440}.jpg` | `/hills` directory (no Figma frame; composed) |
-| `build-cricket-hill-{393,768,1440}.jpg` | Cricket Hill: photo hero, recorded surface, a CMR run |
-| `build-warren-hill-{393,768,1440}.jpg` | Warren Hill: drawn hero, illustrative profile, no run |
-| `build-horner-hill-{393,768,1440}.jpg` | Horner Hill: drawn hero, measured profile, a CMR run |
-| `figma-vs-build-cricket-hill-{393,768,1732}.jpg` | Figma Hill Details (Mobile 1:7032, Tablet 1:6703, Desktop 1:6363) beside the build at the same width |
+| `build-hills-{393,768,1440}.jpg` | `/hills` directory: "Chicago H̶i̶l̶l̶s̶ / Mountains", unnumbered rows, Grass/dirt, Weekly with CMR, Just show up. |
+| `build-cricket-hill-{393,768,1440}.jpg` | Cricket Hill: contour hero, breadcrumb below, lede alone, repeat circles with counts and miles, static map, More hills on repeat. |
+| `build-warren-hill-{393,768,1440}.jpg` | Warren Hill: no mapped route (TBD circles), no weekly run |
+| `build-horner-hill-{393,768,1440}.jpg` | Horner Hill: TBD circles, a weekly run |
+| `build-home-{393,768,1440}.jpg` | Homepage, full page |
+| `home-flat-{393,768,1440}.jpg` | "Flat is a state of mind" with the moving grey contours (one frame) |
+| `home-footer-{393,768,1440}.jpg` | Footer: newsletter left, wordmark right (stacked on mobile) |
+| `home-club-totals-…`, `home-see-you-on-the-hill-…`, `home-get-high-…` | The two resized headings beside the reference size |
+| `motion-hill-hero-frames.jpg`, `motion-flat-frames.jpg` | Three frames, 2 s apart, showing the contour motion |
 
-1440 images are scaled to 50%; the 768 comparison to 75% and the 1732 one to
-50%. The floating "Questions?" button is the site-wide widget from the
-homepage work, not part of these pages.
-
-Visual regression baselines (macOS, `npm run test:visual`) live in
-`tests/e2e/hills.spec.ts-snapshots/`.
+768 images are scaled to 75% and 1440 images to 50%. Screenshots catch the
+animation mid-motion; the visual baselines (`tests/e2e/*-snapshots/`, macOS,
+`npm run test:visual`) use reduced motion, which renders one fixed frame. The
+floating "Questions?" button is the site-wide widget. The milestone's
+Figma-vs-build comparisons are in git history (`8ba945e`); this pass
+deliberately departs from those frames.

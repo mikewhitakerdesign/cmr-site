@@ -22,16 +22,136 @@ validation_state: passed
 blocker_state: awaiting-owner-review
 current_responsibility: owner
 created_at: '2026-11-08T23:30:00.000Z'
-updated_at: '2026-11-09T00:30:00.000Z'
+updated_at: '2026-11-09T06:00:00.000Z'
 ---
 ## Status
 
-**Implemented and validated on branch `feat/cmr-chicago-hills` (from `origin/main`
-at `776cafc`); PR open for one coordinated Owner/GPT review. Not merged; nothing
-deployed to production (Vercel Preview only).** `validation_state: passed` covers
-the deterministic checks listed under Validation; the visual and content judgments
-below are Owner decisions, not mechanical passes. See "Delivery" for the PR, head
-commit, CI run and Preview URL.
+**Implemented, then refined at the Owner's direction (refinement pass, below), on
+branch `feat/cmr-chicago-hills` (from `origin/main` at `776cafc`); PR #4 open for
+one coordinated Owner/GPT review. Not merged; nothing deployed to production
+(Vercel Preview only).** `validation_state: passed` covers the deterministic checks
+listed under Validation; the visual and content judgments are Owner decisions, not
+mechanical passes. See "Delivery" for the PR, head commits, CI runs and Preview.
+
+Sections below "Refinement pass" record the first milestone delivery as it was;
+where the refinement pass changed something, the refinement section governs.
+
+## Refinement pass (Owner direction, 2026-11-08 / 09)
+
+Two Owner briefs on PR #4: "CMR — Chicago Hills Refinement Pass for PR #4" and a
+correction to the Cricket Hill repeat metrics. Same delivery constraints: no
+merge, no deploy, Join untouched, reuse the architecture, no unrelated redesign.
+
+### What changed
+
+**Motion (new, code-only).** `src/components/ContourField.tsx`: one WebGL2
+fragment shader drawing the contour lines of slowly evolving 3D simplex noise
+(Ashima/Gustavson, MIT) over a lightly warped domain, anti-aliased with
+screen-space derivatives (constant hairline). No dependency, about 3 KB. Direction
+only from the Owner's four reference videos (watched as frame sheets; nothing
+from them is used or loaded). Restraint: ≤ 30 fps, paused off screen and in hidden
+tabs, pixel budget ≈ 2.5 MP; `prefers-reduced-motion: reduce` → one still frame,
+following the setting live; no pointer input (the Round 2 liquid cursor stays
+removed); `aria-hidden`; the lines fade in after the first frame; without WebGL2
+the static `TopoPattern` renders. Colors come from CSS tokens:
+`--cmr-contour-on-dark` (MWDS neutrals 600, #525252) and `--cmr-contour-on-light`
+(neutrals 300, #d4d4d4), added to `src/styles/cmr.css` as aliases.
+- Hill heroes (all five): grey lines on black, seeded per hill.
+- Homepage "Flat is a state of mind": grey lines on white; statement static.
+
+**Hill detail template.**
+- Hero: contour background replaces the Cricket Hill photograph and the static
+  pattern (photo, `build-hill-hero.mjs` and the `hero` field removed — recoverable
+  from `5329d58`); no eyebrow; name larger (60 / 104 / 176) and one word per line,
+  capped on phones so "TRASHMORE" never clips; breadcrumb moved below the hero
+  (now "Chicago Mountains / {hill}").
+- Lede alone: standfirst ("One of Chicago Mountain Runners' primary training
+  hills.") and the visible provisional badge/note removed. `data-status` stays on
+  the section; every record stays `provisional`.
+- Removed: the "Elevation gain" five-column strip (`HillStats`) and "What goes up."
+  with its graphic (`HillProfileSection`, `repeat-diagram.svg`).
+- "The mountain at Montrose." kept as the approved reference. Spec rows: Cricket
+  keeps the Figma rows; the others show the Owner's "Surface · Grass/dirt".
+- Repeats: heading "How tall is it? / How tall you need it?"; the Owner's support
+  copy; final sentence dynamic ("The Cricket Hill route is .2 miles up and
+  down." / "CMR hasn't mapped a route on {hill} yet…"). Four pastel metric
+  circles (club-totals style, shared `tintVars` now in `src/lib/tints.ts`, odometer
+  roll-in) in a 2 × 2 quadrant: target, large count, "REPEATS", miles beneath.
+  Line drawing removed. No route → dashed outline circles reading TBD / TBD.
+- Runs band: run title at the display size; empty state "No set weekly run."
+- "Find what you've / been looking for.": address, buttons and note unchanged;
+  the placeholder is now a static greyscale map (see Data).
+- "More hills on repeat.": new `MoreHills` — names only (with park ·
+  neighborhood and ↗), whole-row link, grey hover, name slides in, ↗ nudges,
+  focus ring; motion off under reduced motion.
+- Section headings (all but the hero name and lede) use the homepage "Get high in
+  the city." size, now shared as `displayHeading()` in `src/lib/headings.ts`.
+
+**Directory `/hills`.** No eyebrow; h1 "Chicago H̶i̶l̶l̶s̶ / Mountains" — "Hills"
+struck through and "Mountains" always alone on the second line: an intentional
+visual joke (Owner, 2026-11-09), not a naming inconsistency; 44px on phones so the
+first line holds. Rows: no numbers; Surface "Grass/dirt" for every hill; column
+"Weekly with CMR" (weekly runs only; one-off runs excluded); "No set weekly run"
+where none. Rise footnote removed. Closing band is the homepage `JustShowUp`
+(`PickAHill` deleted). The one-line status note ("Hill details are unconfirmed.
+Rise figures are approximate.") stays — the brief did not remove it (decision R-4).
+
+**Footer.** Newsletter takes the left half; the CMR wordmark ("CHICAGO /
+MOUNTAIN / RUNNERS™") fills the right half in the footer ink, below the
+newsletter on phones. Traced from the Owner's attached image
+(`scripts/assets/source/cmr-wordmark-owner.png` → `trace-wordmark.mjs` (potrace,
+run once, not a dependency) → `public/brand/cmr-wordmark.svg`), drawn by
+`CmrWordmark` as a mask over `currentColor`. The small CMR badge above the
+newsletter is removed so the footer carries one mark (decision R-5).
+
+**Homepage headings.** "2026 club totals." and "See you on the hill." now use the
+"Get high in the city." size (48 / 54 / 96) and its −0.04em tracking.
+
+**Illustrations.** Checked, unchanged: the five SVGs are black and white only
+(#000 / #fff, no greys), pastel labels and "Vertical scale exaggerated." remain
+on the homepage explorer. The directory thumbnails stay label-free.
+
+### Data and provenance
+
+| Field | Value | Kind |
+|---|---|---|
+| `page.surfaceSummary` | "Grass/dirt", all five | Owner-provided (2026-11-08) |
+| Cricket `page.route` | `distanceMi 0.2`, `gainPerRepeatFt 40`, basis "25 complete repeats ≈ 5 miles and ≈ 1,000 ft of gain" | Owner-confirmed route baseline (2026-11-09), approximate |
+| Repeat counts / miles | `routeCounts()`: ceil(target / 40) repeats × 0.2 mi → 500 ft 13 / 2.6 mi; 1,000 ft 25 / 5 mi; 2,500 ft 63 / 12.6 mi; 5,000 ft 125 / 25 mi | **Derived** workout arithmetic from that baseline — not surveyed elevation |
+| Other four hills | no `route` → TBD counts and miles | Never calculated from overall rise (tested) |
+| `page.mapImage` | `public/hills/maps/{slug}.jpg`, 1280×720 greyscale | OpenStreetMap tiles, fetched once by `scripts/assets/build-hill-maps.mjs` (≈ 24 tiles per hill, identified User-Agent, per the OSMF tile policy); centres from Nominatim (Cricket Hill natural/hill; Warren, Horner, James parks; Schiller Woods centroid at one zoom out). "© OpenStreetMap contributors" shown on every map. No runtime map requests |
+
+The first refinement brief gave stored counts (25 / 50 / 150 / 300 repeats; 5 /
+10 / 30 / 60 mi), which did not follow from one gain per repeat. The Owner's
+correction replaced them with the baseline above; the stored counts were never
+pushed. `Hill.elevationGainFt` / `repeatDistanceMi` stay unset: the route
+baseline is approximate and lives on the route, separate from surveyed fields.
+
+### Deviations and judgment calls in this pass
+
+| # | Item | Decision |
+|---|---|---|
+| R1 | Two-line headings at the display size ("How tall is it? / How tall you need it?", "Find what you've / been looking for.") | Two lines from tablet up. At 393 the 48px display size cannot fit "How tall you need it?" in 345px, so phones wrap to 3–4 lines; the size rule was kept over the line count |
+| R2 | Repeats layout | The heading spans the section (two lines at 96px are wider than the space left of a quadrant); the quadrant sits right of the support copy, below the heading, from tablet; stacked on phones |
+| R3 | Find section layout | Heading spans; address/actions left, map right (same reason) |
+| R4 | Directory status note | Kept (not named in the brief); hill pages show no visible provisional marker |
+| R5 | Footer badge | Removed in favour of the one large wordmark |
+| R6 | Breadcrumb label | "Chicago Mountains" (matches the directory h1) instead of "Chicago Mtns" |
+| R7 | Breadcrumb ink | 75% black (≈ #404040): muted-foreground measured 4.06:1 at 13px mono once anti-aliased |
+| R8 | Hero photograph | Removed for all five (the brief applies the animated background to every hill page) |
+| R9 | Review evidence | The milestone's Figma-vs-build images were removed: the refinement deliberately departs from those frames. They remain in git history (`8ba945e`) |
+
+### Future work (recorded only — not implemented in PR #4)
+
+For the **Join the Club** flow (paused; its Work Item is untouched on
+`plan/cmr-join-page`), the Owner wants three pages, detailed and specific to the
+running club:
+- **FAQ** — what joining means, what happens when someone joins, how joining
+  works, whether it costs money.
+- **Terms** — expectations for runners and protections for runners; protections
+  for the club founder / director / admin.
+- **Privacy** — what is collected when joining and how it is used.
+Carry this into `implement-cmr-join-page` when Join resumes. (Owner, 2026-11-08.)
 
 ## Authorization and scope
 
@@ -224,6 +344,30 @@ the park/landmark and say so; runs come only from `src/lib/runs.ts`.
 - Review screenshots: `docs/review/cmr-hills/` (build at 393 / 768 / 1440;
   Figma-vs-build at 393 / 768 / 1732).
 
+## Validation — refinement pass (2026-11-09, macOS, Chromium)
+
+- `npm run lint`, `tsc --noEmit`, `npm run tokens:check`, `npm run build`: pass.
+- Vitest: **264 pass** (19 files). New/changed: route baseline and derived table
+  (13 / 25 / 63 / 125; 2.6 / 5 / 12.6 / 25 mi), no counts without a route,
+  Grass/dirt, static map per hill, no standfirst/hero, weekly-only directory
+  cadences, hero name words and spacing, breadcrumb after the hero, lede alone,
+  TBD circles, More hills, footer, axe.
+- Playwright (393 / 768 / 1440): **224 pass, 10 skipped**. New: contour hero and
+  Flat animate (frames differ) and are one still frame under reduced motion;
+  grey line colors; text doesn't move; hero name fits 320–1440; headline
+  "Mountains" on line 2 at 320–1920; section headings = homepage display size;
+  two-line headings from tablet; 2 × 2 quadrant beside the copy; Cricket counts
+  and miles; TBD for others; no visible provisional marker; map image loaded and
+  credited, no off-site requests; More hills without columns; footer wordmark
+  half-width layout; JustShowUp closes `/hills`; axe clean everywhere; hero
+  contrast (name ≥ 3, breadcrumb ≥ 4.5 worst region). `playwright.config.ts` adds
+  Chromium `--enable-unsafe-swiftshader` so WebGL runs on GPU-less CI.
+- Visual (`npm run test:visual`, macOS): **21 pass**, stable on re-run. 18
+  baselines updated (hills ×3 pages, homepage, footer, footer focus × 3 widths),
+  rendered with reduced motion so the contour frame is deterministic; header
+  baselines unchanged.
+- Review screenshots: `docs/review/cmr-hills/` (see its README).
+
 ## Delivery
 
 - **PR #4**: https://github.com/mikewhitakerdesign/cmr-site/pull/4 (open, mergeable,
@@ -240,6 +384,22 @@ the park/landmark and say so; runs come only from `src/lib/runs.ts`.
   and it passed 9/9 locally with `--repeat-each=3` and on the second CI run.
 
 ## Decisions needed before merging
+
+Refinement pass (current):
+
+- **R-a. Two-line headings on phones** (R1): accept wrapping at 393, or allow a
+  smaller phone size for those two headings only.
+- **R-b. Footer** (R5): confirm removing the small CMR badge.
+- **R-c. Directory status note** (R4): keep or remove "Hill details are
+  unconfirmed. Rise figures are approximate."
+- **R-d. Maps:** OpenStreetMap static images (attribution required, ODbL/
+  CC BY-SA) — confirm, and confirm the pins for Horner Park and Schiller Woods
+  (park/woods centres, not the hills).
+- **R-e. Cricket Hill hero photograph** is no longer shown (R8); confirm.
+- **R-f. Routes for the other four hills** (distance and gain per repeat) to
+  replace their TBDs.
+
+Still open from the milestone (1, 3 and 7 partly answered by this pass):
 
 1. **Directory design.** `/hills` has no Figma frame; approve the composition or
    direct a frame.
