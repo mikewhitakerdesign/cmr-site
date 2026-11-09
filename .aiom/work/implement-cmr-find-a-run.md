@@ -68,3 +68,11 @@ observations 300, alerts 5. NWS is suitable; no alternative needed.
 - `AGENTS.md` is rewritten by `next dev` (heading level); that change was not committed.
 - Live NWS behavior was checked by hand once; `textDescription` is often empty, which is why the forecast fallback exists. A vendor-neutral status page for cancellations does not exist; cancellations only appear if added to the run data.
 - Visual baselines (`@visual`) were not added for the new pages.
+
+## Final MVP visual refinements (2026-11-09, Owner-approved, same branch and PR)
+
+Scope: Run Details (hero contour 25% slower, What to expect icons, exact-pin static maps with a minimal weather block, tie-dye metadata circles); Chicago Hills (specs box with decorative contour art and the new headings "The hill at Montrose." / "The hill at James Park.", map matched to its column, larger and sparser hero contours in neutral 500, grey tie-dye TBD circles, tie-dye word in "More hills on repeat."); a global Pause / Resume motion control in the footer (`src/lib/motion.ts`: pre-paint `data-motion`, choice in localStorage, system reduced motion respected, consumed by CSS, the WebGL ContourField and the Odometer). The motion toggle is the only addition to shared chrome.
+
+Held back, one blocker: **South Side hills (Beverly incline).** One targeted search found only unconfirmed leads (Longwood Drive near 105th Place, Ridge Park), no named, sourced incline, and no repository record of any South Side candidate. Per the Owner's rule no hill was added or guessed. Needs the hill's name or location from the Owner.
+
+Validation: lint, tsc, build, 364 Vitest, 315 Playwright (393 / 768 / 1440) pass, including new final-pass specs (motion pause and persistence across navigation and reload, reduced-motion default and opt-in, WebGL stopped, map pins, circles, hill layout, axe with contrast). Pin coordinates are those the Owner's short links resolve to; the static maps are built by `scripts/assets/build-hill-maps.mjs --runs`.

@@ -19,6 +19,15 @@ describe("run records", () => {
     expect(h.content?.headline).toBe("An hour of questionable decisions.");
   });
 
+  it("pins each meeting map on the exact Google Maps pin (coordinates the supplied links resolve to)", async () => {
+    const { existsSync } = await import("node:fs");
+    const c = getRun("cricket-mtn-repeats")!.pin!;
+    const h = getRun("horner-hell-repeats")!.pin!;
+    expect([c.lat, c.lon]).toEqual([41.962864, -87.64403]); // maps.app.goo.gl/11S9yixBqMH3vxC97
+    expect([h.lat, h.lon]).toEqual([41.959459, -87.69566]); // maps.app.goo.gl/UkzLSDPRzYykq9Aq6
+    for (const p of [c, h]) expect(existsSync(`public${p.image}`), p.image).toBe(true);
+  });
+
   it("never lists the scaffold placeholder as a real run", () => {
     expect(listedRuns().map((r) => r.slug)).toEqual(["cricket-mtn-repeats", "horner-hell-repeats"]);
     expect(getUpcomingWithStatus(now).map((r) => r.occurrence.run.slug)).not.toContain("example-hill-repeats");

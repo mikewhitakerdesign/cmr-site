@@ -15,19 +15,19 @@ const LABEL = "font-mono text-[13px] leading-5 tracking-[0.1em] uppercase";
  * the forecast for the run's day when the forecast reaches it (clearly labelled
  * as a forecast). The full five-day band lives on /calendar only.
  */
-export function WeatherCompact({ now, runDate }: { now: Date; runDate?: IsoDate }) {
+export function WeatherCompact({ now, runDate, minimal }: { now: Date; runDate?: IsoDate; minimal?: boolean }) {
   return (
-    <Suspense fallback={<Frame now={now} state="loading" />}>
-      <CompactData now={now} runDate={runDate} />
+    <Suspense fallback={<Frame now={now} state="loading" minimal={minimal} />}>
+      <CompactData now={now} runDate={runDate} minimal={minimal} />
     </Suspense>
   );
 }
 
-async function CompactData({ now, runDate }: { now: Date; runDate?: IsoDate }) {
-  return <WeatherCompactView result={await getWeather(now)} now={now} runDate={runDate} />;
+async function CompactData({ now, runDate, minimal }: { now: Date; runDate?: IsoDate; minimal?: boolean }) {
+  return <WeatherCompactView result={await getWeather(now)} now={now} runDate={runDate} minimal={minimal} />;
 }
 
-function Frame({ now, state, children }: { now: Date; state: "loading" | "unavailable" | "ok"; children?: React.ReactNode }) {
+function Frame({ now, state, children, minimal }: { now: Date; state: "loading" | "unavailable" | "ok"; children?: React.ReactNode; minimal?: boolean }) {
   const today = toClubTime(now).date;
   const season = seasonOf(today);
   return (
@@ -37,9 +37,14 @@ function Frame({ now, state, children }: { now: Date; state: "loading" | "unavai
       data-weather={state}
       data-variant="compact"
       style={seasonVars(season)}
-      className="relative isolate overflow-hidden rounded-lg border border-foreground/15 bg-(--tie-wash) p-5 text-foreground"
+      data-minimal={minimal || undefined}
+      className={
+        minimal
+          ? "border-t border-foreground/20 pt-5 text-foreground"
+          : "relative isolate overflow-hidden rounded-lg border border-foreground/15 bg-(--tie-wash) p-5 text-foreground"
+      }
     >
-      <div aria-hidden className="cmr-tie-dye absolute -z-10 opacity-80" />
+      {!minimal && <div aria-hidden className="cmr-tie-dye absolute -z-10 opacity-80" />}
       <div className="flex flex-wrap items-baseline justify-between gap-x-4">
         <p id="wx-compact-title" className={LABEL}>
           Current weather
@@ -67,8 +72,8 @@ function Frame({ now, state, children }: { now: Date; state: "loading" | "unavai
   );
 }
 
-export function WeatherCompactView({ result, now, runDate }: { result: WeatherResult; now: Date; runDate?: IsoDate }) {
-  if (result.status !== "ok") return <Frame now={now} state="unavailable" />;
+export function WeatherCompactView({ result, now, runDate, minimal }: { result: WeatherResult; now: Date; runDate?: IsoDate; minimal?: boolean }) {
+  if (result.status !== "ok") return <Frame now={now} state="unavailable" minimal={minimal} />;
   const { data } = result;
   const { observation: obs, current } = data;
   const season = seasonOf(toClubTime(now).date);
@@ -76,11 +81,11 @@ export function WeatherCompactView({ result, now, runDate }: { result: WeatherRe
   const dangerous = (current && isDangerous(current.condition)) || hasUrgent(data.alerts);
 
   return (
-    <Frame now={now} state="ok">
+    <Frame now={now} state="ok" minimal={minimal}>
       <div className="mt-4 flex items-center gap-4">
-        <WeatherArt condition={current?.condition ?? "cloudy"} season={season} isDay={current?.isDay} windy={current?.windy} className="size-16" />
+        <WeatherArt condition={current?.condition ?? "cloudy"} season={season} isDay={current?.isDay} windy={current?.windy} className={minimal ? "size-12" : "size-16"} />
         <div className="min-w-0">
-          <p className="text-[32px] leading-none font-black tracking-[-0.04em]">
+          <p className={minimal ? "text-[24px] leading-none font-black tracking-[-0.04em]" : "text-[32px] leading-none font-black tracking-[-0.04em]"}>
             {obs?.tempF != null ? degrees(obs.tempF) : "–"}
             <span className="sr-only"> degrees Fahrenheit</span>
           </p>

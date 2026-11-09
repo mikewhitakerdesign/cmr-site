@@ -50,7 +50,10 @@ export function HillHero({ hill }: { hill: HillWithPage }) {
     >
       <div className="absolute inset-0 -z-10">
         <ContourField
-          className="bg-primary text-(--cmr-contour-on-dark)"
+          // Final pass: larger, sparser contours in a lighter grey (neutral 500), still smooth and slow.
+          className="bg-primary text-(--cmr-quiet-edge)"
+          scale={940}
+          levels={4.5}
           seed={seedFor(hill.slug)}
           fallback={<TopoPattern className="text-(--cmr-contour-on-dark)" />}
         />

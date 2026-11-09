@@ -39,8 +39,8 @@ export function FindTheMountain({ hill }: { hill: HillWithPage }) {
 
   return (
     <section aria-labelledby="find-heading" className="py-24">
-      <Container className="grid gap-x-12 gap-y-10 md:grid-cols-2 md:items-center">
-        <div>
+      <Container className="grid gap-x-12 gap-y-10 md:grid-cols-2 md:items-stretch">
+        <div className="md:self-center">
           {/* Three lines on desktop; natural wrapping below (spaces kept for the accessible name). */}
           <h2 id="find-heading" style={sectionHeading()} className={cn(FLUID_TYPE, SECTION_HEADING)}>
             <span className="lg:block">Find what</span> <span className="lg:block">you&apos;ve been</span>{" "}
@@ -70,7 +70,7 @@ export function FindTheMountain({ hill }: { hill: HillWithPage }) {
           </p>
         </div>
 
-        <figure data-slot="hill-map" className="group/map relative aspect-[16/9] overflow-hidden rounded-xl border border-foreground bg-muted">
+        <figure data-slot="hill-map" className="group/map relative aspect-[16/9] overflow-hidden md:aspect-auto md:min-h-[300px] rounded-xl border border-foreground bg-muted">
           <Image
             src={page.mapImage}
             alt={`Street map around ${page.address[0]}. The pin marks the park, not a meeting point.`}

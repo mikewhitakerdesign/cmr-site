@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BackToTopLink } from "@/components/BackToTopLink";
 import { CmrWordmark } from "@/components/CmrWordmark";
+import { MotionToggle } from "@/components/MotionToggle";
 import NewsletterSignup, { type NewsletterSignupProps } from "@/components/NewsletterSignup";
 import { footerNav, legalLinks, riskNotice as defaultRiskNotice, type LegalLink, type NavItem } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
@@ -114,6 +115,7 @@ export default function Footer({
             )}
             <p className={cn("text-p-mini", visibleLegal.length > 0 && "mt-4")}>{riskNotice}</p>
             <p className="mt-3 text-p-mini">© {year} Chicago Mountain Runners</p>
+            <MotionToggle className="mt-3" />
           </div>
         </div>
       </div>

@@ -118,3 +118,44 @@ export function ShareIcon(props: IconProps) {
     </svg>
   );
 }
+
+/** What to expect icons: Lucide "repeat", "activity", "mountain" and "backpack" (ISC, lucide.dev), 24-unit grid, stroke 1.5. */
+const lucide = { width: "24", height: "24", viewBox: "0 0 24 24", strokeWidth: "1.5", ...base } as const;
+
+export function RepeatIcon(props: IconProps) {
+  return (
+    <svg {...lucide} {...props}>
+      <path d="m17 2 4 4-4 4" />
+      <path d="M3 11v-1a4 4 0 0 1 4-4h14" />
+      <path d="m7 22-4-4 4-4" />
+      <path d="M21 13v1a4 4 0 0 1-4 4H3" />
+    </svg>
+  );
+}
+
+export function ActivityIcon(props: IconProps) {
+  return (
+    <svg {...lucide} {...props}>
+      <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" />
+    </svg>
+  );
+}
+
+export function MountainIcon(props: IconProps) {
+  return (
+    <svg {...lucide} {...props}>
+      <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+    </svg>
+  );
+}
+
+export function BackpackIcon(props: IconProps) {
+  return (
+    <svg {...lucide} {...props}>
+      <path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
+      <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+      <path d="M8 21v-5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5" />
+      <path d="M8 10h8" />
+    </svg>
+  );
+}

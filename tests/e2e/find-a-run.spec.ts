@@ -105,7 +105,7 @@ test.describe("/calendar", () => {
     const el = page.locator('[data-slot="weather-art"] .wx-drift').first();
     expect(await el.evaluate((n) => getComputedStyle(n).animationName)).not.toBe("none");
     await page.emulateMedia({ reducedMotion: "reduce" });
-    expect(await el.evaluate((n) => getComputedStyle(n).animationName)).toBe("none");
+    await expect.poll(() => el.evaluate((n) => getComputedStyle(n).animationName)).toBe("none");
   });
 
   test("passes axe (including contrast)", async ({ page }) => {

@@ -5,10 +5,12 @@ import { Fragment } from "react";
 import { Container } from "@/components/Container";
 import { ContourField } from "@/components/ContourField";
 import { CtaLink } from "@/components/CtaLink";
+import { RunMap } from "@/components/calendar/RunMap";
 import { RunActions } from "@/components/calendar/RunActions";
 import { statusLabel } from "@/components/calendar/status";
 import { TopoPattern } from "@/components/home/TopoPattern";
-import { ClockIcon, MapPinIcon } from "@/components/icons";
+import { ActivityIcon, BackpackIcon, ClockIcon, MapPinIcon, MountainIcon, RepeatIcon } from "@/components/icons";
+import { cmrTieDyeCircle } from "@/components/calendar/circles";
 import { WeatherCompact } from "@/components/weather/WeatherCompact";
 import { WeatherGuidance } from "@/components/weather/WeatherGuidance";
 import { FLUID_TYPE, fluidType } from "@/lib/fluid";
@@ -53,7 +55,7 @@ export default async function RunPage({ params }: { params: Promise<{ slug: stri
     <>
       <section aria-labelledby="run-heading" className="relative isolate overflow-hidden">
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 opacity-50">
-          <ContourField className="bg-background text-(--cmr-contour-on-light)" scale={460} levels={10} seed={7} fallback={<TopoPattern />} />
+          <ContourField className="bg-background text-(--cmr-contour-on-light)" scale={460} levels={10} seed={7} speed={0.027} fallback={<TopoPattern />} />
         </div>
         <Container className="pt-10 pb-14 md:pt-14 md:pb-20">
           <nav aria-label="Breadcrumb">
@@ -99,8 +101,8 @@ export default async function RunPage({ params }: { params: Promise<{ slug: stri
       <WhatToExpect run={run} />
 
       <section aria-labelledby="meet-heading" className="border-t border-foreground/15 py-16 md:py-24">
-        <Container className="grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
-          <div>
+        <Container className="grid gap-10 lg:grid-cols-2 lg:gap-16">
+          <div className="flex flex-col">
             <h2 id="meet-heading" style={displayHeading()} className={cn(FLUID_TYPE, DISPLAY_HEADING)}>
               Where to meet<span className="ss08">.</span>
             </h2>
@@ -112,12 +114,15 @@ export default async function RunPage({ params }: { params: Promise<{ slug: stri
               The exact spot may vary. Use the link for the park and check for schedule updates before you go.
             </p>
             {run.directionsUrl && (
-              <CtaLink href={run.directionsUrl} target="_blank" rel="noopener noreferrer" variant="primary" className="mt-6 h-12 px-6 text-[16px] font-medium">
+              <CtaLink href={run.directionsUrl} target="_blank" rel="noopener noreferrer" variant="primary" className="mt-6 self-start h-12 px-6 text-[16px] font-medium">
                 Get directions<span className="sr-only"> (opens Google Maps in a new tab)</span>
               </CtaLink>
             )}
+            <div className="mt-10 lg:mt-auto lg:pt-10">
+              <WeatherCompact now={now} runDate={nextReal?.date} minimal />
+            </div>
           </div>
-          <WeatherCompact now={now} runDate={nextReal?.date} />
+          {run.pin && <RunMap image={run.pin.image} label={`${c.placeName} meeting pin`} placeName={c.placeName} />}
         </Container>
       </section>
 
@@ -214,16 +219,17 @@ function AtAGlance({ run, hillName, hillHref, surface }: { run: Run; hillName: s
     ["Duration", run.durationLabel ?? "To be confirmed"],
     ["Workout", run.workoutSummary ?? "To be confirmed"],
     ["Surface", surface ?? "To be confirmed"],
-    ["Hill", hillHref ? <Link key="h" href={hillHref} className="underline-offset-4 hover:underline">{hillName}</Link> : hillName],
+    ["Hill", hillHref ? <Link key="h" href={hillHref} className="rounded-xs underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring">{hillName}</Link> : hillName],
   ];
   return (
-    <section aria-label="At a glance" className="border-y border-foreground">
+    <section aria-label="At a glance" className="border-y border-foreground py-10 md:py-14">
       <Container>
-        <dl className="grid grid-cols-2 gap-y-6 py-8 md:grid-cols-4">
-          {items.map(([k, v]) => (
-            <div key={k}>
-              <dt className={cn(LABEL, "text-foreground/75")}>{k}</dt>
-              <dd className="mt-1 text-[20px] leading-[28px] font-semibold">{v}</dd>
+        <dl className="grid grid-cols-2 justify-items-center gap-4 md:flex md:justify-between">
+          {items.map(([k, v], i) => (
+            <div key={k} {...cmrTieDyeCircle(i)}>
+              <span aria-hidden className="cmr-tie-dye absolute -z-10" />
+              <dt className={cn(LABEL, "text-[12px] leading-4 md:text-[13px]")}>{k}</dt>
+              <dd className="mt-1 text-[18px] leading-[22px] font-semibold md:mt-2 md:text-[22px] md:leading-[26px]">{v}</dd>
             </div>
           ))}
         </dl>
@@ -234,11 +240,11 @@ function AtAGlance({ run, hillName, hillHref, surface }: { run: Run; hillName: s
 
 function WhatToExpect({ run }: { run: Run }) {
   const c = run.content!;
-  const rows: [string, string][] = [
-    ["Workout", c.workout],
-    ["Effort", c.effort],
-    ["Terrain", c.terrain],
-    ["What to bring", c.bring],
+  const rows: [string, string, typeof RepeatIcon][] = [
+    ["Workout", c.workout, RepeatIcon],
+    ["Effort", c.effort, ActivityIcon],
+    ["Terrain", c.terrain, MountainIcon],
+    ["What to bring", c.bring, BackpackIcon],
   ];
   return (
     <section aria-labelledby="expect-heading" className="py-16 md:py-24">
@@ -247,10 +253,13 @@ function WhatToExpect({ run }: { run: Run }) {
           What to expect<span className="ss08">.</span>
         </h2>
         <dl className="mt-10 border-b border-foreground md:mt-14">
-          {rows.map(([k, v]) => (
+          {rows.map(([k, v, Icon]) => (
             <Fragment key={k}>
               <div className="grid gap-2 border-t border-foreground py-6 md:grid-cols-[220px_minmax(0,1fr)] md:gap-10 md:py-8">
-                <dt className={cn(LABEL, "pt-1")}>{k}</dt>
+                <dt className={cn(LABEL, "flex items-start gap-3")}>
+                  <Icon className="size-6 shrink-0 -translate-y-0.5" />
+                  {k}
+                </dt>
                 <dd className="max-w-[68ch] text-[18px] leading-[27px]">{v}</dd>
               </div>
             </Fragment>

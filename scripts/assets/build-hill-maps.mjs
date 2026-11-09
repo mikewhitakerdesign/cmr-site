@@ -33,9 +33,16 @@ const PLACES = [
   ["schiller-hill", 41.9473764, -87.8459328, 15], // natural/wood "Schiller Woods"
   ["mt-trashmore", 42.0244838, -87.7028706, 16], // leisure/park "Robert E. James Park"
 ];
+// `--runs`: the run pages' "Where to meet" maps, centred on the Owner's exact Google Maps pins
+// (the coordinates the supplied short links resolve to, read 2026-11-09), one zoom step closer.
+const RUN_PLACES = [
+  ["cricket-mtn-repeats", 41.962864, -87.64403, 17], // https://maps.app.goo.gl/11S9yixBqMH3vxC97
+  ["horner-hell-repeats", 41.959459, -87.69566, 17], // https://maps.app.goo.gl/UkzLSDPRzYykq9Aq6
+];
+const RUNS = process.argv.includes("--runs");
 const W = 1280, H = 720, TILE = 256;
 const UA = "cmr-site-asset-build/1.0 (one-off static map build; github.com/mikewhitakerdesign/cmr-site)";
-const OUT = "public/hills/maps";
+const OUT = RUNS ? "public/calendar/maps" : "public/hills/maps";
 mkdirSync(OUT, { recursive: true });
 
 const project = (lat, lon, z) => {
@@ -45,7 +52,7 @@ const project = (lat, lon, z) => {
 };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-for (const [slug, lat, lon, z] of PLACES) {
+for (const [slug, lat, lon, z] of RUNS ? RUN_PLACES : PLACES) {
   const [cx, cy] = project(lat, lon, z);
   const left = Math.round(cx - W / 2), top = Math.round(cy - H / 2);
   const tiles = [];

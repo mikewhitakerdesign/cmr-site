@@ -76,7 +76,7 @@ describe("hill records (Chicago Hills milestone)", () => {
     expect(p.lede).toBe(
       "A grassy lakefront hill beside Montrose Harbor with just enough elevation to become considerably less charming after enough repeats.",
     );
-    expect(p.aboutHeading).toBe("The mountain at Montrose.");
+    expect(p.aboutHeading).toBe("The hill at Montrose.");
     expect(p.about.slice(0, 3)).toEqual([
       "Cricket Hill sits just west of Montrose Harbor along Chicago's lakefront. In another city, it might be a pleasant little hill.",
       "Here, we have standards to maintain.",

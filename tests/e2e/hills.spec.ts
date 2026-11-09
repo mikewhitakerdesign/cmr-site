@@ -273,8 +273,8 @@ test.describe("hill detail pages", () => {
       await page.waitForTimeout(1000);
       expect(Buffer.compare(s1, await canvas.screenshot()), "software WebGL: one still frame").toBe(0);
     }
-    // Grey lines (MWDS neutrals 600), not white.
-    expect(await css(canvas, "color")).toBe("rgb(82, 82, 82)");
+    // Grey lines, not white: MWDS neutrals 500 since the final pass (lighter, larger, sparser contours; was neutrals 600).
+    expect(await css(canvas, "color")).toBe("rgb(115, 115, 115)");
 
     // The animation itself (forced on, as a GPU would run it).
     const moving = await browser.newPage({ viewport: page.viewportSize()! });
