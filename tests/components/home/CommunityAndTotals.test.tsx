@@ -99,8 +99,8 @@ describe("ClubTotals", () => {
       return copy.textContent!.replace(/\s+/g, " ").trim();
     };
     expect(spoken(moon.querySelector("p")!)).toBe("Join the club and help us get there. We're only 1,261,022,400 feet away.");
-    // Only the distance is bold.
-    expect(spoken(moon.querySelector("strong")!)).toBe("1,261,022,400 feet away");
+    // Only the number is bold; "feet away" is ordinary text.
+    expect(spoken(moon.querySelector("strong")!)).toBe("1,261,022,400");
     expect(moon.querySelector("strong .sr-only")).toHaveTextContent("1,261,022,400");
     // The countdown is the 132K ft vertical: 1,261,154,400 − 132,000.
     expect(clubTotals!.moon!.startFt - clubTotals!.moon!.remainingFt).toBe(132_000);

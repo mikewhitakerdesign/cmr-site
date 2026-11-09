@@ -54,6 +54,23 @@ describe("hill records (Chicago Hills milestone)", () => {
     }
   });
 
+  it("uses the Owner's Warren and Schiller paragraphs verbatim, keeping headings and sources", () => {
+    const warren = getHill("warren-hill")!.page!;
+    expect(warren.aboutHeading).toBe("The hill at Warren Park.");
+    expect(warren.about).toEqual([
+      "Warren Park covers roughly 89 acres and has a nine-hole golf course and an ice rink. The hill is proving less cooperative.",
+      "At this point, locating it may count as the first repeat.",
+    ]);
+    expect(warren.sources.map((s) => s.label)).toEqual(["Chicago Park District: Warren (Laurence) Park"]);
+    const schiller = getHill("schiller-hill")!.page!;
+    expect(schiller.aboutHeading).toBe("The hill at Schiller Woods.");
+    expect(schiller.about).toEqual([
+      "Schiller Woods sits along Irving Park Road. Somewhere in the vicinity is a hill we intend to run up repeatedly.",
+      "Its exact location remains a closely guarded secret. Apparently, even from us.",
+    ]);
+    for (const h of hillsWithPages()) expect([...h.page.about, h.page.lede].join(" ")).not.toMatch(/—/);
+  });
+
   it("uses the Cricket Hill copy from the approved frame verbatim", () => {
     const p = getHill("cricket-hill")!.page!;
     expect(p.lede).toBe(

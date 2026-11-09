@@ -22,7 +22,7 @@ validation_state: passed
 blocker_state: awaiting-owner-review
 current_responsibility: owner
 created_at: '2026-11-08T23:30:00.000Z'
-updated_at: '2026-11-09T09:00:00.000Z'
+updated_at: '2026-11-09T12:00:00.000Z'
 ---
 ## Status
 
@@ -35,6 +35,41 @@ mechanical passes. See "Delivery" for the PR, head commits, CI runs and Preview.
 
 Sections below "Refinement pass" record the first milestone delivery as it was;
 where the refinement pass changed something, the refinement section governs.
+
+## Final mobile, motion and content refinements (Owner direction, 2026-11-09)
+
+Brief "CMR: PR #4 Final Mobile, Motion & Content Refinements", from the Owner's
+review of the live Preview. Same constraints: no merge, no deploy, Join
+untouched, approved heroes, directory, calculations and maps unchanged.
+
+| # | Item | What changed |
+|---|---|---|
+| M1 | Mobile header (`Header`, `HeaderShell`) | Below 768: top row (logo + "Join the club", 64px), a 1px rule, then the link row. Links 15px (was 13); each link is its whole cell, 48px tall, cells sharing the full width (`flex-auto`, so a fourth link, "The Science", fits by adding it to `primaryNav`). Scrolling down past the top row slides it away (`data-hide-top`, a transform on the bar) and the link row stays pinned; scrolling up (more than 6px) brings it back; focus on the logo or CTA brings it back. The header's layout box keeps 114px, so content never shifts or jumps. Reduced motion: no slide. Tablet and desktop unchanged (no compact shrink on mobile; the slide replaces it) |
+| M2 | Mobile hero headline | Fills the content width: `(100vw − 48px) / 6.12` (each line ≈ 6.1em; 44px at 320, 56px at 393, 62px at 430) |
+| M3 | Mobile hero CTAs | Stacked, full width: Find a Run, then Join the club; colours and hovers unchanged |
+| M4 | Next-run card | 8px radius at every size; mobile: at the bottom of the hero, hanging 96px into the white page (hero `mb-24` holds the space; 64px before the statement); a static contour pattern inside at every size (TopoPattern, `--cmr-contour-on-dark` at 45%, ≈ #262626 on black; no canvas) |
+| M5 | Mobile club totals | The grid bleeds 12px into the margins, gap 24 both ways: circles ≈ 136 / 159 / 172 / 191 at 320 / 375 / 393 / 430 (were ≤ 162, 126 at 320); labels on one line (no wrap, 4% padding) |
+| M6 | Moon sequence | `Odometer` gained a `done` phase and `after`: the moon distance waits until all four totals have finished rolling AND it is itself 40% on screen, then spins down once (1,261,154,400 → 1,261,022,400). Visible at load: still. Reduced motion: still. Screen readers: the final figure |
+| M7 | Moon typography | Only "1,261,022,400" is bold and 1.15×; " feet away." is ordinary text |
+| M8 | Footer wordmark | A real link, `href="#top"` (works without JS), named "Chicago Mountain Runners, back to top"; JS scrolls smoothly (instant under reduced motion), keeps the URL clean and moves focus to the skip link. The wordmark inside is decorative (the link carries the name); look unchanged |
+| M9 | Warren / Schiller copy | Owner's paragraphs, verbatim; headings, sources (Warren: Chicago Park District; Schiller: none) and `provisional` status unchanged. No other hill copy changed |
+| M10 | "Find what you've been looking for." | Heading, address, actions and note in the left half; the map in the right half, centred vertically against them. Desktop heading on exactly three lines ("Find what / you've been / looking for."); natural wrapping on tablet (two columns kept) and phones (stacked, map last). Copy, map, pin, attribution, zoom and links unchanged. All five pages |
+
+Validation (2026-11-09, macOS, Chromium): lint, `tsc`, `tokens:check`, build
+pass; Vitest **279 pass** (new: hide-top logic, four-link mobile row, Odometer
+`done` and `after` sequencing, moon typography, footer link, Owner copy);
+Playwright **249 pass, 10 skipped** (new: real-wheel scrolling hides and restores
+the mobile top row with no layout change or jump, focus restores it, never on
+tablet/desktop, no slide under reduced motion; mobile header geometry (114px,
+48px cells, full width, 15px); hero headline fills 320 / 375 / 393 / 430 without
+overflow; stacked full-width CTAs; card radius, pattern, 96px overhang, ≥ 48px
+before the statement; mobile circles equal, 22–32px apart, bigger, labels one
+line inside; moon waits for all four totals and for visibility, runs once,
+only the number bold; back-to-top scrolls to 0, clean URL, focus at the skip
+link, instant under reduced motion; Find layout on all five pages, three lines
+on desktop); visual **21 pass**, 10 baselines updated (mobile header, mobile
+homepage, mobile footer focus, /hills mobile, Cricket and Warren at three
+widths), stable on re-run. Evidence in `docs/review/cmr-hills/`.
 
 ## Final refinement pass (Owner direction, 2026-11-09)
 
@@ -444,7 +479,11 @@ Milestone delivery (history):
 
 ## Decisions needed before merging
 
-Final pass (current):
+Final mobile pass: no new blockers. Mobile nav cells share the width by
+content (`flex-auto`) rather than strictly equal widths, so "Chicago Hills
+Mtns" fits at 320px; text gaps are even. Say if strictly equal cells are wanted.
+
+Final pass (still open):
 
 - **F-a. Join page em dashes:** `src/app/join/page.tsx` (paused Join scaffold) still
   has two em dashes (title and body). Fix when Join resumes, or allow a one-line

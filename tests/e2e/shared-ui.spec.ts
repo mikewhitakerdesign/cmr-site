@@ -9,7 +9,8 @@ const AXE_PATH = require.resolve("axe-core");
 // (+1px on the expanded height). Logo and CTA sizes are Figma's.
 // Desktop content is a 1400px container centred in the viewport, 48px padding.
 const FIGMA = {
-  mobile: { headerH: 137, logo: [24, 12, 100], cta: [259, 18, 110], linksY: 94, linkPx: 13, linkGap: 12, formH: 48, headingPx: 28 },
+  // Mobile: PR #4 final refinements (64px top row, 1px rule, 48px link cells at 15px).
+  mobile: { headerH: 114, logo: [24, 6, 100], cta: [259, 14, 110], linksY: 65, linkPx: 15, linkGap: 12, formH: 48, headingPx: 28 },
   tablet: { headerH: 100, logo: [48, 16, 128], cta: [592, 31, 128], linksY: 39, linkPx: 14, linkGap: 24, formH: 48, headingPx: 30 },
   desktop: { headerH: 123, logo: [68, 12, 188], cta: [1222, 43, 150], linksY: 51, linkPx: 14, linkGap: 36, formH: 44, headingPx: 30 },
 } as const;
@@ -83,7 +84,7 @@ test.describe("header", () => {
     const header = page.locator("header");
     expect(Math.round((await box(header)).height)).toBe(s.headerH);
 
-    const logo = await box(page.getByRole("link", { name: "Chicago Mountain Runners" }));
+    const logo = await box(page.getByRole("link", { name: "Chicago Mountain Runners", exact: true }));
     expect(Math.round(logo.x)).toBe(s.logo[0]);
     expect(Math.round(logo.y)).toBe(s.logo[1]);
     expect(Math.round(logo.width)).toBe(s.logo[2]);
@@ -109,7 +110,14 @@ test.describe("header", () => {
     // Links sit on the right: the gap before the CTA equals the gap between links.
     const links = await box(nav);
     if (info.project.name === "mobile") {
-      expect(Math.round(links.x + links.width)).toBe(Math.round(cta.x + cta.width)); // right-aligned under the CTA
+      // The link row spans the viewport under a 1px rule; each link is its whole cell, ≥ 44px tall.
+      expect(Math.round(links.x)).toBe(0);
+      expect(Math.round(links.width)).toBe(393);
+      expect(await css(nav, "border-top-width")).toBe("1px");
+      const cells = await nav.getByRole("link").evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).map((r) => ({ x: r.x, w: r.width, h: r.height })));
+      for (const c of cells) expect(c.h).toBeGreaterThanOrEqual(44);
+      expect(Math.round(cells.reduce((sum, c) => sum + c.w, 0))).toBe(393);
+      expect(Math.round(cells[0].x)).toBe(0);
     } else {
       expect(Math.round(cta.x - (links.x + links.width))).toBe(s.linkGap);
       const [a, b] = await nav.getByRole("link").all();
@@ -144,7 +152,7 @@ test.describe("header", () => {
   });
 
   test("renders the masked wordmark (not a solid block, not empty)", async ({ page }) => {
-    const shot = await page.getByRole("link", { name: "Chicago Mountain Runners" }).screenshot();
+    const shot = await page.getByRole("link", { name: "Chicago Mountain Runners", exact: true }).screenshot();
     const darkRatio = await page.evaluate(async (b64) => {
       const img = new Image();
       img.src = `data:image/png;base64,${b64}`;
@@ -179,6 +187,61 @@ test.describe("header", () => {
   });
 });
 
+test.describe("mobile header scrolling (PR #4 final refinements)", () => {
+  test("scrolling down hides the top row and pins the link row; scrolling up brings it back; nothing jumps", async ({ page }, info) => {
+    test.skip(info.project.name !== "mobile", "mobile only");
+    await page.goto("/hills/cricket-hill");
+    await page.evaluate(() => document.fonts.ready);
+    const header = page.locator("body > header");
+    const bar = header.locator("[data-slot=header-bar]");
+    const nav = page.getByRole("navigation", { name: "Primary" });
+    const cta = header.getByRole("link", { name: "Join the club" });
+    const headerH = (await box(header)).height;
+    // Real scrolling: wheel steps down.
+    for (let i = 0; i < 12; i++) {
+      await page.mouse.wheel(0, 80);
+      await page.waitForTimeout(40);
+    }
+    await expect(header).toHaveAttribute("data-hide-top", "");
+    await expect.poll(async () => Math.round((await box(nav)).y)).toBe(0); // link row pinned at the top
+    expect((await box(cta)).y + (await box(cta)).height).toBeLessThanOrEqual(0); // top row out of view
+    expect((await box(header)).height).toBe(headerH); // layout box unchanged: no content shift
+    // The pinned row's links still work as full-height cells.
+    for (const l of await nav.getByRole("link").all()) expect((await box(l)).height).toBeGreaterThanOrEqual(44);
+    // Up a little: the top row returns, without moving the page.
+    const before = await page.evaluate(() => window.scrollY);
+    await page.mouse.wheel(0, -60);
+    await page.waitForTimeout(40);
+    await page.mouse.wheel(0, -60);
+    await expect(header).not.toHaveAttribute("data-hide-top", "");
+    await expect.poll(async () => Math.round((await box(bar)).y)).toBe(0);
+    const after = await page.evaluate(() => window.scrollY);
+    expect(before - after).toBeLessThanOrEqual(130); // only what we scrolled; no jump
+    // Keyboard: focus on the CTA while hidden brings the row back.
+    for (let i = 0; i < 6; i++) await page.mouse.wheel(0, 120);
+    await expect(header).toHaveAttribute("data-hide-top", "");
+    await cta.focus();
+    await expect(header).not.toHaveAttribute("data-hide-top", "");
+  });
+
+  test("tablet and desktop never hide the top row", async ({ page }, info) => {
+    test.skip(info.project.name === "mobile", "tablet and desktop");
+    await page.goto("/hills/cricket-hill");
+    for (let i = 0; i < 12; i++) await page.mouse.wheel(0, 120);
+    await page.waitForTimeout(300);
+    await expect(page.locator("body > header")).not.toHaveAttribute("data-hide-top", "");
+    expect(Math.round((await box(page.locator("[data-slot=header-bar]"))).y)).toBe(0);
+  });
+
+  test("reduced motion: the top row hides without a slide", async ({ browser }, info) => {
+    test.skip(info.project.name !== "mobile", "mobile only");
+    const page = await browser.newPage({ reducedMotion: "reduce", viewport: { width: 393, height: 852 } });
+    await page.goto("/hills/cricket-hill");
+    expect(await css(page.locator("[data-slot=header-bar]"), "transition-property")).not.toMatch(/transform/);
+    await page.close();
+  });
+});
+
 test.describe("footer", () => {
   test("uses the Round 2 quiet neutral surface, the tone-on-tone wordmark and Figma typography", async ({ page }, info) => {
     const s = spec(info.project.name);
@@ -195,7 +258,8 @@ test.describe("footer", () => {
     // Refinement pass (Owner direction, 2026-11-08): one large wordmark, in the footer ink,
     // in the right half beside the newsletter (below it on mobile). The small badge is gone.
     const mark = footer.locator("[data-slot=cmr-wordmark]");
-    await expect(footer.getByRole("img", { name: "Chicago Mountain Runners" })).toHaveCount(1);
+    // The wordmark is the "back to top" link's content (PR #4 final refinements).
+    await expect(footer.getByRole("link", { name: "Chicago Mountain Runners, back to top" })).toHaveCount(1);
     await expect(mark).toBeVisible();
     expect(await toRgb(page, await css(mark, "background-color"))).toBe(ink);
     const m = await box(mark);
@@ -238,6 +302,33 @@ test.describe("footer", () => {
   test("is unavailable — not broken — until a provider is configured", async ({ page }) => {
     await expect(page.getByRole("textbox", { name: "Email address" })).toBeDisabled();
     await expect(page.getByRole("status")).toHaveText("Newsletter signup isn’t open yet.");
+  });
+
+  test("the wordmark is a link back to the top of the page: smooth, then focus at the top", async ({ page }) => {
+    await page.goto("/hills/cricket-hill");
+    const link = page.locator("footer").getByRole("link", { name: "Chicago Mountain Runners, back to top" });
+    await expect(link).toHaveAttribute("href", "#top");
+    await link.scrollIntoViewIfNeeded();
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(1000);
+    await link.click();
+    await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 4000 }).toBe(0);
+    expect(page.url()).not.toContain("#top");
+    // Keyboard users continue from the top: focus is on the skip link.
+    await expect(page.getByRole("link", { name: /skip/i })).toBeFocused();
+    // The wordmark keeps its look: the footer ink, the traced proportions.
+    const mark = link.locator("[data-slot=cmr-wordmark]");
+    const m = await box(mark);
+    expect(m.width / m.height).toBeCloseTo(1858 / 888, 1);
+  });
+
+  test("the back-to-top link jumps instantly under reduced motion", async ({ browser }) => {
+    const page = await browser.newPage({ reducedMotion: "reduce" });
+    await page.goto("/hills/cricket-hill");
+    const link = page.locator("footer").getByRole("link", { name: "Chicago Mountain Runners, back to top" });
+    await link.scrollIntoViewIfNeeded();
+    await link.click();
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+    await page.close();
   });
 
   test("has no axe violations (including color contrast)", async ({ page }) => {

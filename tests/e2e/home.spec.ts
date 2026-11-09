@@ -26,7 +26,9 @@ type Frame = {
 // Figma measurements (px). Section heights are compared ±2px.
 const FIGMA: Record<string, Frame> = {
   mobile: {
-    hero: { h: 614, h1Size: 48, h1Top: 52, ctaTop: 230, ctaH: 48, cardTop: 326, cardW: "full" },
+    // PR #4 final refinements: full-width headline ((393 − 48) / 6.12), stacked CTAs, and the
+    // card at the bottom hanging 96px below (its top is measured with that offset).
+    hero: { h: 649, h1Size: 56.37, h1Top: 52, ctaTop: 248, ctaH: 48, cardTop: 500, cardW: "full" },
     sections: { community: 390, jsu: 460, flat: 398 },
     runRowH: 166,
     hillRowH: 100,
@@ -189,7 +191,17 @@ test.describe("layout against Figma", () => {
     const findBox = await box(find);
     expect(Math.round(findBox.y - heroBox.y)).toBe(f.ctaTop);
     expect(Math.round(findBox.height)).toBe(f.ctaH);
-    expect(Math.round((await box(become)).y)).toBe(Math.round(findBox.y));
+    const becomeBox = await box(become);
+    if (info.project.name === "mobile") {
+      // Stacked, full content width, Find a Run first.
+      expect(becomeBox.y).toBeGreaterThan(findBox.y + findBox.height);
+      for (const b of [findBox, becomeBox]) {
+        expect(Math.round(b.x)).toBe(24);
+        expect(Math.round(b.width)).toBe(345);
+      }
+    } else {
+      expect(Math.round(becomeBox.y)).toBe(Math.round(findBox.y));
+    }
 
     const card = hero(page).getByRole("article");
     const cardBox = await box(card);
@@ -199,6 +211,34 @@ test.describe("layout against Figma", () => {
     expect(Math.round(cardBox.x + cardBox.width)).toBe(Math.round(contentRight)); // right-aligned to the container
     if (f.cardW !== "full") expect(Math.round(cardBox.width)).toBe(f.cardW);
     else expect(Math.round(cardBox.x)).toBe(24);
+  });
+
+  test("mobile headline fills the content width at 320–430, without overflowing", async ({ page }, info) => {
+    test.skip(info.project.name !== "mobile", "mobile only");
+    for (const w of [320, 375, 393, 430]) {
+      await page.setViewportSize({ width: w, height: 852 });
+      const lines = await page.locator("#hero-heading > span").evaluateAll((els) =>
+        els.map((e) => {
+          const r = document.createRange();
+          r.selectNodeContents(e);
+          const b = r.getBoundingClientRect();
+          return { left: b.left, right: b.right };
+        }),
+      );
+      for (const l of lines) {
+        expect(l.left, `${w}px`).toBeGreaterThanOrEqual(23);
+        expect(l.right, `${w}px`).toBeLessThanOrEqual(w - 23);
+        expect(l.right - l.left, `${w}px fills`).toBeGreaterThan((w - 48) * 0.97);
+      }
+    }
+  });
+
+  test("next-run card: rounded at every size, a quiet static contour inside, no canvas", async ({ page }) => {
+    const card = hero(page).getByRole("article");
+    expect(await css(card, "border-radius")).toBe("8px");
+    await expect(card.locator("[data-slot=topo-pattern]")).toHaveCount(1);
+    await expect(card.locator("canvas")).toHaveCount(0);
+    expect(parseFloat(await css(card.locator("[data-slot=topo-pattern]"), "opacity"))).toBeLessThan(0.5);
   });
 
   test("desktop card overhangs the hero, stays on top and unclipped; inside the hero elsewhere", async ({ page }, info) => {
@@ -219,6 +259,16 @@ test.describe("layout against Figma", () => {
       // CTAs and card never collide.
       const become = await box(hero(page).getByRole("link", { name: "Join the club" }));
       expect(become.x + become.width).toBeLessThan(cardBox.x);
+    } else if (info.project.name === "mobile") {
+      // PR #4 final refinements: the card hangs 96px into the white page, clear of the statement.
+      expect(Math.round(overhang)).toBe(96);
+      expect(cardBox.y).toBeLessThan(heroBox.y + heroBox.height - 96); // still over the photograph
+      const statement = await box(page.locator("main > section").nth(1).locator("p").first());
+      expect(statement.y - (cardBox.y + cardBox.height)).toBeGreaterThanOrEqual(48);
+      await page.evaluate((y) => window.scrollTo(0, y - 300), heroBox.y + heroBox.height);
+      const scrolled = await page.evaluate(() => window.scrollY);
+      const hit = await page.evaluate(([x, yy]) => document.elementFromPoint(x, yy)?.closest("article")?.tagName ?? null, [cardBox.x + 40, heroBox.y + heroBox.height + 48 - scrolled]);
+      expect(hit).toBe("ARTICLE");
     } else {
       expect(overhang).toBeLessThan(0);
     }
@@ -493,7 +543,8 @@ test.describe("accessibility", () => {
 const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "POST, OPTIONS" };
 
 test.describe("Round 2 interactions", () => {
-  test("sticky header turns compact with a 1px black rule, without shifting the page, and the logo returns to the top", async ({ page }) => {
+  test("sticky header turns compact with a 1px black rule, without shifting the page, and the logo returns to the top", async ({ page }, info) => {
+    const mobile = info.project.name === "mobile";
     const header = page.locator("body > header");
     const bar = header.locator("[data-slot=header-bar]");
     const tall = (await box(bar)).height;
@@ -501,7 +552,12 @@ test.describe("Round 2 interactions", () => {
     const before = await docTop();
     await page.evaluate(() => window.scrollTo(0, 1200));
     await expect(header).toHaveAttribute("data-compact", "");
-    await expect.poll(async () => (await box(bar)).height).toBeLessThan(tall - 20); // the visible bar shrinks…
+    if (mobile) {
+      // Mobile (PR #4 final refinements): the top row slides away instead of shrinking.
+      await expect.poll(async () => Math.round((await box(bar)).y)).toBe(-64);
+    } else {
+      await expect.poll(async () => (await box(bar)).height).toBeLessThan(tall - 20); // the visible bar shrinks…
+    }
     expect(await docTop()).toBe(before); // …but the layout never moves (no scroll-anchoring side effects)
     expect(Math.round((await box(header)).height)).toBe(Math.round(tall)); // header box keeps its expanded height
     expect(await css(header, "pointer-events")).toBe("none"); // …and is click-through
@@ -510,7 +566,12 @@ test.describe("Round 2 interactions", () => {
     await expect.poll(() => css(bar, "border-bottom-color")).toBe("rgb(0, 0, 0)");
     expect(await css(bar, "border-bottom-width")).toBe("1px");
     expect(await css(bar, "box-shadow")).toBe("none");
-    await page.getByRole("link", { name: "Chicago Mountain Runners" }).click();
+    if (mobile) {
+      // Scrolling up a little brings the logo back.
+      await page.mouse.wheel(0, -80);
+      await expect(header).not.toHaveAttribute("data-hide-top");
+    }
+    await page.getByRole("link", { name: "Chicago Mountain Runners", exact: true }).click();
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
     await expect(page).toHaveURL(/\/$/);
     await expect(header).not.toHaveAttribute("data-compact");
@@ -544,15 +605,24 @@ test.describe("Round 2 interactions", () => {
     expect(settled).toEqual([true, true, true, true]);
   });
 
-  test("moon line: the distance counts down from 1,261,154,400 to 1,261,022,400 with the totals, once", async ({ page }) => {
+  test("moon line: counts down from 1,261,154,400 to 1,261,022,400 only after the four totals finish and once it's seen", async ({ page }) => {
     const totals = page.locator("section[aria-labelledby=club-totals-heading]");
     const moon = totals.locator("[data-slot=moon]");
     await expect(moon.getByRole("heading", { level: 3 })).toHaveText("We're going to the moon!");
     const odo = moon.locator("[data-odometer]");
-    const metric = totals.locator("[data-slot=total] [data-odometer]").first();
-    // Off screen at load: parked on the starting distance, figures parked at zero.
-    await expect(odo).toHaveAttribute("data-odometer", "armed");
-    const visible = () =>
+    const metrics = totals.locator("[data-slot=total] [data-odometer]");
+    // Record every phase change, with a timestamp, from here on.
+    await page.evaluate(() => {
+      const log: [string, string, number][] = [];
+      Object.assign(window, { __odoLog: log });
+      new MutationObserver((ms) => {
+        for (const m of ms) {
+          const el = m.target as HTMLElement;
+          log.push([el.closest("[data-slot=moon]") ? "moon" : "metric", el.getAttribute("data-odometer")!, performance.now()]);
+        }
+      }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ["data-odometer"] });
+    });
+    const shown = () =>
       odo.evaluate((el) =>
         [...el.querySelectorAll<HTMLElement>("[aria-hidden] > span")]
           .map((cell) => {
@@ -563,16 +633,70 @@ test.describe("Round 2 interactions", () => {
           })
           .join(""),
       );
-    expect(await visible()).toBe("1,261,154,400");
-    await totals.scrollIntoViewIfNeeded();
-    // Starts with the four figures, and lands on the remaining distance.
-    await expect(odo).toHaveAttribute("data-odometer", "rolling");
-    await expect(metric).toHaveAttribute("data-odometer", "rolling");
-    expect(await visible()).toBe("1,261,022,400");
+    // Off screen at load: parked on the starting distance.
+    await expect(odo).toHaveAttribute("data-odometer", "armed");
+    expect(await shown()).toBe("1,261,154,400");
+
+    // The totals come into view and roll; the moon waits, even if it's on screen too.
+    await totals.locator("h2").evaluate((h) => h.scrollIntoView({ block: "start" }));
+    await expect(metrics.first()).toHaveAttribute("data-odometer", /rolling|done/);
+    await expect(odo).toHaveAttribute("data-odometer", "armed");
+    for (const m of await metrics.all()) await expect(m).toHaveAttribute("data-odometer", "done", { timeout: 5000 });
+
+    // Then, once the line is on screen, the second moment.
+    await moon.scrollIntoViewIfNeeded();
+    await expect(odo).toHaveAttribute("data-odometer", /rolling|done/);
+    expect(await shown()).toBe("1,261,022,400");
+    await expect(odo).toHaveAttribute("data-odometer", "done", { timeout: 6000 });
+    const log = await page.evaluate(() => (window as unknown as { __odoLog: [string, string, number][] }).__odoLog);
+    const lastMetricDone = Math.max(...log.filter(([w, p]) => w === "metric" && p === "done").map(([, , t]) => t));
+    const moonStart = log.find(([w, p]) => w === "moon" && p === "rolling")![2];
+    expect(moonStart).toBeGreaterThanOrEqual(lastMetricDone);
+    expect(log.filter(([w, p]) => w === "moon" && p === "rolling")).toHaveLength(1); // once
+
+    // Only the number is bold and a touch larger; "feet away" is ordinary text.
     await expect(moon.locator("strong .sr-only")).toHaveText("1,261,022,400");
     const strong = moon.locator("strong");
+    const p = moon.locator("p");
     expect(await css(strong, "font-weight")).toBe("700");
-    expect(parseFloat(await css(strong, "font-size"))).toBeGreaterThan(parseFloat(await css(moon.locator("p"), "font-size")));
+    expect(parseFloat(await css(strong, "font-size"))).toBeGreaterThan(parseFloat(await css(p, "font-size")));
+    expect(
+      await strong.evaluate((el) => {
+        let t = "";
+        for (let n = el.nextSibling; n; n = n.nextSibling) t += n.textContent;
+        return t;
+      }),
+    ).toBe(" feet away.");
+    expect(await css(p, "font-weight")).toBe("400");
+  });
+
+  test("mobile club totals: larger equal circles, 2 × 2, ~24px apart, labels on one line (320–430)", async ({ page }, info) => {
+    test.skip(info.project.name !== "mobile", "mobile only");
+    const sizes: Record<number, number> = {};
+    for (const w of [320, 375, 393, 430]) {
+      await page.setViewportSize({ width: w, height: 852 });
+      const circles = page.locator("[data-slot=total]");
+      const b = await circles.evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).map((r) => ({ x: r.x, y: r.y, w: r.width, h: r.height })));
+      expect(new Set(b.map((c) => Math.round(c.w))).size, `${w}: equal`).toBe(1);
+      expect(Math.round(b[0].y)).toBe(Math.round(b[1].y));
+      expect(Math.round(b[2].y)).toBe(Math.round(b[3].y));
+      const gapX = b[1].x - (b[0].x + b[0].w);
+      const gapY = b[2].y - (b[0].y + b[0].h);
+      expect(gapX, `${w}: gap x`).toBeGreaterThanOrEqual(22);
+      expect(gapX, `${w}: gap x`).toBeLessThanOrEqual(32);
+      expect(gapY, `${w}: gap y`).toBeGreaterThanOrEqual(22);
+      expect(gapY, `${w}: gap y`).toBeLessThanOrEqual(32);
+      // Labels on one line, inside the circle.
+      for (const dt of await page.locator("[data-slot=total] dt").all()) {
+        const [lines, width] = await dt.evaluate((e) => [Math.round(e.getBoundingClientRect().height / parseFloat(getComputedStyle(e).lineHeight)), e.getBoundingClientRect().width]);
+        expect(lines, `${w}: label lines`).toBe(1);
+        expect(width, `${w}: label fits the circle`).toBeLessThan(b[0].w * 0.96);
+      }
+      sizes[w] = b[0].w;
+    }
+    // Bigger than before (≤ 162 at 393; 126 at 320).
+    expect(sizes[393]).toBeGreaterThan(168);
+    expect(sizes[320]).toBeGreaterThan(130);
   });
 
   test("reduced motion: figures and topography stay static", async ({ browser, page }) => {

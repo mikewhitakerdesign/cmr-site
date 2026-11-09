@@ -53,6 +53,13 @@ describe("Footer", () => {
     expect(screen.queryByRole("heading", { name: "Get the next run in your inbox." })).not.toBeInTheDocument();
   });
 
+  it("makes the large wordmark a link back to the top of the page", () => {
+    render(<Footer year={2026} />);
+    const link = screen.getByRole("link", { name: "Chicago Mountain Runners, back to top" });
+    expect(link).toHaveAttribute("href", "#top");
+    expect(link.querySelector("[data-slot=cmr-wordmark]")).toHaveAttribute("aria-hidden", "true");
+  });
+
   it("has no axe violations", async () => {
     const { container } = render(<Footer year={2026} />);
     expect(await axeViolations(container)).toEqual([]);

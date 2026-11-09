@@ -323,12 +323,10 @@ test.describe("hill detail pages", () => {
       expect(parseFloat(await css(page.locator(sel), "font-size")), sel).toBeCloseTo(f.display, 0);
     }
     if (info.project.name === "mobile") return; // 48px can't hold "How tall you need it?" in 345px
-    for (const sel of ["#repeats-heading", "#find-heading"]) {
-      const lines = await page.locator(`${sel} > span`).evaluateAll((els) =>
-        els.map((e) => e.getBoundingClientRect().height / parseFloat(getComputedStyle(e).lineHeight)),
-      );
-      expect(lines.map(Math.round), sel).toEqual([1, 1]);
-    }
+    const lines = await page.locator("#repeats-heading > span").evaluateAll((els) =>
+      els.map((e) => e.getBoundingClientRect().height / parseFloat(getComputedStyle(e).lineHeight)),
+    );
+    expect(lines.map(Math.round), "#repeats-heading").toEqual([1, 1]);
   });
 
   test("repeats: wide support copy, then four circles on one row (2 × 2 on phones), Cricket Hill's derived counts and miles", async ({ page }, info) => {
@@ -411,6 +409,38 @@ test.describe("hill detail pages", () => {
     await expect(map.locator("img")).toHaveJSProperty("complete", true);
     expect(await map.locator("img").evaluate((i: HTMLImageElement) => i.naturalWidth)).toBeGreaterThan(0);
     await expect(map.getByRole("link", { name: "OpenStreetMap" })).toHaveAttribute("href", "https://www.openstreetmap.org/copyright");
+  });
+
+  test("Find section: heading, address, actions and note in the left half, map opposite; three heading lines on desktop", async ({ page }, info) => {
+    for (const slug of SLUGS) {
+      await page.goto(`/hills/${slug}`);
+      await page.evaluate(() => document.fonts.ready);
+      const section = page.locator("section[aria-labelledby=find-heading]");
+      const heading = section.locator("#find-heading");
+      await expect(heading).toHaveText("Find what you've been looking for.");
+      const map = section.locator("[data-slot=hill-map]");
+      const [h, m, note, sec] = await Promise.all([box(heading), box(map), box(section.locator("p").last()), box(section.locator(":scope > div"))]);
+      if (info.project.name === "mobile") {
+        expect(m.y, slug).toBeGreaterThan(note.y + note.height); // stacked: text, then the map
+        continue;
+      }
+      // Two halves: the heading sits in the left column, opposite the map (no longer spanning).
+      expect(h.x + h.width, slug).toBeLessThan(m.x);
+      expect(Math.abs(m.x + m.width / 2 - (sec.x + sec.width * 0.75)), slug).toBeLessThanOrEqual(sec.width * 0.06);
+      // The map is centred vertically against the left column.
+      const leftTop = h.y, leftBottom = note.y + note.height;
+      expect(Math.abs(m.y + m.height / 2 - (leftTop + leftBottom) / 2), slug).toBeLessThanOrEqual(4);
+      if (info.project.name === "desktop") {
+        const spans = await heading.locator(":scope > span").evaluateAll((els) =>
+          els.map((e) => ({ t: e.textContent, lines: Math.round(e.getBoundingClientRect().height / parseFloat(getComputedStyle(e).lineHeight)) })),
+        );
+        expect(spans, slug).toEqual([
+          { t: "Find what", lines: 1 },
+          { t: "you've been", lines: 1 },
+          { t: "looking for.", lines: 1 },
+        ]);
+      }
+    }
   });
 
   test("the map eases in slightly on hover, about its centre; not under reduced motion", async ({ browser, page }, info) => {

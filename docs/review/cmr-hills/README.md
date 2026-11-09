@@ -1,7 +1,8 @@
 # Chicago Hills: review evidence
 
 Screenshots of the production build (`next build && next start`, Chromium,
-macOS, 1× DPR, full page), final refinement pass of PR #4, taken 2026-11-09.
+macOS, 1× DPR, full page), PR #4 final mobile, motion and content refinements,
+taken 2026-11-09.
 Headless Chromium renders WebGL in software, where the contours hold still by
 design; these captures turn the animation on (the test-only flag) to show it
 as a browser with a GPU runs it. See
@@ -19,8 +20,12 @@ as a browser with a GPU runs it. See
 | `home-club-totals-…`, `home-see-you-on-the-hill-…`, `home-get-high-…` | Club totals with the moon line; the heading sizes; the "Get high" copy color |
 | `motion-hill-hero-frames.jpg`, `motion-flat-frames.jpg` | Three frames, 2 s apart, showing the contour motion |
 | `hills-row-hover-1440.jpg` | /hills rows with the third row hovered: the shared contour layer showing through that row |
-| `home-moon-countdown-frames.jpg` | The moon distance counting down (0.4 s, 1.2 s, settled) |
+| `home-moon-countdown-frames.jpg` | The moon distance: parked while the totals roll, then spinning down, then settled |
 | `hill-map-zoom-rest-hover.jpg` | The map at rest and after the hover zoom |
+| `mobile-header-top-down-up-393.jpg` | Mobile header at the top, after scrolling down (link row pinned), after scrolling up (top row back) |
+| `mobile-home-hero-{320,375,393,430}.jpg` | Mobile hero: full-width headline, stacked CTAs, card hanging into the white page |
+| `mobile-club-totals-{320,375,393,430}.jpg` | Larger mobile circles, 24px apart, labels on one line; the moon line settled |
+| `hill-find-{393,768,1440}.jpg` | "Find what you've been looking for.": heading and actions left, map right; stacked on phones |
 
 768 images are scaled to 75% and 1440 images to 50%. Screenshots catch the
 animation mid-motion; the visual baselines (`tests/e2e/*-snapshots/`, macOS,
