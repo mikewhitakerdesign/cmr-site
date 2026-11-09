@@ -2,22 +2,22 @@
 
 import { useForm } from "@formspree/react";
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { Field } from "@/components/form/Field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { QUESTIONS_FORM_ID } from "@/lib/questions";
+import { isEmail } from "@/lib/validation";
 import { cn } from "@/lib/utils";
 
 type Fields = { message: string; email: string; name: string };
 type FieldErrors = Partial<Record<"message" | "email", string>>;
-
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Client-side checks, mirrored by Formspree's own validation on the server. */
 export function validateQuestion(values: { message: string; email: string }): FieldErrors {
   const errors: FieldErrors = {};
   if (!values.message.trim()) errors.message = "Add your question.";
   if (!values.email.trim()) errors.email = "Add your email so we can reply.";
-  else if (!EMAIL.test(values.email.trim())) errors.email = "That email doesn't look right. Check it and try again.";
+  else if (!isEmail(values.email)) errors.email = "That email doesn't look right. Check it and try again.";
   return errors;
 }
 
@@ -233,42 +233,6 @@ export function QuestionsWidget() {
         </svg>
         {open ? "Close" : "Questions?"}
       </button>
-    </div>
-  );
-}
-
-function Field({
-  id,
-  label,
-  hint,
-  optional,
-  error,
-  children,
-}: {
-  id: string;
-  label: string;
-  hint?: string;
-  optional?: boolean;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-p-sm font-medium">
-        {label}
-        {optional && <span className="font-normal text-muted-foreground"> (optional)</span>}
-      </label>
-      {children}
-      {hint && (
-        <p id={`${id}-hint`} className="text-p-mini text-muted-foreground">
-          {hint}
-        </p>
-      )}
-      {error && (
-        <p id={`${id}-error`} className="text-p-mini font-medium text-destructive">
-          {error}
-        </p>
-      )}
     </div>
   );
 }

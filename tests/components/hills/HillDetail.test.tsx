@@ -22,7 +22,7 @@ function Page({ slug }: { slug: string }) {
       <HillLede hill={h} />
       <HillAbout hill={h} />
       <HillRepeats hill={h} />
-      <HillRuns hill={h} runs={getRunsAtHill(slug, NOW)} />
+      <HillRuns held={false} hill={h} runs={getRunsAtHill(slug, NOW)} />
       <FindTheMountain hill={h} />
       <MoreHills hills={otherHills(slug)} />
     </main>
@@ -109,7 +109,7 @@ describe("hill detail page (refinement pass, PR #4)", () => {
   });
 
   it("links the run held at the hill, from runs data (not the Figma sample)", () => {
-    render(<HillRuns hill={hill("cricket-hill")} runs={getRunsAtHill("cricket-hill", NOW)} />);
+    render(<HillRuns held={false} hill={hill("cricket-hill")} runs={getRunsAtHill("cricket-hill", NOW)} />);
     expect(screen.getByRole("heading", { level: 3, name: "Cricket Mtn Repeats" })).toBeInTheDocument();
     expect(screen.getByText("Every Saturday · 5:30 AM · Cricket Hill · Montrose Beach")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "View run: Cricket Mtn Repeats" })).toHaveAttribute("href", "/calendar/cricket-mtn-repeats");
@@ -117,7 +117,7 @@ describe("hill detail page (refinement pass, PR #4)", () => {
   });
 
   it("says so when no CMR run uses the hill", () => {
-    render(<HillRuns hill={hill("warren-hill")} runs={[]} />);
+    render(<HillRuns held={false} hill={hill("warren-hill")} runs={[]} />);
     expect(screen.getByRole("heading", { level: 3, name: "No set weekly run." })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Find a Run" })).toHaveAttribute("href", "/calendar");
   });

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { HillProfile } from "@/components/HillProfile";
 import { HillDirectoryList } from "@/components/hills/HillDirectoryList";
 import { directoryEntries } from "@/lib/hill-directory";
+import { runs as allRuns } from "@/lib/runs";
 import { getHill } from "@/lib/hills";
 import { axeViolations } from "../../axe";
 
@@ -13,7 +14,7 @@ const facts = (row: HTMLElement) =>
 
 describe("HillDirectoryList (/hills)", () => {
   it("lists the five hills in order, unnumbered, and links each whole row to its page", () => {
-    render(<HillDirectoryList entries={directoryEntries(NOW)} />);
+    render(<HillDirectoryList entries={directoryEntries(NOW, allRuns)} />);
     expect(rows().map((r) => r.getAttribute("data-hill"))).toEqual(["cricket-hill", "warren-hill", "horner-hill", "schiller-hill", "mt-trashmore"]);
     for (const r of rows()) expect(r.textContent).not.toMatch(/\b0[1-5]\b/);
     for (const r of rows()) {
@@ -31,7 +32,7 @@ describe("HillDirectoryList (/hills)", () => {
   });
 
   it("compares rise, surface and weekly CMR runs, without numbers for Warren Hill", () => {
-    render(<HillDirectoryList entries={directoryEntries(NOW)} />);
+    render(<HillDirectoryList entries={directoryEntries(NOW, allRuns)} />);
     const [cricket, warren, horner] = rows();
     expect(facts(cricket)).toEqual({ Rise: "≈ 30 ft", Surface: "Grass/dirt", "Weekly with CMR": "Saturdays · 5:30 AM" });
     expect(facts(warren)).toEqual({ Rise: "Not measured", Surface: "Grass/dirt", "Weekly with CMR": "No set weekly run" });
@@ -39,14 +40,14 @@ describe("HillDirectoryList (/hills)", () => {
   });
 
   it("has no drawings and no visible provisional marker; status stays on each row (final pass)", () => {
-    const { container } = render(<HillDirectoryList entries={directoryEntries(NOW)} />);
+    const { container } = render(<HillDirectoryList entries={directoryEntries(NOW, allRuns)} />);
     expect(container.querySelector("[data-hill-profile], img, svg[role=img]")).toBeNull();
     expect(screen.queryByText(/provisional/i)).toBeNull();
     for (const r of rows()) expect(r).toHaveAttribute("data-status", "provisional");
   });
 
   it("has one shared, decorative hover layer for all rows, not one per row", () => {
-    const { container } = render(<HillDirectoryList entries={directoryEntries(NOW)} />);
+    const { container } = render(<HillDirectoryList entries={directoryEntries(NOW, allRuns)} />);
     const layers = container.querySelectorAll("[data-slot=directory-hover-field]");
     expect(layers).toHaveLength(1);
     expect(layers[0]).toHaveAttribute("aria-hidden", "true");
@@ -56,13 +57,13 @@ describe("HillDirectoryList (/hills)", () => {
   });
 
   it("supports h3 names", () => {
-    const more = directoryEntries(NOW).filter((e) => e.hill.slug !== "cricket-hill");
+    const more = directoryEntries(NOW, allRuns).filter((e) => e.hill.slug !== "cricket-hill");
     render(<HillDirectoryList entries={more} headingLevel="h3" />);
     expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(4);
   });
 
   it("has no axe violations", async () => {
-    const { container } = render(<HillDirectoryList entries={directoryEntries(NOW)} />);
+    const { container } = render(<HillDirectoryList entries={directoryEntries(NOW, allRuns)} />);
     expect(await axeViolations(container)).toEqual([]);
   });
 });

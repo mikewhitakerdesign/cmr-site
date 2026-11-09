@@ -264,24 +264,16 @@ test.describe("footer", () => {
     expect(await toRgb(page, await css(mark, "background-color"))).toBe(ink);
     const m = await box(mark);
     expect(m.width / m.height).toBeCloseTo(1858 / 888, 1);
-    const news = await box(footer.locator("section").first());
+    // The newsletter block is hidden for v1 (Owner, 2026-11-09), so the wordmark sits left, at the container edge.
+    await expect(footer.locator("form")).toHaveCount(0);
+    await expect(footer.getByRole("heading", { name: "Get the next run in your inbox." })).toHaveCount(0);
     const inner = await box(footer.locator(":scope > div"));
-    if (info.project.name === "mobile") {
-      expect(m.y).toBeGreaterThan(news.y + news.height);
-    } else {
-      expect(news.width / inner.width).toBeGreaterThan(0.4);
-      expect(news.width / inner.width).toBeLessThan(0.55);
-      expect(m.x).toBeGreaterThanOrEqual(news.x + news.width);
-      const padRight = parseFloat(await css(footer.locator(":scope > div"), "padding-right"));
-      expect(Math.abs(m.x + m.width - (inner.x + inner.width - padRight))).toBeLessThanOrEqual(1); // flush right
-    }
-
-    const heading = footer.getByRole("heading", { name: "Get the next run in your inbox." });
-    expect(await css(heading, "font-size")).toBe(`${s.headingPx}px`);
-    expect(await css(heading, "font-weight")).toBe("900");
+    const padLeft = parseFloat(await css(footer.locator(":scope > div"), "padding-left"));
+    expect(Math.abs(m.x - (inner.x + padLeft))).toBeLessThanOrEqual(1);
+    void s;
   });
 
-  test("newsletter form matches the MWDS instances", async ({ page }, info) => {
+  test.skip("newsletter form matches the MWDS instances (block hidden for v1)", async ({ page }, info) => {
     const s = spec(info.project.name);
     const input = page.getByRole("textbox", { name: "Email address" });
     const button = page.getByRole("button", { name: "Join the list" });
@@ -299,7 +291,7 @@ test.describe("footer", () => {
     if (info.project.name === "mobile") expect(Math.abs((await box(input)).width - 206)).toBeLessThanOrEqual(3);
   });
 
-  test("is unavailable — not broken — until a provider is configured", async ({ page }) => {
+  test.skip("is unavailable — not broken — until a provider is configured", async ({ page }) => {
     await expect(page.getByRole("textbox", { name: "Email address" })).toBeDisabled();
     await expect(page.getByRole("status")).toHaveText("Newsletter signup isn’t open yet.");
   });
@@ -337,7 +329,7 @@ test.describe("footer", () => {
 });
 
 test.describe("focus indicators on solid black primary buttons", () => {
-  test("gray footer: ring is offset from the fill and contrasts with it", async ({ page }) => {
+  test.skip("gray footer: ring is offset from the fill and contrasts with it", async ({ page }) => {
     const button = await tabToNewsletterButton(page);
     expect(await css(button, "background-color")).toBe("rgb(0, 0, 0)");
     const [gap, ring] = rings(await css(button, "box-shadow"));
@@ -347,7 +339,7 @@ test.describe("focus indicators on solid black primary buttons", () => {
     expect(contrast(gap.color, "rgb(0, 0, 0)")).toBeGreaterThanOrEqual(3); // gap separates ring from fill
   });
 
-  test("white page background: gap follows the surface", async ({ page }) => {
+  test.skip("white page background: gap follows the surface", async ({ page }) => {
     await tabToNewsletterButton(page);
     // Place a copy of the real button on the white page surface and tab to it.
     await page.evaluate(() => {
@@ -370,7 +362,7 @@ test.describe("focus indicators on solid black primary buttons", () => {
     expect(contrast(ring.color, gap.color)).toBeGreaterThanOrEqual(3);
   });
 
-  test("ring appears on keyboard focus and is removed on blur", async ({ page }) => {
+  test.skip("ring appears on keyboard focus and is removed on blur", async ({ page }) => {
     const button = await tabToNewsletterButton(page);
     expect(rings(await css(button, "box-shadow")).length).toBe(2);
     await page.keyboard.press("Shift+Tab");
@@ -378,7 +370,7 @@ test.describe("focus indicators on solid black primary buttons", () => {
     expect(rings(await css(button, "box-shadow"))).toEqual([]);
   });
 
-  test("the ring is not clipped: footer content clears the 5px ring", async ({ page }) => {
+  test.skip("the ring is not clipped: footer content clears the 5px ring", async ({ page }) => {
     const button = await tabToNewsletterButton(page);
     const b = await box(button);
     const form = await box(page.locator("footer form"));
@@ -386,6 +378,25 @@ test.describe("focus indicators on solid black primary buttons", () => {
     expect(await css(page.locator("footer"), "overflow")).toBe("visible");
     expect(b.x + b.width + 5).toBeLessThanOrEqual((await box(page.locator("footer"))).width);
     expect(form.height).toBeGreaterThan(0);
+  });
+});
+
+test.describe("focus indicators on the Join submit button (solid black primary, white page)", () => {
+  test("ring is offset by the page color and appears only on keyboard focus", async ({ page }) => {
+    await page.goto("/join");
+    const button = page.locator("#join").getByRole("button", { name: "Join the club" });
+    // The Privacy Policy link sits between the age box and the button; tab from it.
+    await page.locator("#join").getByRole("link", { name: "Privacy Policy" }).focus();
+    await page.keyboard.press("Tab");
+    await expect(button).toBeFocused();
+    expect(await css(button, "background-color")).toBe("rgb(0, 0, 0)");
+    const [gap, ring] = rings(await css(button, "box-shadow"));
+    expect(gap).toEqual({ color: "rgb(255, 255, 255)", spread: 2 });
+    expect(ring).toEqual({ color: "rgb(0, 0, 0)", spread: 5 });
+    expect(contrast(ring.color, gap.color)).toBeGreaterThanOrEqual(3);
+    await page.keyboard.press("Shift+Tab");
+    await expect(button).not.toBeFocused();
+    expect(rings(await css(button, "box-shadow"))).toEqual([]);
   });
 });
 
@@ -401,10 +412,19 @@ test.describe("social links (none configured in this build)", () => {
 
   test("footer link row keeps its layout without social links", async ({ page }, info) => {
     const links = page.getByRole("navigation", { name: "Footer" }).getByRole("link");
-    await expect(links).toHaveText(["Find a Run", "About", "Join the club"]);
+    await expect(links).toHaveText(["Find a Run", "About", "FAQ", "Join the club"]);
     const first = await box(links.first());
     const last = await box(links.last());
     expect(Math.abs(first.y - last.y)).toBeLessThan(2); // still a single row
+    // Owner direction (2026-11-09): Pause motion sits in this row, to the right of "Join the club".
+    const pause = await box(page.locator("footer").getByRole("button", { name: /Pause motion|Resume motion/ }));
+    if (info.project.name === "mobile") {
+      // 345px holds the four links but not the control too: it wraps to the row's left edge, never to the legal column.
+      expect(Math.round(pause.x)).toBe(24);
+    } else {
+      expect(pause.x).toBeGreaterThanOrEqual(last.x + last.width);
+      expect(Math.abs(pause.y + pause.height / 2 - (last.y + last.height / 2))).toBeLessThan(6);
+    }
     expect(Math.round(first.x)).toBe(info.project.name === "mobile" ? 24 : info.project.name === "tablet" ? 48 : 68);
   });
 });
@@ -415,9 +435,5 @@ test.describe("visual @visual", () => {
   });
   test("footer", async ({ page }) => {
     await expect(page.locator("footer")).toHaveScreenshot("footer.png");
-  });
-  test("footer with keyboard focus on the primary button", async ({ page }) => {
-    await tabToNewsletterButton(page);
-    await expect(page.locator("footer form")).toHaveScreenshot("footer-button-focus.png");
   });
 });

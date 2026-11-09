@@ -7,7 +7,8 @@ import { HillRuns } from "@/components/hills/HillRuns";
 import { HillAbout, HillRepeats } from "@/components/hills/HillTerrain";
 import { MoreHills } from "@/components/hills/MoreHills";
 import { getHill, hillsWithPages, otherHills } from "@/lib/hills";
-import { getRunsAtHill } from "@/lib/runs";
+import { withoutHeldRuns } from "@/lib/permit-hold";
+import { getRunsAtHill, type RunOccurrence } from "@/lib/runs";
 
 /** Only the listed hills have pages; anything else (incl. the scaffold placeholder) is a 404. */
 export const dynamicParams = false;
@@ -53,7 +54,8 @@ export default async function HillPage({ params }: PageProps<"/hills/[slug]">) {
   const hill = pageHill(slug);
   if (!hill) notFound();
 
-  const runs = getRunsAtHill(hill.slug, new Date());
+  // Permit-pending hold (src/lib/permit-hold.ts): no run reaches the page while official runs are on hold.
+  const runs = withoutHeldRuns(getRunsAtHill(hill.slug, new Date())) as RunOccurrence[];
   const more = otherHills(hill.slug);
 
   return (

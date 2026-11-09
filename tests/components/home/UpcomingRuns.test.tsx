@@ -8,7 +8,7 @@ const now = new Date("2026-11-09T18:00:00Z"); // Monday noon in Chicago
 
 describe("UpcomingRuns", () => {
   it("lists the Round 2 two-run schedule, one row per run, soonest first", () => {
-    render(<UpcomingRuns occurrences={getNextOccurrencePerRun(now)} now={now} />);
+    render(<UpcomingRuns held={false} occurrences={getNextOccurrencePerRun(now)} now={now} />);
     expect(screen.getByRole("heading", { level: 2, name: "See you on the hill." })).toBeInTheDocument();
     const items = screen.getAllByRole("listitem");
     expect(items.map((li) => within(li).getByRole("heading", { level: 3 }).textContent)).toEqual([
@@ -26,7 +26,7 @@ describe("UpcomingRuns", () => {
   });
 
   it("describes each workout without inventing paces, and says the details are unconfirmed", () => {
-    render(<UpcomingRuns occurrences={getNextOccurrencePerRun(now)} now={now} />);
+    render(<UpcomingRuns held={false} occurrences={getNextOccurrencePerRun(now)} now={now} />);
     for (const li of screen.getAllByRole("listitem")) {
       const run = runs.find((r) => r.title === within(li).getByRole("heading").textContent)!;
       expect(within(li).getByText(run.description)).toBeInTheDocument();
@@ -36,26 +36,26 @@ describe("UpcomingRuns", () => {
   });
 
   it("links each run name to its detail route, and the section to the calendar", () => {
-    render(<UpcomingRuns occurrences={getNextOccurrencePerRun(now)} now={now} />);
+    render(<UpcomingRuns held={false} occurrences={getNextOccurrencePerRun(now)} now={now} />);
     expect(screen.getByRole("link", { name: "Cricket Mtn Repeats" })).toHaveAttribute("href", "/calendar/cricket-mtn-repeats");
     expect(screen.getByRole("link", { name: "Horner Hell Repeats" })).toHaveAttribute("href", "/calendar/horner-hell-repeats");
     expect(screen.getByRole("link", { name: "See the full schedule" })).toHaveAttribute("href", "/calendar");
   });
 
   it("puts the schedule link after the runs in reading order", () => {
-    render(<UpcomingRuns occurrences={getNextOccurrencePerRun(now)} now={now} />);
+    render(<UpcomingRuns held={false} occurrences={getNextOccurrencePerRun(now)} now={now} />);
     const names = screen.getAllByRole("link").map((l) => l.textContent);
     expect(names.at(-1)).toBe("See the full schedule");
   });
 
   it("shows no visible sample badge but keeps each run's content status on the row", () => {
-    render(<UpcomingRuns occurrences={getNextOccurrencePerRun(now)} now={now} />);
+    render(<UpcomingRuns held={false} occurrences={getNextOccurrencePerRun(now)} now={now} />);
     expect(screen.queryByText(/Sample|unconfirmed/)).not.toBeInTheDocument();
     for (const li of screen.getAllByRole("listitem")) expect(li).toHaveAttribute("data-status", "provisional");
   });
 
   it("never lists scaffold placeholder runs", () => {
-    render(<UpcomingRuns occurrences={getUpcomingRuns(new Date("2026-09-01T12:00:00Z"), 10)} now={now} />);
+    render(<UpcomingRuns held={false} occurrences={getUpcomingRuns(new Date("2026-09-01T12:00:00Z"), 10)} now={now} />);
     expect(screen.queryByText("Example Hill Repeats")).not.toBeInTheDocument();
   });
 
@@ -67,7 +67,7 @@ describe("UpcomingRuns", () => {
           ? { ...r, schedule: { ...r.schedule, overrides: [{ date: "2026-11-14", time: "06:00", note: "Late start" }] } }
           : r,
     );
-    render(<UpcomingRuns occurrences={getNextOccurrencePerRun(now, edited)} now={now} />);
+    render(<UpcomingRuns held={false} occurrences={getNextOccurrencePerRun(now, edited)} now={now} />);
     const items = screen.getAllByRole("listitem");
     expect(items).toHaveLength(2);
     expect(within(items[0]).getByRole("heading").textContent).toBe("Cricket Mtn Repeats");
@@ -78,14 +78,14 @@ describe("UpcomingRuns", () => {
   });
 
   it("has an honest empty state that keeps the section and the calendar link", () => {
-    render(<UpcomingRuns occurrences={[]} now={now} />);
+    render(<UpcomingRuns held={false} occurrences={[]} now={now} />);
     expect(screen.queryByRole("list")).not.toBeInTheDocument();
     expect(screen.getByText(/No runs on the calendar right now/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "See the full schedule" })).toHaveAttribute("href", "/calendar");
   });
 
   it("has no axe violations", async () => {
-    const { container } = render(<UpcomingRuns occurrences={getNextOccurrencePerRun(now)} now={now} />);
+    const { container } = render(<UpcomingRuns held={false} occurrences={getNextOccurrencePerRun(now)} now={now} />);
     expect(await axeViolations(container)).toEqual([]);
   });
 });

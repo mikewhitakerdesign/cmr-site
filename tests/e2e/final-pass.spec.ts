@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { OFFICIAL_RUNS_ON_HOLD } from "../../src/lib/permit-hold";
 
 /** Final MVP refinements: run details, hill pages and the global motion control. */
 const AXE_PATH = require.resolve("axe-core");
@@ -16,6 +17,7 @@ const forceMotion = (page: Page) => page.addInitScript(() => ((window as unknown
 const field = (page: Page) => page.locator('[data-slot="contour-field"]').first();
 
 test.describe("run map hover zoom", () => {
+  test.skip(OFFICIAL_RUNS_ON_HOLD, "Run pages are not served while official runs are on hold.");
   test("zooms the image only, and not when motion is paused", async ({ page }, info) => {
     test.skip(info.project.name !== "desktop", "hover is a desktop behaviour");
     await page.goto("/calendar/cricket-mtn-repeats");
@@ -38,6 +40,7 @@ test.describe("run map hover zoom", () => {
 });
 
 test.describe("run details", () => {
+  test.skip(OFFICIAL_RUNS_ON_HOLD, "Run pages are not served while official runs are on hold.");
   for (const slug of ["cricket-mtn-repeats", "horner-hell-repeats"]) {
     test(`${slug}: icons, map, tie-dye circles, no overflow`, async ({ page }, info) => {
       await page.goto(`/calendar/${slug}`);
@@ -94,9 +97,17 @@ test.describe("hill pages", () => {
     const specs = page.locator('[data-slot="hill-specs"]');
     await expect(specs).toBeVisible();
     expect(await specs.evaluate((e) => parseFloat(getComputedStyle(e).borderTopLeftRadius))).toBeGreaterThanOrEqual(12);
-    const art = (await specs.locator('[data-slot="hill-contour-art"]').boundingBox())!;
-    expect(art.width).toBe(info.project.name === "desktop" ? 250 : info.project.name === "tablet" ? 160 : 120);
+    // The contour drawing sits above the gray block, not inside it (Owner direction, 2026-11-09).
+    await expect(specs.locator('[data-slot="hill-contour-art"]')).toHaveCount(0);
+    const art = (await page.locator('[data-slot="hill-contour-art"]').first().boundingBox())!;
+    expect(art.width).toBe(info.project.name === "desktop" ? 240 : info.project.name === "tablet" ? 180 : 140);
+    expect(art.y + art.height).toBeLessThanOrEqual((await specs.boundingBox())!.y + 1);
     if (info.project.name !== "mobile") {
+      // Four quadrants: heading | drawing on the top row, copy | specs below, the drawing right of the heading.
+      const h = (await page.locator("#about-heading").boundingBox())!;
+      const sb = (await specs.boundingBox())!;
+      expect(art.x).toBeGreaterThan(h.x + h.width - 1);
+      expect(Math.abs(art.x + art.width - (sb.x + sb.width))).toBeLessThan(2); // right edges align
       const copy = (await page.locator("#about-heading ~ div").first().locator("p").first().boundingBox())!;
       const box = (await specs.boundingBox())!;
       expect(Math.abs(box.y - copy.y)).toBeLessThan(6); // the box starts level with the copy
@@ -114,16 +125,13 @@ test.describe("hill pages", () => {
     expect(await axe(page)).toEqual([]);
   });
 
-  test("the word 'hill' in the About heading carries the tie-dye; More hills does not", async ({ page }) => {
-    await page.goto("/hills/cricket-hill");
-    const word = page.locator("#about-heading .cmr-tie-dye-text");
-    await expect(word).toHaveCount(1);
-    await expect(word).toHaveText("hill");
-    await expect(page.locator("#about-heading")).toHaveText("The hill at Montrose.");
-    await expect(page.locator("#more-heading .cmr-tie-dye-text")).toHaveCount(0);
-    expect(await word.evaluate((e) => getComputedStyle(e).webkitTextStrokeWidth)).not.toBe("0px");
-    await page.goto("/hills/mt-trashmore");
-    await expect(page.locator("#about-heading .cmr-tie-dye-text")).toHaveText("hill");
+  test("the About heading is plain black text, with no tie-dye on 'hill'", async ({ page }) => {
+    for (const [slug, text] of [["cricket-hill", "The hill at Montrose."], ["mt-trashmore", "The hill at James Park."]]) {
+      await page.goto(`/hills/${slug}`);
+      await expect(page.locator("#about-heading")).toHaveText(text);
+      await expect(page.locator("#about-heading *")).toHaveCount(0);
+      expect(await page.locator("#about-heading").evaluate((e) => getComputedStyle(e).color)).toBe("rgb(0, 0, 0)");
+    }
   });
 
   test("the hero shows a calm, sparse contour field", async ({ page }) => {
@@ -151,13 +159,17 @@ test.describe("motion control", () => {
     await page.locator("footer").getByRole("link", { name: "Find a Run" }).click();
     await expect(page).toHaveURL(/\/calendar$/);
     await expect(page.getByRole("button", { name: "Resume motion" })).toBeVisible();
-    expect(await page.locator('[data-slot="weather-art"] .wx-drift').first().evaluate((n) => getComputedStyle(n).animationName)).toBe("none");
+    if (!OFFICIAL_RUNS_ON_HOLD) {
+      expect(await page.locator('[data-slot="weather-art"] .wx-drift').first().evaluate((n) => getComputedStyle(n).animationName)).toBe("none");
+    }
     // reload keeps it paused, before anything animates
     await page.reload();
     await expect(page.locator("html")).toHaveAttribute("data-motion", "off");
     // resume
     await page.getByRole("button", { name: "Resume motion" }).click();
-    expect(await page.locator('[data-slot="weather-art"] .wx-drift').first().evaluate((n) => getComputedStyle(n).animationName)).toBe("wx-drift");
+    if (!OFFICIAL_RUNS_ON_HOLD) {
+      expect(await page.locator('[data-slot="weather-art"] .wx-drift').first().evaluate((n) => getComputedStyle(n).animationName)).toBe("wx-drift");
+    }
     await page.goto("/hills/cricket-hill");
     await expect(field(page)).toHaveAttribute("data-state", "animating");
   });
@@ -168,9 +180,13 @@ test.describe("motion control", () => {
     await expect(page.locator("html")).toHaveAttribute("data-motion", "off");
     const btn = page.getByRole("button", { name: "Resume motion" });
     await btn.scrollIntoViewIfNeeded();
-    expect(await page.locator('[data-slot="weather-art"] .wx-drift').first().evaluate((n) => getComputedStyle(n).animationName)).toBe("none");
+    if (!OFFICIAL_RUNS_ON_HOLD) {
+      expect(await page.locator('[data-slot="weather-art"] .wx-drift').first().evaluate((n) => getComputedStyle(n).animationName)).toBe("none");
+    }
     await btn.click();
-    expect(await page.locator('[data-slot="weather-art"] .wx-drift').first().evaluate((n) => getComputedStyle(n).animationName)).toBe("wx-drift");
+    if (!OFFICIAL_RUNS_ON_HOLD) {
+      expect(await page.locator('[data-slot="weather-art"] .wx-drift').first().evaluate((n) => getComputedStyle(n).animationName)).toBe("wx-drift");
+    }
     await page.reload();
     await expect(page.getByRole("button", { name: "Pause motion" })).toBeVisible();
   });

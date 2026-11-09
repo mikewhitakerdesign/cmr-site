@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { measureTextContrast } from "./contrast.mjs";
+import { OFFICIAL_RUNS_ON_HOLD } from "../../src/lib/permit-hold";
 
 /**
  * Homepage browser checks at the three Figma frame widths (projects: mobile
@@ -95,7 +96,7 @@ test.describe("structure and content", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("MAKE YOUR OWN MTNS");
     const h2s = await page.locator("main h2").allTextContents();
     // The next-run card title is an h2 inside the hero; section headings follow in order.
-    expect(h2s.slice(1)).toEqual(["2026 club totals.", "See you on the hill.", "Get high in the city.", "JUST SHOW UP."]);
+    expect(h2s.slice(1)).toEqual(["2026 club totals.", OFFICIAL_RUNS_ON_HOLD ? "Group runs are on hold." : "See you on the hill.", "Get high in the city.", "JUST SHOW UP."]);
     await expect(community(page)).toContainText("questioning our sanity decisions.");
     await expect(flat(page)).toContainText("FLAT IS A STATE OF MIND.");
     await expect(page.locator("header")).toBeVisible();
@@ -105,13 +106,15 @@ test.describe("structure and content", () => {
   test("shows no sample badges (Round 2) but keeps content status in the markup", async ({ page }) => {
     await expect(page.locator("main [data-provisional]")).toHaveCount(0);
     await expect(page.locator("main").getByText(/Sample|unconfirmed|unverified/)).toHaveCount(0);
-    await expect(hero(page).getByRole("article")).toHaveAttribute("data-status", "provisional");
+    // The next-run card carries a run's status; the hold notice shows no run.
+    if (!OFFICIAL_RUNS_ON_HOLD) await expect(hero(page).getByRole("article")).toHaveAttribute("data-status", "provisional");
     await expect(page.locator("section[aria-labelledby=club-totals-heading]")).toHaveAttribute("data-status", "provisional");
     for (const li of await runs(page).locator("li").all()) await expect(li).toHaveAttribute("data-status", "provisional");
     await expect(page.getByText("Example Hill")).toHaveCount(0);
   });
 
   test("lists the two-run schedule and five hills, each linking to its detail route", async ({ page }) => {
+    test.skip(OFFICIAL_RUNS_ON_HOLD, "No run is listed while official runs are on hold.");
     const runLinks = runs(page).locator("li h3 a");
     await expect(runLinks).toHaveCount(2);
     const hrefs = await runLinks.evaluateAll((as) => as.map((a) => a.getAttribute("href")));
@@ -323,12 +326,14 @@ test.describe("layout against Figma", () => {
 
 test.describe("navigation and interaction", () => {
   test("all four Join CTAs say \"Join the club\" and go to /join", async ({ page }) => {
+    // Held: the hold notice in "Group runs" also points to Join, between the hero and Just show up.
     const joins = page.getByRole("link", { name: "Join the club" });
-    await expect(joins).toHaveCount(4);
+    await expect(joins).toHaveCount(OFFICIAL_RUNS_ON_HOLD ? 5 : 4);
     const where = await joins.evaluateAll((as) => as.map((a) => [a.closest("header, footer, section")?.tagName + ":" + (a.closest("section")?.getAttribute("aria-labelledby") ?? ""), a.getAttribute("href")]));
     expect(where).toEqual([
       ["HEADER:", "/join"],
       ["SECTION:hero-heading", "/join"],
+      ...(OFFICIAL_RUNS_ON_HOLD ? [["SECTION:upcoming-runs-heading", "/join"]] : []),
       ["SECTION:just-show-up-heading", "/join"],
       ["FOOTER:", "/join"],
     ]);
@@ -344,15 +349,17 @@ test.describe("navigation and interaction", () => {
     await expect(page).toHaveURL(/\/join$/);
     await page.goBack();
 
-    // Rows are clickable anywhere (stretched link), not only on the name.
-    const firstRun = runs(page).locator("li").first();
-    await firstRun.scrollIntoViewIfNeeded();
-    const runHref = await firstRun.locator("a").getAttribute("href");
-    const rowBox = await box(firstRun);
-    await page.mouse.click(rowBox.x + rowBox.width - 30, rowBox.y + rowBox.height / 2);
-    await expect(page).toHaveURL(new RegExp(`${runHref}$`));
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await page.goBack();
+    if (!OFFICIAL_RUNS_ON_HOLD) {
+      // Rows are clickable anywhere (stretched link), not only on the name.
+      const firstRun = runs(page).locator("li").first();
+      await firstRun.scrollIntoViewIfNeeded();
+      const runHref = await firstRun.locator("a").getAttribute("href");
+      const rowBox = await box(firstRun);
+      await page.mouse.click(rowBox.x + rowBox.width - 30, rowBox.y + rowBox.height / 2);
+      await expect(page).toHaveURL(new RegExp(`${runHref}$`));
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await page.goBack();
+    }
 
     const trashmore = hills(page).locator("li").last();
     await trashmore.scrollIntoViewIfNeeded();
@@ -384,7 +391,7 @@ test.describe("navigation and interaction", () => {
     }
     const hillNames = ["Cricket Hill", "Warren Hill", "Horner Hill", "Schiller Hill", "Mt. Trashmore"];
     const expected = [
-      "See the full schedule",
+      ...(OFFICIAL_RUNS_ON_HOLD ? ["Explore the hills", "Join the club"] : ["See the full schedule"]),
       "Explore all hills",
       // phones: the touch preview buttons sit between the profile and the list
       ...(info.project.name === "mobile" ? hillNames : []),
@@ -392,6 +399,12 @@ test.describe("navigation and interaction", () => {
       "Find a Run",
       "Join the club",
     ];
+    if (OFFICIAL_RUNS_ON_HOLD) {
+      // hero CTAs, the hold card's link, then the Group runs section's two links; no run anywhere
+      expect(order.slice(0, 3)).toEqual(["Find a Run", "Join the club", "Explore the hills"]);
+      expect(order.slice(3, 3 + expected.length)).toEqual(expected);
+      return;
+    }
     expect(order.slice(0, 3)).toEqual(["Find a Run", "Join the club", "Run details"]);
     // two run names (order depends on the build clock)
     expect(order.slice(3, 5).sort()).toEqual(["Cricket Mtn Repeats", "Horner Hell Repeats"]);
@@ -410,11 +423,13 @@ test.describe("navigation and interaction", () => {
     expect(ringColor(await css(cta, "box-shadow"))).toEqual([["rgb(0, 0, 0)", 2], ["rgb(255, 255, 255)", 5]]);
 
     // Black section: run row ring is white, drawn on the row overlay.
-    const runLink = runs(page).locator("li a").first();
-    await runLink.focus();
-    await page.keyboard.press("Shift+Tab");
-    await page.keyboard.press("Tab");
-    expect(await css(runLink, "box-shadow", "::after")).toContain("rgb(255, 255, 255)");
+    if (!OFFICIAL_RUNS_ON_HOLD) {
+      const runLink = runs(page).locator("li a").first();
+      await runLink.focus();
+      await page.keyboard.press("Shift+Tab");
+      await page.keyboard.press("Tab");
+      expect(await css(runLink, "box-shadow", "::after")).toContain("rgb(255, 255, 255)");
+    }
 
     // White section: hill row ring is black.
     const hillLink = hills(page).locator("li a").first();
