@@ -7,7 +7,7 @@ objective: >-
   over the real page headline, the cropped hill contour art, a balanced
   newsletter-free footer, a one-line Join form subtitle, a pure-white nav Join
   button, and a shared "Join the club" tooltip.
-status: in_progress
+status: complete
 stage: implementation
 active_capability: ui-implementation
 bundle_references:
@@ -18,11 +18,13 @@ validation_state: passed
 blocker_state: none
 current_responsibility: orchestrator
 created_at: '2026-11-09T00:00:00.000Z'
-updated_at: '2026-11-09T00:00:00.000Z'
+updated_at: '2026-11-09T23:59:00.000Z'
 ---
 ## Status
 
-Implemented on `feat/cmr-final-join-hold-ui` from `origin/main` at `2f3a176`, one PR. Merge, production verification and closeout are recorded in the closeout section when they happen.
+**Complete: merged and deployed (2026-11-09).** PR #11 merged as merge commit **`5c59b2f`**. GitHub CI `validate` and `browser` and the Vercel Preview passed on the PR head, and `validate` and `browser` passed on `main` after the merge. Vercel deployed it to https://cmr-site-xi.vercel.app. Production smoke checks at 1440, 768 and 393: `/`, `/calendar`, `/join`, `/hills` and `/hills/cricket-hill` return 200; the hold backdrop is `inert` with no links or buttons in it; `/calendar/[slug]` still 307s to `/calendar` and `.ics` still 404s; the nav Join button is `rgb(255, 255, 255)` on `/join`; the Join subtitle is one line at 1440 (wraps at 768 and 393, by design); every hill contour ring is inside its box; the footer has no newsletter input and, at 1440, shows the links beside the wordmark; the header tooltip shows the exact text on hover; no horizontal overflow. Branch `feat/cmr-final-join-hold-ui` and its worktree are removed after the merge.
+
+Authorized as the Owner's final refinements; PR #10 (Join closeout) merged to `main` while this PR was open and touched none of the same files.
 
 ## Authorization
 
