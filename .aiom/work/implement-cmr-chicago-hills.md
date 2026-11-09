@@ -376,9 +376,9 @@ the park/landmark and say so; runs come only from `src/lib/runs.ts`.
 
 **Refinement pass:** commits `01f2e20` (implementation), `f14b171` (tests and
 baselines), `c91c7ea` (record and evidence), `20587b6` (contrast-sweep fix),
-`ede9a00` (record), then the software-renderer change (see the commit after
-`ede9a00`; the verified head and CI run are given in the PR thread and the final
-report). CI history: run 42570866595 (`c91c7ea`) failed the homepage
+`ede9a00` (record), `7920223` (software-renderer still frame). Verified head
+**`7920223`**: GitHub CI `validate` and `browser` pass (run 42572703986, browser
+2m12s); Vercel Preview rebuilt from it (branch URL below, SSO-protected). CI history: run 42570866595 (`c91c7ea`) failed the homepage
 photo-text contrast sweep (30s timeout); run 42571352930 (`20587b6`) passed; run
 42571799005 (`ede9a00`, record-only) failed the hill hero contrast test the same
 way. Cause, both times: on the GPU-less Linux runner Chromium renders WebGL in
