@@ -5,7 +5,7 @@
  * 2026-11-08: "an actual map or a static map screenshot/image of the location,
  * rather than a generic placeholder").
  *
- *   output  public/hills/maps/{slug}.jpg — 1280×720, greyscale, centred on
+ *   output  public/hills/maps/{slug}.jpg — 1280×720 (--runs: public/calendar/maps/{slug}.webp, 960×640, z18), greyscale, centred on
  *           the place (the pin is drawn by the page, at the centre)
  *
  * Source: OpenStreetMap standard tiles (tile.openstreetmap.org), fetched once
@@ -36,11 +36,15 @@ const PLACES = [
 // `--runs`: the run pages' "Where to meet" maps, centred on the Owner's exact Google Maps pins
 // (the coordinates the supplied short links resolve to, read 2026-11-09), one zoom step closer.
 const RUN_PLACES = [
-  ["cricket-mtn-repeats", 41.962864, -87.64403, 17], // https://maps.app.goo.gl/11S9yixBqMH3vxC97
-  ["horner-hell-repeats", 41.959459, -87.69566, 17], // https://maps.app.goo.gl/UkzLSDPRzYykq9Aq6
+  ["cricket-mtn-repeats", 41.962864, -87.64403, 18], // https://maps.app.goo.gl/11S9yixBqMH3vxC97
+  ["horner-hell-repeats", 41.959459, -87.69566, 18], // https://maps.app.goo.gl/UkzLSDPRzYykq9Aq6
 ];
+// Run maps (Map & Weather Card Refinement, 2026-11-09): zoom 18 (finer detail than the old z17, no upscaling),
+// 3:2 to match the card, saved as high-quality WebP. The pin is NOT at the centre: it sits at ANCHOR (fractions
+// of the image), clear of the floating weather card; src/lib/runs.ts carries the same fractions for the overlay.
+const ANCHOR = [0.38, 0.64];
 const RUNS = process.argv.includes("--runs");
-const W = 1280, H = 720, TILE = 256;
+const W = RUNS ? 960 : 1280, H = RUNS ? 640 : 720, TILE = 256;
 const UA = "cmr-site-asset-build/1.0 (one-off static map build; github.com/mikewhitakerdesign/cmr-site)";
 const OUT = RUNS ? "public/calendar/maps" : "public/hills/maps";
 mkdirSync(OUT, { recursive: true });
@@ -54,7 +58,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 for (const [slug, lat, lon, z] of RUNS ? RUN_PLACES : PLACES) {
   const [cx, cy] = project(lat, lon, z);
-  const left = Math.round(cx - W / 2), top = Math.round(cy - H / 2);
+  const [ax, ay] = RUNS ? ANCHOR : [0.5, 0.5];
+  const left = Math.round(cx - W * ax), top = Math.round(cy - H * ay);
   const tiles = [];
   for (let ty = Math.floor(top / TILE); ty <= Math.floor((top + H - 1) / TILE); ty++) {
     for (let tx = Math.floor(left / TILE); tx <= Math.floor((left + W - 1) / TILE); tx++) {
@@ -70,11 +75,11 @@ for (const [slug, lat, lon, z] of RUNS ? RUN_PLACES : PLACES) {
     .composite(tiles.map((t) => ({ ...t, left: t.left + pad, top: t.top + pad })))
     .png()
     .toBuffer();
-  await sharp(canvas)
+  const img = sharp(canvas)
     .extract({ left: pad, top: pad, width: W, height: H })
     .greyscale()
-    .linear(1.08, -10) // a touch more contrast: the site is black and white, not OSM's pastels
-    .jpeg({ quality: 82, mozjpeg: true })
-    .toFile(`${OUT}/${slug}.jpg`);
-  console.log(`${OUT}/${slug}.jpg  (${tiles.length} tiles, z${z})`);
+    .linear(1.08, -10); // a touch more contrast: the site is black and white, not OSM's pastels
+  const file = RUNS ? `${OUT}/${slug}.webp` : `${OUT}/${slug}.jpg`;
+  await (RUNS ? img.webp({ quality: 92, effort: 6, smartSubsample: false }) : img.jpeg({ quality: 82, mozjpeg: true })).toFile(file);
+  console.log(`${file}  (${tiles.length} tiles, z${z})`);
 }
