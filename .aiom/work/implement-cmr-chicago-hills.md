@@ -71,6 +71,11 @@ on re-run. Note: the footer-only baselines would have passed unchanged (the ink
 change is under the screenshot comparison's per-pixel threshold), so they were
 refreshed explicitly. Evidence in `docs/review/cmr-hills/`.
 
+Delivery: commit `4b3d4fe` on `feat/cmr-chicago-hills`. GitHub CI `validate` and
+`browser` pass (run 42584585971); Vercel Preview rebuilt from it (branch URL under
+Delivery, SSO-protected). PR #4 description updated. Not merged; no production
+deployment.
+
 ## Refinement pass (Owner direction, 2026-11-08 / 09)
 
 Two Owner briefs on PR #4: "CMR — Chicago Hills Refinement Pass for PR #4" and a
