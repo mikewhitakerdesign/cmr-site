@@ -15,6 +15,28 @@ const noHScroll = (page: Page) => page.evaluate(() => document.documentElement.s
 const forceMotion = (page: Page) => page.addInitScript(() => ((window as unknown as Record<string, boolean>).__CMR_CONTOUR_FORCE_MOTION__ = true));
 const field = (page: Page) => page.locator('[data-slot="contour-field"]').first();
 
+test.describe("run map hover zoom", () => {
+  test("zooms the image only, and not when motion is paused", async ({ page }, info) => {
+    test.skip(info.project.name !== "desktop", "hover is a desktop behaviour");
+    await page.goto("/calendar/cricket-mtn-repeats");
+    const map = page.locator('[data-slot="run-map"]');
+    const img = map.locator("img");
+    const pin = map.locator("span.bg-primary").first();
+    const scale = (l: typeof img) => l.evaluate((e) => getComputedStyle(e).transform);
+    await map.scrollIntoViewIfNeeded();
+    await page.evaluate(() => document.documentElement.setAttribute("data-motion", "on"));
+    const pinBefore = await pin.boundingBox();
+    await map.hover();
+    await expect.poll(() => scale(img)).toMatch(/matrix\(1\.05/);
+    expect(await pin.boundingBox()).toEqual(pinBefore);
+    await page.mouse.move(0, 0);
+    await page.evaluate(() => document.documentElement.setAttribute("data-motion", "off"));
+    await map.hover();
+    await page.waitForTimeout(600);
+    expect(await scale(img)).toBe("none");
+  });
+});
+
 test.describe("run details", () => {
   for (const slug of ["cricket-mtn-repeats", "horner-hell-repeats"]) {
     test(`${slug}: icons, map, tie-dye circles, no overflow`, async ({ page }, info) => {
@@ -32,12 +54,20 @@ test.describe("run details", () => {
         "href",
         slug.startsWith("cricket") ? "https://maps.app.goo.gl/11S9yixBqMH3vxC97" : "https://maps.app.goo.gl/UkzLSDPRzYykq9Aq6",
       );
-      await expect(section.locator('[data-variant="compact"][data-minimal]')).toBeVisible();
+      await expect(section.locator('[data-variant="compact"][data-placement="float"]')).toBeVisible();
+      await expect(map.locator("img")).toHaveAttribute("src", /webp|%2Fcalendar%2Fmaps/);
       if (info.project.name === "desktop") {
         const m = (await map.boundingBox())!;
         const text = (await section.locator("h2").boundingBox())!;
-        expect(m.height).toBeGreaterThanOrEqual(420);
+        expect(m.width / m.height).toBeCloseTo(1.5, 1); // 3:2 landscape
+        expect(m.height).toBeLessThan(460);
         expect(m.x).toBeGreaterThan(text.x + 300); // side by side
+        // The floating weather card overlaps the map's upper-right corner and sticks out past its top edge, clear of the pin.
+        const w = (await section.locator('[data-variant="compact"]').boundingBox())!;
+        expect(w.y).toBeLessThan(m.y);
+        expect(w.x + w.width).toBeGreaterThan(m.x + m.width - 40);
+        const pin = (await map.locator("span.bg-primary").first().boundingBox())!;
+        expect(w.y + w.height <= pin.y || w.x >= pin.x + pin.width).toBe(true);
       } else {
         const m = (await map.boundingBox())!;
         expect(m.width).toBeLessThanOrEqual(info.project.name === "mobile" ? 345 : 680);

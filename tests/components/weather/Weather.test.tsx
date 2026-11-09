@@ -117,6 +117,34 @@ describe("WeatherCompactView", () => {
   });
 });
 
+describe("WeatherCompactView placement (floating over the map)", () => {
+  const placement = () => document.querySelector("[data-variant=compact]")!.getAttribute("data-placement");
+  const alert: WeatherAlert = { id: "a1", event: "Wind Advisory", urgent: false } as WeatherAlert;
+
+  it("floats while the content is short", () => {
+    render(<WeatherCompactView result={ok()} now={now} runDate="2026-11-11" floating />);
+    expect(placement()).toBe("float");
+  });
+
+  it("moves below the map, with the alert intact, when there is an alert, an unchecked-alerts notice or no data", () => {
+    const { unmount } = render(<WeatherCompactView result={ok(obs, [alert])} now={now} floating />);
+    expect(placement()).toBe("stack");
+    expect(screen.getByRole("list", { name: "Active weather alerts" })).toBeInTheDocument();
+    unmount();
+    const u2 = render(<WeatherCompactView result={ok(obs, null)} now={now} floating />);
+    expect(placement()).toBe("stack");
+    expect(screen.getByText(/Weather alerts could not be checked/)).toBeInTheDocument();
+    u2.unmount();
+    render(<WeatherCompactView result={{ status: "unavailable" }} now={now} floating />);
+    expect(placement()).toBe("stack");
+  });
+
+  it("moves below the map for long condition text", () => {
+    render(<WeatherCompactView result={ok({ ...obs, text: "Light Freezing Rain and Fog/Mist with Blowing Snow" })} now={now} floating />);
+    expect(placement()).toBe("stack");
+  });
+});
+
 describe("WeatherGuidance", () => {
   it("uses the approved copy", () => {
     render(<WeatherGuidance />);

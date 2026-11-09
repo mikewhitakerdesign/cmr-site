@@ -101,7 +101,7 @@ export default async function RunPage({ params }: { params: Promise<{ slug: stri
       <WhatToExpect run={run} />
 
       <section aria-labelledby="meet-heading" className="border-t border-foreground/15 py-16 md:py-24">
-        <Container className="grid gap-10 lg:grid-cols-2 lg:gap-16">
+        <Container className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
           <div className="flex flex-col">
             <h2 id="meet-heading" style={displayHeading()} className={cn(FLUID_TYPE, DISPLAY_HEADING)}>
               Where to meet<span className="ss08">.</span>
@@ -118,11 +118,13 @@ export default async function RunPage({ params }: { params: Promise<{ slug: stri
                 Get directions<span className="sr-only"> (opens Google Maps in a new tab)</span>
               </CtaLink>
             )}
-            <div className="mt-10 lg:mt-auto lg:pt-10">
-              <WeatherCompact now={now} runDate={nextReal?.date} minimal />
-            </div>
           </div>
-          {run.pin && <RunMap image={run.pin.image} label={`${c.placeName} meeting pin`} placeName={c.placeName} />}
+          {run.pin && (
+            <div data-slot="run-map-stack" className="relative flex flex-col lg:mt-6">
+              <WeatherCompact now={now} runDate={nextReal?.date} floating />
+              <RunMap image={run.pin.image} anchor={run.pin.anchor} label={`${c.placeName} meeting pin`} placeName={c.placeName} />
+            </div>
+          )}
         </Container>
       </section>
 

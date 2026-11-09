@@ -41,8 +41,8 @@ export interface Run {
   content?: RunContent;
   /** Where the "Get directions" link goes: the Owner's Google Maps link for the meeting place. */
   directionsUrl?: string;
-  /** The exact meeting pin (from the Owner's Google Maps link) and its static map (scripts/assets/build-hill-maps.mjs --runs). */
-  pin?: { lat: number; lon: number; image: string };
+  /** The exact meeting pin (from the Owner's Google Maps link) and its static map (scripts/assets/build-hill-maps.mjs --runs). `anchor` is where the pin sits in the image, as fractions of its width and height (not the centre: that keeps the pin clear of the floating weather card). */
+  pin?: { lat: number; lon: number; image: string; anchor: [number, number] };
   schedule: RunSchedule;
   status: ContentStatus;
 }
@@ -89,7 +89,7 @@ export const runs: Run[] = [
     durationLabel: "~2 hrs",
     durationMinutes: 120,
     directionsUrl: "https://maps.app.goo.gl/11S9yixBqMH3vxC97",
-    pin: { lat: 41.962864, lon: -87.64403, image: "/calendar/maps/cricket-mtn-repeats.jpg" },
+    pin: { lat: 41.962864, lon: -87.64403, image: "/calendar/maps/cricket-mtn-repeats.webp", anchor: [0.38, 0.64] },
     content: {
       headline: "A little mountain by the lake.",
       intro: [
@@ -123,7 +123,7 @@ export const runs: Run[] = [
     durationLabel: "~60 min",
     durationMinutes: 60,
     directionsUrl: "https://maps.app.goo.gl/UkzLSDPRzYykq9Aq6",
-    pin: { lat: 41.959459, lon: -87.69566, image: "/calendar/maps/horner-hell-repeats.jpg" },
+    pin: { lat: 41.959459, lon: -87.69566, image: "/calendar/maps/horner-hell-repeats.webp", anchor: [0.38, 0.64] },
     content: {
       headline: "An hour of questionable decisions.",
       intro: [
