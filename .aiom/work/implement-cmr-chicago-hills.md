@@ -77,6 +77,12 @@ now full-width "Find a Run" while the pointer rested on it (hover inverts its
 colours mid-transition). The sweep now parks the pointer before each
 measurement; thresholds unchanged.
 
+Delivery: commits `2a8885d` (implementation), `9f70447` (tests, baselines,
+evidence, record), `c770b6c` (CI fix). Verified head **`c770b6c`**: GitHub CI
+`validate` and `browser` pass (run 42590502376); Vercel Preview rebuilt from it
+(branch URL under Delivery, SSO-protected). PR #4 description updated. Not
+merged; no production deployment.
+
 ## Final refinement pass (Owner direction, 2026-11-09)
 
 Brief "CMR: Final refinement pass for PR #4", plus two clarifications from the
