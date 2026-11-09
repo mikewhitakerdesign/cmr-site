@@ -84,3 +84,37 @@ export function RocketIcon(props: IconProps) {
     </svg>
   );
 }
+
+/** Find a Run icons (not in the Figma export set): Lucide geometry (ISC), 16px, same stroke as above. */
+export function ChevronLeftIcon(props: IconProps) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" strokeWidth="1.5" {...base} {...props}>
+      <path d="M10 3.5L5.5 8L10 12.5" />
+    </svg>
+  );
+}
+
+export function ChevronRightIcon(props: IconProps) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" strokeWidth="1.5" {...base} {...props}>
+      <path d="M6 3.5L10.5 8L6 12.5" />
+    </svg>
+  );
+}
+
+export function CalendarPlusIcon(props: IconProps) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" strokeWidth="1.16667" {...base} {...props}>
+      <rect x="2" y="3" width="12" height="11" rx="1.5" />
+      <path d="M2 6.5H14M5.5 1.75V4M10.5 1.75V4M8 8.5V12M6.25 10.25H9.75" />
+    </svg>
+  );
+}
+
+export function ShareIcon(props: IconProps) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" strokeWidth="1.16667" {...base} {...props}>
+      <path d="M8 10V2M5 4.75L8 1.75L11 4.75M3 8.5V13a1 1 0 0 0 1 1H12a1 1 0 0 0 1-1V8.5" />
+    </svg>
+  );
+}

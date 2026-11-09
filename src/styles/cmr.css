@@ -51,6 +51,9 @@
   --cmr-tint-lavender-dye: #e8e0ff;
   --cmr-tint-blue-wash: #f2f8ff;
   --cmr-tint-blue-dye: #dbeafe;
+  /* Autumn weather art (Find a Run): a pale mauve beside the peach. Black text on it is >= 17:1. */
+  --cmr-tint-mauve-wash: #fbf3f7;
+  --cmr-tint-mauve-dye: #f1dce8;
 }
 
 @layer base {
@@ -81,4 +84,42 @@
     repeating-conic-gradient(from 18deg at 46% 54%, var(--tie-wash) 0deg 14deg, var(--tie-dye) 24deg 28deg, var(--tie-wash) 38deg 45deg),
     var(--tie-wash);
   filter: blur(10px);
+}
+
+/*
+ * Weather art motion (Find a Run). CSS only, transform and opacity only, and
+ * nothing moves unless the visitor allows motion. Each class is one small
+ * element in the weather glyph (src/components/weather/WeatherGlyph.tsx).
+ * Nothing flashes: lightning is a still bolt.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes wx-drift {
+    from { transform: translateX(-2.5px); }
+    to { transform: translateX(2.5px); }
+  }
+  @keyframes wx-spin {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes wx-fall {
+    0% { transform: translateY(-3px); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translateY(6px); opacity: 0; }
+  }
+  @keyframes wx-sway {
+    0% { transform: translate(-1.5px, -3px); opacity: 0; }
+    20% { opacity: 1; }
+    50% { transform: translate(1.5px, 1px); }
+    100% { transform: translate(-1px, 6px); opacity: 0; }
+  }
+  @keyframes wx-gust {
+    0% { transform: translateX(-3px); opacity: 0.35; }
+    50% { opacity: 1; }
+    100% { transform: translateX(4px); opacity: 0.35; }
+  }
+  .wx-drift { animation: wx-drift 5s ease-in-out infinite alternate; }
+  .wx-drift-slow { animation: wx-drift 8s ease-in-out infinite alternate-reverse; }
+  .wx-rays { transform-origin: 32px 32px; animation: wx-spin 60s linear infinite; }
+  .wx-fall { animation: wx-fall 1.6s ease-in infinite; }
+  .wx-sway { animation: wx-sway 3.2s ease-in-out infinite; }
+  .wx-gust { animation: wx-gust 3s ease-in-out infinite alternate; }
 }
