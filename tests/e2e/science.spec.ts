@@ -218,13 +218,16 @@ test.describe("hero motion", () => {
   });
 
   test("the canvas has drawn lines, behind the text", async ({ page }) => {
-    const lit = await page.locator("[data-slot=terrain-lines] canvas").evaluate((c: HTMLCanvasElement) => {
-      const d = c.getContext("2d")!.getImageData(0, 0, c.width, c.height).data;
-      let n = 0;
-      for (let i = 3; i < d.length; i += 4) if (d[i] > 0) n++;
-      return n;
-    });
-    expect(lit).toBeGreaterThan(1000);
+    // The first frame is drawn after hydration; on a slow runner that can follow page load.
+    await expect(page.locator("[data-slot=terrain-lines]")).not.toHaveAttribute("data-state", "pending");
+    const lit = () =>
+      page.locator("[data-slot=terrain-lines] canvas").evaluate((c: HTMLCanvasElement) => {
+        const d = c.getContext("2d")!.getImageData(0, 0, c.width, c.height).data;
+        let n = 0;
+        for (let i = 3; i < d.length; i += 4) if (d[i] > 0) n++;
+        return n;
+      });
+    await expect.poll(lit).toBeGreaterThan(1000);
     expect(await page.locator("[data-slot=terrain-lines]").evaluate((e) => getComputedStyle(e).pointerEvents)).toBe("none");
   });
 });
