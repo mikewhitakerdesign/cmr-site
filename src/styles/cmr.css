@@ -143,3 +143,32 @@ html[data-motion="on"] .wx-gust { animation: wx-gust 3s ease-in-out infinite alt
   html[data-motion="on"] .run-map-img { transition: transform 450ms cubic-bezier(0.22, 1, 0.36, 1); }
   html[data-motion="on"] [data-slot="run-map"]:hover .run-map-img { transform: scale(1.05); }
 }
+
+/*
+ * The Science (/the-science). Anchors, fragment URLs and keyboard focus must
+ * clear the sticky site header and the sticky section bar under it (49px:
+ * 48px row + 1px rule), so this page's scroll padding includes both. Sized to
+ * the tallest header state after a jump at each width: on phones the header's
+ * top row can come back when jumping upward (64 + 1 + 48 + 1 = 114px); from
+ * tablet up the header is compact once scrolled (bar ≈ 71px tablet, 74px
+ * desktop). The extra is breathing room above the heading.
+ */
+:root:has([data-slot="science-nav"]) {
+  scroll-padding-top: calc(114px + 49px + 20px);
+}
+@media (min-width: 768px) {
+  :root:has([data-slot="science-nav"]) {
+    scroll-padding-top: calc(72px + 49px + 28px);
+  }
+}
+@media (min-width: 1024px) {
+  :root:has([data-slot="science-nav"]) {
+    scroll-padding-top: calc(75px + 49px + 36px);
+  }
+}
+/* Section links glide unless the visitor's system asks for reduced motion (navigation, not decoration). */
+@media (prefers-reduced-motion: no-preference) {
+  :root:has([data-slot="science-nav"]) {
+    scroll-behavior: smooth;
+  }
+}
