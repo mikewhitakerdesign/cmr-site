@@ -269,8 +269,8 @@ test.describe("footer", () => {
     await expect(footer.getByRole("heading", { name: "Get the next run in your inbox." })).toHaveCount(0);
     const inner = await box(footer.locator(":scope > div"));
     const padLeft = parseFloat(await css(footer.locator(":scope > div"), "padding-left"));
-    if (info.project.name === "desktop") {
-      // Final refinements: without the newsletter the wordmark takes the right half, the links the left.
+    if (info.project.name !== "mobile") {
+      // Final site polish: from tablet up the wordmark is right-aligned in the upper area.
       const padRight = parseFloat(await css(footer.locator(":scope > div"), "padding-right"));
       expect(Math.abs(m.x + m.width - (inner.x + inner.width - padRight))).toBeLessThanOrEqual(1);
     } else {
@@ -424,9 +424,10 @@ test.describe("social links (none configured in this build)", () => {
     expect(Math.abs(first.y - last.y)).toBeLessThan(2); // still a single row
     // Owner direction (2026-11-09): Pause motion sits in this row, to the right of "Join the club".
     const pause = await box(page.locator("footer").getByRole("button", { name: /Pause motion|Resume motion/ }));
-    if (info.project.name === "mobile") {
-      // 345px holds the four links but not the control too: it wraps to the row's left edge, never to the legal column.
-      expect(Math.round(pause.x)).toBe(24);
+    const edge = info.project.name === "mobile" ? 24 : 48;
+    if (info.project.name !== "desktop") {
+      // Narrow columns hold the four links but not the control too: it wraps to the row's left edge, never to the legal column.
+      expect(Math.round(pause.x)).toBe(edge);
     } else {
       expect(pause.x).toBeGreaterThanOrEqual(last.x + last.width);
       expect(Math.abs(pause.y + pause.height / 2 - (last.y + last.height / 2))).toBeLessThan(6);
