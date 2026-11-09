@@ -67,7 +67,7 @@ test.describe("final refinements", () => {
     }
   });
 
-  test("footer: wordmark upper right, divider, links left and legal right at tablet+; stacked on mobile", async ({ page }, info) => {
+  test("footer: wordmark left with Navigate right, divider, Pause motion left and legal right at tablet+; stacked on mobile", async ({ page }, info) => {
     await page.goto("/hills");
     const footer = page.locator("footer");
     const mark = footer.getByRole("link", { name: /back to top/i });
@@ -81,18 +81,29 @@ test.describe("final refinements", () => {
     const n = (await nav.boundingBox())!;
     const m = (await mark.boundingBox())!;
     const legal = (await footer.getByRole("list", { name: "Legal" }).boundingBox())!;
+    const pb = (await pause.boundingBox())!;
+    const divider = (await footer.locator("[data-slot=footer-divider]").boundingBox())!;
     const vw = page.viewportSize()!.width;
-    expect(n.y).toBeGreaterThan(m.y + m.height); // links below the wordmark, under the divider
-    expect(legal.y).toBeGreaterThan(m.y + m.height);
+    expect(divider.y).toBeGreaterThanOrEqual(n.y + n.height); // divider below the whole upper area
+    expect(divider.y).toBeGreaterThanOrEqual(m.y + m.height);
+    expect(pb.y).toBeGreaterThan(divider.y);
+    expect(legal.y).toBeGreaterThan(divider.y);
     if (info.project.name === "mobile") {
-      expect(legal.y).toBeGreaterThan(n.y + n.height); // stacked: legal after the main links
+      expect(n.y).toBeGreaterThan(m.y + m.height); // Navigate stacks under the wordmark
+      expect(legal.y).toBeGreaterThan(pb.y + pb.height);
     } else {
-      expect(m.x + m.width).toBeGreaterThan(vw / 2); // wordmark in the upper right
-      expect(n.x + n.width).toBeLessThan(legal.x); // links left column, legal right column
-      expect(legal.x + legal.width).toBeGreaterThan(vw - 100); // legal right-aligned to the container edge
+      expect(m.x + m.width).toBeLessThan(n.x); // wordmark left, Navigate right
+      expect(n.x + n.width).toBeGreaterThan(vw - 100); // Navigate block at the right edge
+      expect(legal.x + legal.width).toBeGreaterThan(vw - 100); // legal right-aligned
+      expect(pb.x).toBeLessThan(vw / 2);
       const copy = (await footer.getByText(/© \d{4} Chicago Mountain Runners/).boundingBox())!;
-      expect(copy.y).toBeGreaterThan(n.y + n.height); // copyright beneath the main links, left column
-      expect(copy.x).toBeLessThan(vw / 2);
+      expect(copy.y).toBeGreaterThan(pb.y + pb.height); // copyright directly below Pause motion
+      expect(Math.abs(copy.x - pb.x)).toBeLessThan(2);
+      const risk = footer.getByText(/Running carries inherent physical risk/);
+      const lines = await risk.evaluate((e) => Math.round(e.getBoundingClientRect().height / parseFloat(getComputedStyle(e).lineHeight)));
+      if (info.project.name === "desktop") expect(lines).toBe(2); // balanced two-line measure
+      const rb = (await risk.boundingBox())!;
+      expect(rb.x + rb.width).toBeGreaterThan(vw - 100);
     }
   });
 

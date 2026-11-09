@@ -13,7 +13,6 @@ import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
 export type FaqItem = { q: string; a: string; more?: { label: string; href: string } };
 export type FaqCategory = { id: string; number: string; title: string; items: FaqItem[] };
 
-export const FAQ_LABEL = "GOOD QUESTIONS.";
 export const FAQ_TITLE = "FREQUENTLY ASKED.";
 export const FAQ_INTRO =
   "Everything you need to know about running with Chicago Mountain Runners. Except why we keep running up the same hill. We're still working on that one.";
