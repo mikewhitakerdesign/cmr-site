@@ -1,5 +1,6 @@
 import { ArrowLink } from "@/components/ArrowLink";
 import { ClockIcon, MapPinIcon } from "@/components/icons";
+import { TopoPattern } from "@/components/home/TopoPattern";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
 import type { RunOccurrence } from "@/lib/runs";
 import { formatSlot, toDateTimeAttr } from "@/lib/schedule";
@@ -25,6 +26,11 @@ import { cn } from "@/lib/utils";
  *
  * Round 2 (Owner direction, 2026-11-08): no visible "sample" badge. The run's
  * content status stays in the data and on the card as `data-status`.
+ *
+ * PR #4 final refinements (Owner direction, 2026-11-09): the 8px radius at
+ * every size, and a very quiet static contour pattern inside the card (the
+ * site's vector TopoPattern, `--cmr-contour-on-dark` at 45%: ≈ #262626 on
+ * black). White text crossing a line still measures > 15:1. No canvas.
  */
 export function NextRunCard({ next, now, className }: { next: RunOccurrence | null; now: Date; className?: string }) {
   const title = fluidType([26, 30, 30], [32, 32, 30]);
@@ -41,11 +47,12 @@ export function NextRunCard({ next, now, className }: { next: RunOccurrence | nu
       data-status={next?.run.status}
       style={space}
       className={cn(
-        "bg-primary p-6 pb-[30px] text-primary-foreground lg:rounded-lg lg:p-8",
+        "relative isolate overflow-hidden rounded-lg bg-primary p-6 pb-[30px] text-primary-foreground lg:p-8",
         "shadow-[0_24px_30px_rgba(65,65,65,0.55)]", // Figma drop shadow; not in MWDS
         className,
       )}
     >
+      <TopoPattern className="-z-10 text-(--cmr-contour-on-dark) opacity-45" />
       <p className="text-caption uppercase">Next run</p>
 
       <h2

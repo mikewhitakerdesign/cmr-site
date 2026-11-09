@@ -142,14 +142,14 @@ export function QuestionsWidget() {
           </button>
         </div>
         <p id={ids.intro} className="mt-1 text-p-sm text-muted-foreground">
-          Ask away. No question is too small. Meetups, fitness levels, what to bring — it goes to the club&apos;s
+          Ask away. No question is too small. Meetups, fitness levels, what to bring. It goes to the club&apos;s
           founder, who usually replies within a day or so.
         </p>
 
         {state.succeeded ? (
           <div className="mt-5">
             <p ref={doneRef} tabIndex={-1} role="status" className="rounded-lg bg-accent p-4 text-p-sm outline-none">
-              <strong className="block font-semibold">Thanks — your question is on its way.</strong>
+              <strong className="block font-semibold">Thanks, your question is on its way.</strong>
               Watch for a reply{sentTo ? ` at ${sentTo}` : ""}.
             </p>
             <Button

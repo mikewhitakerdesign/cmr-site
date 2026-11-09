@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { CmrLogo } from "@/components/CmrLogo";
+import { BackToTopLink } from "@/components/BackToTopLink";
+import { CmrWordmark } from "@/components/CmrWordmark";
 import NewsletterSignup, { type NewsletterSignupProps } from "@/components/NewsletterSignup";
 import { footerNav, legalLinks, riskNotice as defaultRiskNotice, type LegalLink, type NavItem } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
@@ -24,12 +25,19 @@ const linkClass =
  * Mobile 78:477), revised in homepage Round 2 (Owner direction, 2026-11-08):
  *
  *   - very light neutral surface (MWDS `muted`, #f5f5f5) instead of mint
- *   - everything in one darker neutral ink (`--cmr-quiet-ink`, #404040, 9.4:1),
+ *   - everything in one neutral ink (`--cmr-quiet-ink`, ≈ #6c6c6c, 4.8:1 since the
+ *     PR #4 final pass; it was #404040),
  *     including the newsletter input's text and its border (`--cmr-quiet-edge`,
  *     4.4:1 — a UI boundary needs 3:1); the submit stays the MWDS primary button
  *   - a tone-on-tone CMR logo above the newsletter heading, left-aligned
  *   - more vertical padding (80/96/128 top, 56/64/80 bottom) and a calmer rhythm:
  *     logo → newsletter → links → legal, separated by one hairline
+ *
+ * Chicago Hills refinement pass (Owner direction, 2026-11-08): the newsletter
+ * takes the left half and the CMR wordmark (CmrWordmark, traced from the
+ * Owner's reference image) fills the right half as one large block, in the
+ * same quiet ink. Stacked below the newsletter on mobile. The small CMR badge
+ * that sat above the newsletter is removed, so the footer carries one mark.
  *
  * Focus rings stay MWDS `focus/ring` (black) with the gap in the surface
  * color. Links and legal behavior are unchanged.
@@ -53,18 +61,25 @@ export default function Footer({
       )}
     >
       <div className="mx-auto max-w-[1400px] px-6 pt-20 pb-14 md:px-12 md:pt-24 md:pb-16 lg:pt-32 lg:pb-20">
-        <CmrLogo tone="current" className="aspect-[188/98] w-[96px] md:w-[112px] lg:w-[128px]" />
-
-        {newsletter !== false && (
-          <NewsletterSignup
-            {...newsletter}
-            className={cn("mt-8 md:mt-10", newsletter.className)}
-            inputClassName={cn(
-              "border-(color:--cmr-quiet-edge) text-(color:--cmr-quiet-ink) placeholder:text-(color:--cmr-quiet-ink)/80",
-              newsletter.inputClassName,
-            )}
-          />
-        )}
+        <div className="grid gap-y-14 md:grid-cols-2 md:items-start md:gap-x-12 lg:gap-x-16">
+          {newsletter !== false && (
+            <NewsletterSignup
+              {...newsletter}
+              className={newsletter.className}
+              inputClassName={cn(
+                "border-(color:--cmr-quiet-edge) text-(color:--cmr-quiet-ink) placeholder:text-(color:--cmr-quiet-ink)",
+                newsletter.inputClassName,
+              )}
+            />
+          )}
+          {/* PR #4 final refinements: the wordmark takes you back to the top of the page. */}
+          <BackToTopLink
+            label="Chicago Mountain Runners, back to top"
+            className="block w-full max-w-[640px] rounded-xs motion-safe:transition-opacity hover:opacity-80 md:col-start-2 md:justify-self-end"
+          >
+            <CmrWordmark decorative className="w-full" />
+          </BackToTopLink>
+        </div>
 
         <div className="mt-14 border-t border-(color:--cmr-quiet-ink)/20 pt-8 md:mt-16 lg:mt-20 lg:flex lg:items-start lg:justify-between lg:gap-16">
           <nav aria-label="Footer">

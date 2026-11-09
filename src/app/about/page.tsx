@@ -1,4 +1,4 @@
-export const metadata = { title: "About — Chicago Mountain Runners" };
+export const metadata = { title: "About | Chicago Mountain Runners" };
 
 export default function AboutPage() {
   return (
@@ -8,11 +8,11 @@ export default function AboutPage() {
         Chicago Mountain Runners is a running club built around finding
         elevation in a very flat city. We organize recurring hill-focused
         group runs and help runners discover and train on Chicago&apos;s
-        artificial hills — parking garage ramps, stadium stairs, and the odd
+        artificial hills: parking garage ramps, stadium stairs and the odd
         landfill.
       </p>
       <p className="max-w-xl text-muted-foreground">
-        Placeholder copy — replace with the real About page content.
+        Placeholder copy. Replace it with the real About page content.
       </p>
     </div>
   );

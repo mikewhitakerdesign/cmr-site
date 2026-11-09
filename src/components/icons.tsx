@@ -11,6 +11,7 @@ import type { SVGProps } from "react";
  *   MapPin     1:55  "Icon / Cricket Hill · Montrose Beach" 16px
  *   ArrowRight 1:39  "Icon / See the full schedule"        16px
  *   ArrowUpRight 1:64 "Icon / TUE · 5:30 AM" (row action)  20px, stroke 1.25
+ *   Navigation 1:6591 "Icon / Get directions" (Hill Details) 16px
  */
 type IconProps = Omit<SVGProps<SVGSVGElement>, "children">;
 
@@ -50,11 +51,36 @@ export function ArrowRightIcon(props: IconProps) {
   );
 }
 
+/** Hill Details 1:6591 "Icon / Get directions" (Lucide "navigation"), 16px. */
+export function NavigationIcon(props: IconProps) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" strokeWidth="1.16667" {...base} {...props}>
+      <path d="M2 7.33333L14.6667 1.33333L8.66667 14L7.33333 8.66667L2 7.33333Z" />
+    </svg>
+  );
+}
+
 export function ArrowUpRightIcon(props: IconProps) {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" strokeWidth="1.25" {...base} {...props}>
       <path d="M5.83333 5.83333H14.1667V14.1667" />
       <path d="M5.83333 14.1667L14.1667 5.83333" />
+    </svg>
+  );
+}
+
+/**
+ * Rocket — not in Figma. Lucide "rocket" geometry (ISC licence, lucide.dev),
+ * drawn in the same outline style, for the club totals' moon line (PR #4 final
+ * pass, Owner direction 2026-11-09). 24-unit grid, stroke 1.5.
+ */
+export function RocketIcon(props: IconProps) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" strokeWidth="1.5" {...base} {...props}>
+      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+      <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+      <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+      <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
     </svg>
   );
 }

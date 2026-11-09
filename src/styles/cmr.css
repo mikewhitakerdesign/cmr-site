@@ -12,13 +12,29 @@
 
 :root {
   /*
-   * Quiet neutrals (aliases of MWDS brand neutrals) — the Round 2 footer.
+   * Quiet neutrals (from MWDS brand neutrals) — the footer.
    *   surface   neutrals 100  #f5f5f5  = MWDS `muted`
-   *   ink       neutrals 700  #404040  9.4:1 on surface (text, logo, input text)
+   *   ink       80% neutrals 500 + 20% neutrals 600 ≈ #6c6c6c, 4.8:1 on surface
+   *             (text, wordmark, input text). PR #4 final pass (Owner direction,
+   *             2026-11-09): "a couple shades lighter … only barely accessible";
+   *             it was neutrals 700, #404040, 9.4:1. Neutrals 500 alone would be
+   *             4.4:1, under AA, hence the mix.
    *   edge      neutrals 500  #737373  4.4:1 on surface (input border; ≥ 3:1 for UI)
    */
-  --cmr-quiet-ink: var(--mwd-brand-brand-neutrals-700);
+  --cmr-quiet-ink: color-mix(in srgb, var(--mwd-brand-brand-neutrals-500) 80%, var(--mwd-brand-brand-neutrals-600));
   --cmr-quiet-edge: var(--mwd-brand-brand-neutrals-500);
+
+  /*
+   * Contour lines (Chicago Hills refinement pass, Owner direction 2026-11-08:
+   * "gray lines instead of white / black"). Aliases of MWDS brand neutrals,
+   * read by ContourField as the line color.
+   *   on-dark   neutrals 600  #525252 on black (hill heroes): faint, and white
+   *             type crossing a line still measures 7.8:1
+   *   on-light  neutrals 300  #d4d4d4 on white ("Flat is a state of mind"):
+   *             black type crossing a line still measures 15:1
+   */
+  --cmr-contour-on-dark: var(--mwd-brand-brand-neutrals-600);
+  --cmr-contour-on-light: var(--mwd-brand-brand-neutrals-300);
 
   /*
    * Pastel tints (Round 2, Owner direction 2026-11-08): very pale mint, peach,

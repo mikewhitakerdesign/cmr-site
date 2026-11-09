@@ -31,6 +31,15 @@ import { cn } from "@/lib/utils";
  *   - "OWN MTNS" tracking is 0.048em (Figma: +10px at every size, which only
  *     matches line one's width on desktop).
  *
+ * Mobile (PR #4 final refinements, Owner direction 2026-11-09), below 768:
+ *   - the headline fills the content width: font size (100vw − 48px) / 6.24,
+ *     each line being ≈ 6.1em wide (≈ 55px at 393, 44px at 320, 61px at 430);
+ *     the 2% margin and no-wrap cover Linux's slightly wider rendering
+ *   - the CTAs stack, full width: Find a Run, then Join the club
+ *   - the next-run card sits at the bottom of the hero and hangs 96px below
+ *     it, over the white page (the section's bottom margin holds that space)
+ * Tablet and desktop are unchanged.
+ *
  * ACCEPTED ACCESSIBILITY EXCEPTION (Owner decision, PR #3, 2026-11-08): the
  * headline is solid white (100%, like "JUST SHOW UP.") with no halo or shadow —
  * Figma's ghosted 60% and the soft halo were removed in the final refinement. Its
@@ -59,6 +68,9 @@ export function HomeHero({ next, now }: { next: RunOccurrence | null; now: Date 
       className={cn(
         "relative isolate z-10 bg-primary text-primary-foreground",
         "min-h-(--hero-minh-a) md:min-h-(--hero-minh-b)",
+        // Mobile: a column, so the card can sit at the bottom; the margin is the white
+        // space its overhang occupies.
+        "max-md:mb-24 max-md:flex max-md:flex-col",
         onDarkSurface,
       )}
     >
@@ -81,32 +93,37 @@ export function HomeHero({ next, now }: { next: RunOccurrence | null; now: Date 
         }
       />
 
-      <Container className="relative pt-(--hero-pt-a) md:pt-(--hero-pt-b)">
+      <Container className="relative pt-(--hero-pt-a) max-md:flex max-md:flex-1 max-md:flex-col md:pt-(--hero-pt-b)">
         <h1
           id="hero-heading"
           style={heading}
-          className={cn(FLUID_TYPE, "text-center font-black")}
+          className={cn(
+            FLUID_TYPE,
+            "text-center font-black",
+            // Mobile: fill the content width (each line is ≈ 6.1em wide), never wrapping a line.
+            "max-md:text-[calc((100vw-48px)/6.24)] max-md:leading-[1.08] max-md:whitespace-nowrap",
+          )}
         >
           {/* The space keeps the accessible name "MAKE YOUR OWN MTNS" (blocks don't add one). */}
           <span className="block">MAKE YOUR</span>{" "}
           <span className="block tracking-[0.048em]">OWN MTNS</span>
         </h1>
 
-        <div className="relative mt-(--hero-actions-mt-a) md:mt-(--hero-actions-mt-b)">
+        <div className="relative mt-(--hero-actions-mt-a) max-md:flex max-md:flex-1 max-md:flex-col md:mt-(--hero-actions-mt-b)">
           <div
             style={cta}
             className={cn(
               FLUID_TYPE,
-              // Mobile: the pair fills the row (Figma 116 + 217 = 345); below ~360px the
-              // second CTA drops to its own full-width row instead of overflowing.
-              "flex flex-wrap gap-3 md:flex-nowrap",
+              // Mobile: stacked, full width (PR #4 final refinements). The auto margin takes
+              // the hero's spare height, so the card lands at the bottom.
+              "flex flex-col gap-3 max-md:mb-auto md:flex-row md:flex-nowrap",
               "*:h-(--hero-cta-h-a) md:*:h-(--hero-cta-h-b)",
             )}
           >
-            <CtaLink href="/calendar" variant="primary" className="px-5 md:px-7">
+            <CtaLink href="/calendar" variant="primary" className="w-full px-5 md:w-auto md:px-7">
               Find a Run
             </CtaLink>
-            <CtaLink href="/join" variant="secondary" className="grow px-5 md:grow-0 md:px-7">
+            <CtaLink href="/join" variant="secondary" className="w-full px-5 md:w-auto md:px-7">
               Join the club
             </CtaLink>
           </div>
@@ -116,6 +133,8 @@ export function HomeHero({ next, now }: { next: RunOccurrence | null; now: Date 
             now={now}
             className={cn(
               "mt-(--hero-card-mt-a) w-full md:mt-(--hero-card-mt-b) md:ml-auto md:w-(--hero-card-w-b)",
+              // Mobile: hang 96px below the hero, over the white page.
+              "max-md:translate-y-24",
               "lg:absolute lg:top-0 lg:right-0 lg:mt-0",
             )}
           />

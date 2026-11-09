@@ -111,7 +111,7 @@ describe("QuestionsWidget", () => {
 
     resolve(json(200, { ok: true, next: "https://formspree.io/thanks" }));
     const done = await within(dialog).findByRole("status");
-    expect(done).toHaveTextContent("Thanks — your question is on its way.");
+    expect(done).toHaveTextContent("Thanks, your question is on its way.");
     expect(done).toHaveTextContent("runner@example.com");
     await waitFor(() => expect(done).toHaveFocus());
   });

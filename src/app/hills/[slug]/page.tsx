@@ -1,50 +1,71 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { HillProfile } from "@/components/HillProfile";
-import { ProvisionalBadge } from "@/components/ProvisionalBadge";
-import { getHill, hills } from "@/lib/hills";
+import { FindTheMountain } from "@/components/hills/FindTheMountain";
+import { HillBreadcrumb, HillHero } from "@/components/hills/HillHero";
+import { HillLede } from "@/components/hills/HillIntro";
+import { HillRuns } from "@/components/hills/HillRuns";
+import { HillAbout, HillRepeats } from "@/components/hills/HillTerrain";
+import { MoreHills } from "@/components/hills/MoreHills";
+import { getHill, hillsWithPages, otherHills } from "@/lib/hills";
+import { getRunsAtHill } from "@/lib/runs";
+
+/** Only the listed hills have pages; anything else (incl. the scaffold placeholder) is a 404. */
+export const dynamicParams = false;
+
+/** "Run it with us" depends on the runs' upcoming dates, so regenerate hourly (as the homepage). */
+export const revalidate = 3600;
 
 export function generateStaticParams() {
-  return hills.map((hill) => ({ slug: hill.slug }));
+  return hillsWithPages().map((hill) => ({ slug: hill.slug }));
 }
 
-const NOT_MEASURED = "Not measured yet";
-
-// Scaffold page (not yet designed). Unknown measurements are shown as such,
-// never estimated.
-export default async function HillPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
+const pageHill = (slug: string) => {
   const hill = getHill(slug);
+  return hill?.page && hill.status !== "placeholder" ? { ...hill, page: hill.page } : undefined;
+};
+
+export async function generateMetadata({ params }: PageProps<"/hills/[slug]">): Promise<Metadata> {
+  const hill = pageHill((await params).slug);
+  if (!hill) return {};
+  return {
+    title: `${hill.name} | Chicago Mountain Runners`,
+    description: hill.page.lede,
+    openGraph: { title: hill.name, description: hill.page.lede },
+  };
+}
+
+/**
+ * Hill detail — Figma Hill Details / Desktop 1:6363, Tablet 1:6703, Mobile
+ * 1:7032 (IA: "What's this hill like, and when can I run it with CMR?").
+ * Header and Footer come from the root layout.
+ *
+ * One shared structure for every hill: hero, breadcrumb, lede, about + spec
+ * rows, repeats, runs here, find it, more hills. Sections vary with what each
+ * record holds (mapped route or not; recorded surface; runs or none).
+ *
+ * Refinement pass (Owner direction, 2026-11-08): the "Elevation gain" numbers
+ * strip and the "What goes up." profile section are removed; the breadcrumb
+ * moves below the hero; "More hills" becomes the simpler "More hills on
+ * repeat." list.
+ */
+export default async function HillPage({ params }: PageProps<"/hills/[slug]">) {
+  const { slug } = await params;
+  const hill = pageHill(slug);
   if (!hill) notFound();
 
+  const runs = getRunsAtHill(hill.slug, new Date());
+  const more = otherHills(hill.slug);
+
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4 px-6 py-16">
-      <h1 className="text-3xl font-semibold tracking-tight">{hill.name}</h1>
-      {hill.status !== "verified" && (
-        <p>
-          <ProvisionalBadge>{hill.status === "placeholder" ? "Placeholder" : "Unverified"}</ProvisionalBadge>
-        </p>
-      )}
-      <p className="text-muted-foreground">{hill.neighborhood}</p>
-      {hill.profile && <HillProfile name={hill.name} profile={hill.profile} className="mt-4 max-w-2xl" />}
-      <dl className="grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <dt className="text-muted-foreground">Elevation gain per repeat</dt>
-          <dd className="font-medium">
-            {hill.elevationGainFt !== undefined ? `${hill.elevationGainFt} ft` : NOT_MEASURED}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-muted-foreground">Repeat distance</dt>
-          <dd className="font-medium">
-            {hill.repeatDistanceMi !== undefined ? `${hill.repeatDistanceMi} mi` : NOT_MEASURED}
-          </dd>
-        </div>
-      </dl>
-      <p className="max-w-xl">{hill.description}</p>
-    </div>
+    <>
+      <HillHero hill={hill} />
+      <HillBreadcrumb hill={hill} />
+      <HillLede hill={hill} />
+      <HillAbout hill={hill} />
+      <HillRepeats hill={hill} />
+      <HillRuns hill={hill} runs={runs} />
+      <FindTheMountain hill={hill} />
+      {more.length > 0 && <MoreHills hills={more} />}
+    </>
   );
 }

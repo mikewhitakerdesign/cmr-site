@@ -49,7 +49,7 @@ export const runs: Run[] = [
     hillSlug: "cricket-hill",
     meetupLocation: "Cricket Hill · Montrose Beach",
     description:
-      "Laps up and down Cricket Hill by the lake, at whatever effort feels right. Do a few reps or stay the whole morning — every pace is welcome and nobody's keeping score. Exact workout to be confirmed.",
+      "Laps up and down Cricket Hill by the lake, at whatever effort feels right. Do a few reps or stay the whole morning. Every pace is welcome and nobody's keeping score. Exact workout to be confirmed.",
     workoutSummary: "Hill repeats",
     durationLabel: "~2 hrs",
     schedule: { kind: "weekly", weekday: "SAT", time: "05:30" },
@@ -103,4 +103,13 @@ export function getNextOccurrencePerRun(now: Date, all: readonly Run[] = runs): 
     if (out.length === listed.length) break;
   }
   return out;
+}
+
+/**
+ * The next occurrence of each listed run held at `hillSlug`, soonest first —
+ * the Hill → Run side of the bidirectional relationship (IA). Runs with no
+ * upcoming occurrence (ended, cancelled) drop out.
+ */
+export function getRunsAtHill(hillSlug: string, now: Date, all: readonly Run[] = runs): RunOccurrence[] {
+  return getNextOccurrencePerRun(now, all).filter((o) => o.run.hillSlug === hillSlug);
 }

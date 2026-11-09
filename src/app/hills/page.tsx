@@ -1,38 +1,71 @@
-import Link from "next/link";
-import { ProvisionalBadge } from "@/components/ProvisionalBadge";
-import { hills } from "@/lib/hills";
+import type { Metadata } from "next";
+import { Container } from "@/components/Container";
+import { HillDirectoryList } from "@/components/hills/HillDirectoryList";
+import { JustShowUp } from "@/components/home/JustShowUp";
+import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
+import { BODY_TEXT_COLOR } from "@/lib/headings";
+import { directoryEntries } from "@/lib/hill-directory";
+import { cn } from "@/lib/utils";
 
-export const metadata = { title: "Hills — Chicago Mountain Runners" };
+export const metadata: Metadata = {
+  title: "Chicago Hills | Chicago Mountain Runners",
+  description:
+    "The hills Chicago Mountain Runners climb in a very flat city: Cricket Hill, Warren Hill, Horner Hill, Schiller Hill and Mt. Trashmore.",
+};
 
-// Scaffold page (not yet designed).
+/** "Weekly with CMR" depends on the runs' upcoming dates, so regenerate hourly (as the homepage). */
+export const revalidate = 3600;
+
+/**
+ * /hills — the Chicago Hills directory (IA: "What hills does CMR use, and which
+ * interests me?"; primary action: open a hill).
+ *
+ * No Figma frame exists for this page (the file has Hill Details only). It is
+ * composed from approved parts: the Hill Details display type for the page
+ * head, the homepage hill list extended into a comparison (HillDirectoryList),
+ * and the homepage's "Just show up." band to close.
+ *
+ * Refinement pass (Owner direction, 2026-11-08): no eyebrow; the headline is
+ * "Chicago H̶i̶l̶l̶s̶ / Mountains" with "Mountains" always on its own second line;
+ * the rise footnote under the list is removed; the closing band is the
+ * homepage JustShowUp (was "Pick a hill. Show up.").
+ *
+ * Final pass (Owner direction, 2026-11-09): the provisional tag and note are
+ * gone (every hill stays `provisional` in its data and rows carry
+ * `data-status`); the intro uses the body-text color of the Cricket Hill description
+ * (BODY_TEXT_COLOR).
+ */
 export default function HillsPage() {
+  const entries = directoryEntries(new Date());
+  const layout = fluidVars({ "--head-pt": [56, 80, 128], "--head-pb": [48, 64, 96] });
+  // 44 on mobile so "Chicago Hills" holds one line in the 345px column.
+  const heading = fluidType([44, 96, 144], [42, 88, 129.6]);
+  const intro = fluidType([18, 20, 24], [27, 30, 34]);
+
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-16">
-      <h1 className="text-3xl font-semibold tracking-tight">
-        Chicago&apos;s Mountains
-      </h1>
-      <p className="max-w-xl text-muted-foreground">
-        Every hill Chicago has, which is to say every hill Chicago has built
-        by accident or on purpose.
-      </p>
-      <ul className="flex flex-col divide-y divide-border">
-        {hills.map((hill) => (
-          <li key={hill.slug} className="flex flex-col gap-1 py-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <Link href={`/hills/${hill.slug}`} className="font-medium hover:underline">
-                {hill.name}
-              </Link>
-              {hill.status !== "verified" && (
-                <ProvisionalBadge>{hill.status === "placeholder" ? "Placeholder" : "Unverified"}</ProvisionalBadge>
-              )}
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {hill.neighborhood}
-              {hill.elevationGainFt !== undefined && <> · {hill.elevationGainFt} ft gain per repeat</>}
-            </p>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <>
+      <section aria-labelledby="hills-heading" style={layout} className="pt-(--head-pt-a) pb-(--head-pb-a) md:pt-(--head-pt-b) md:pb-(--head-pb-b)">
+        <Container>
+          <h1 id="hills-heading" style={heading} className={cn(FLUID_TYPE, "font-black tracking-[-0.045em]")}>
+            <span className="block whitespace-nowrap">
+              Chicago <s>Hills</s>
+            </span>{" "}
+            <span className="block">Mountains</span>
+          </h1>
+          <p style={intro} className={cn(FLUID_TYPE, BODY_TEXT_COLOR, "max-w-[760px] pt-6 font-medium md:pt-8")}>
+            The places in and around a very flat city where the ground goes up on purpose. Each one has a page: what we know,
+            what we&apos;re still measuring, and when we run it.
+          </p>
+        </Container>
+      </section>
+
+      <section aria-label="All hills" className="pb-16 md:pb-24">
+        <Container>
+          <HillDirectoryList entries={entries} />
+        </Container>
+      </section>
+
+      <JustShowUp />
+    </>
   );
 }

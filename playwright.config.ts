@@ -22,7 +22,11 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   reporter: process.env.CI ? [["github"], ["list"]] : "list",
   grepInvert: process.env.PW_VISUAL ? undefined : /@visual/,
-  use: { baseURL: `http://localhost:${PORT}` },
+  use: {
+    baseURL: `http://localhost:${PORT}`,
+    // WebGL (the contour backgrounds) on GPU-less CI runners: Chromium's software renderer.
+    launchOptions: { args: ["--enable-unsafe-swiftshader"] },
+  },
   expect: { toHaveScreenshot: { maxDiffPixelRatio: 0.01 } },
   projects: [
     { name: "mobile", use: { ...devices["Desktop Chrome"], viewport: { width: 393, height: 852 } } },
