@@ -6,7 +6,7 @@ objective: >-
   Remove the FAQ eyebrow, move the FAQ category links into a sticky section bar
   matching The Science, stack FAQ section headings above their accordions at
   desktop, and recompose the shared footer around a vertical Navigate list.
-status: in-progress
+status: complete
 stage: implementation
 active_capability: ui-implementation
 bundle_references:
@@ -21,7 +21,7 @@ updated_at: '2026-11-09T00:00:00.000Z'
 ---
 ## Status
 
-Implemented and validated locally; PR open. Closeout follows the merge.
+**Complete: merged and deployed (2026-11-09).** PR #16 merged as `218e4b9`. `validate`, `browser` and the Vercel Preview passed on the PR head and CI passed on `main`. Production smoke at 1440, 768 and 393: `/faq` has no eyebrow, the category bar sits under the header bar, the Schedules & Safety anchor lands with its heading below both bars, all 23 questions are present, the footer lists the five Navigate links in order, and there is no horizontal overflow.
 
 ## Authorization
 
