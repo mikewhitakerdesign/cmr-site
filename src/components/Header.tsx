@@ -41,8 +41,9 @@ const shrink =
  *     full 48px row tall, so the whole cell is the tap target. Cells grow from
  *     their content (flex-auto).
  *   - The Science (fourth link, 2026-11-09): four labels need ~380px at 15px,
- *     so cell padding is 6px (was 8) and the type scales down below 393px
- *     (3.82vw, 15px at 393, never under 12px), so the row fits down to 320px.
+ *     so cell padding is 6px (was 8) and below 393px the type scales
+ *     (3.65vw, never under 11.5px; 15px from 393 up), so the row fits down to
+ *     320px with room for platform font differences (Linux renders wider).
  *     The row may scroll sideways as a last resort; the page never does.
  *   - Tablet: one gap value between every item and the CTA is now 16px (was
  *     24), so four links, the logo and the CTA share one line at 768.
@@ -103,7 +104,7 @@ export default function Header({ items = primaryNav, cta = joinCta, className }:
           </HomeLink>
 
           <nav aria-label="Primary" data-slot="primary-nav" className="col-span-2 row-start-2 border-t border-foreground md:border-0">
-            <ul className="flex max-md:overflow-x-auto max-md:[scrollbar-width:none] md:flex-wrap md:justify-end md:gap-x-4 lg:gap-x-9 text-[clamp(12px,3.82vw,15px)] leading-5 md:text-p-sm">
+            <ul className="flex max-md:overflow-x-auto max-md:[scrollbar-width:none] md:flex-wrap md:justify-end md:gap-x-4 lg:gap-x-9 text-[15px] max-[393px]:text-[clamp(11.5px,3.65vw,15px)] leading-5 md:text-p-sm">
               {items.map((item) => (
                 <li key={item.href} className="flex-auto md:flex-none">
                   <NavLink
