@@ -3,7 +3,8 @@ import { ctaLinkVariants } from "@/components/CtaLink";
 import { HeaderShell } from "@/components/HeaderShell";
 import { HomeLink } from "@/components/HomeLink";
 import { NavLink } from "@/components/NavLink";
-import { joinCta, primaryNav, type NavItem } from "@/lib/navigation";
+import { Tooltip } from "@/components/Tooltip";
+import { JOIN_TOOLTIP, joinCta, primaryNav, type NavItem } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
 export type HeaderProps = {
@@ -120,19 +121,20 @@ export default function Header({ items = primaryNav, cta = joinCta, className }:
             </ul>
           </nav>
 
-          <NavLink
-            href={cta.href}
-            className={cn(
-              ctaLinkVariants({ variant: "outline" }),
-              "col-start-2 row-start-1 mr-6 h-9 justify-self-end md:mr-0",
-              "w-[110px] md:w-[128px] lg:w-[150px]",
-              "text-p lg:text-p-lg",
-              // Current page keeps the light MWDS ghost fill; hover still flips it to black.
-              "aria-[current=page]:bg-ghost-hover aria-[current=page]:hover:bg-primary",
-            )}
-          >
-            {cta.label}
-          </NavLink>
+          <Tooltip text={JOIN_TOOLTIP} side="bottom" align="end" className="col-start-2 row-start-1 mr-6 justify-self-end md:mr-0">
+            <NavLink
+              href={cta.href}
+              className={cn(
+                ctaLinkVariants({ variant: "outline" }),
+                // Pure white at rest, on /join too (the current-page state keeps this white; hover still flips to black).
+                "h-9 bg-background",
+                "w-[110px] md:w-[128px] lg:w-[150px]",
+                "text-p lg:text-p-lg",
+              )}
+            >
+              {cta.label}
+            </NavLink>
+          </Tooltip>
         </div>
       </div>
     </HeaderShell>

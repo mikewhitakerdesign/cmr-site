@@ -2,6 +2,8 @@ import Image from "next/image";
 import { Container } from "@/components/Container";
 import { CtaLink } from "@/components/CtaLink";
 import { PhotoBackdrop } from "@/components/PhotoBackdrop";
+import { Tooltip } from "@/components/Tooltip";
+import { JOIN_TOOLTIP } from "@/lib/navigation";
 import { NextRunCard } from "@/components/home/NextRunCard";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
 import type { RunOccurrence } from "@/lib/runs";
@@ -123,9 +125,11 @@ export function HomeHero({ next, now, held }: { next: RunOccurrence | null; now:
             <CtaLink href="/calendar" variant="primary" className="w-full px-5 md:w-auto md:px-7">
               Find a Run
             </CtaLink>
-            <CtaLink href="/join" variant="secondary" className="w-full px-5 md:w-auto md:px-7">
-              Join the club
-            </CtaLink>
+            <Tooltip text={JOIN_TOOLTIP} className="w-full md:w-auto">
+              <CtaLink href="/join" variant="secondary" className="h-full w-full px-5 md:w-auto md:px-7">
+                Join the club
+              </CtaLink>
+            </Tooltip>
           </div>
 
           <NextRunCard

@@ -37,6 +37,9 @@ export const primaryNav: NavItem[] = [
   { label: "About", href: "/about" },
 ];
 
+/** The supplementary tooltip on every "Join the club" CTA. One string, so it is identical everywhere. */
+export const JOIN_TOOLTIP = "No fees. No commitments. Lots of elevation.";
+
 /** Header CTA. "Join the club" is the label of every Join CTA (header, hero, Just show up, footer). */
 export const joinCta: NavItem = { label: "Join the club", href: "/join" };
 

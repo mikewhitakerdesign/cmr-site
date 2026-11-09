@@ -2,6 +2,8 @@ import Image from "next/image";
 import { Container } from "@/components/Container";
 import { CtaLink } from "@/components/CtaLink";
 import { PhotoBackdrop } from "@/components/PhotoBackdrop";
+import { Tooltip } from "@/components/Tooltip";
+import { JOIN_TOOLTIP } from "@/lib/navigation";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
 import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
 import { onDarkSurface } from "@/lib/surfaces";
@@ -95,9 +97,11 @@ export function JustShowUp({ held = OFFICIAL_RUNS_ON_HOLD }: { held?: boolean })
           <CtaLink href="/calendar" variant="primary" className="px-7">
             Find a Run
           </CtaLink>
-          <CtaLink href="/join" variant="secondary" className="px-7">
-            Join the club
-          </CtaLink>
+          <Tooltip text={JOIN_TOOLTIP}>
+            <CtaLink href="/join" variant="secondary" className="h-full px-7">
+              Join the club
+            </CtaLink>
+          </Tooltip>
         </div>
       </Container>
     </section>

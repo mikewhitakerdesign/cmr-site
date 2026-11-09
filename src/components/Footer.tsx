@@ -57,6 +57,60 @@ export default function Footer({
 }: FooterProps) {
   const visibleLegal = legal.filter((l): l is Required<LegalLink> => Boolean(l.href));
 
+  // The link row, with the motion control inline in it (Owner direction, 2026-11-09).
+  const linkRow = (
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 lg:gap-x-8">
+      <nav aria-label="Footer">
+        <ul className="flex flex-wrap gap-x-5 gap-y-2 text-p-sm font-medium lg:gap-x-8">
+          {links.map((item) => (
+            <li key={item.href}>
+              {item.external ? (
+                <a href={item.href} className={linkClass}>
+                  {item.label}
+                </a>
+              ) : (
+                <Link href={item.href} className={linkClass}>
+                  {item.label}
+                </Link>
+              )}
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <MotionToggle />
+    </div>
+  );
+
+  const legalBlock = (
+    <div className="max-w-[550px] lg:max-w-[448px]">
+      {visibleLegal.length > 0 && (
+        <ul aria-label="Legal" className="flex flex-wrap gap-x-5 gap-y-2 text-p-sm lg:gap-x-6">
+          {visibleLegal.map((l) => (
+            <li key={l.href}>
+              <Link href={l.href} className={linkClass}>
+                {l.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className={cn("text-p-mini", visibleLegal.length > 0 && "mt-4")}>{riskNotice}</p>
+      <p className="mt-3 text-p-mini">© {year} Chicago Mountain Runners</p>
+    </div>
+  );
+
+  const wordmark = (className?: string) => (
+    // PR #4 final refinements: the wordmark takes you back to the top of the page.
+    <BackToTopLink
+      label="Chicago Mountain Runners, back to top"
+      className={cn("block w-full max-w-[640px] rounded-xs motion-safe:transition-opacity hover:opacity-80", className)}
+    >
+      <CmrWordmark decorative className="w-full" />
+    </BackToTopLink>
+  );
+
+  const rule = "border-t border-(color:--cmr-quiet-ink)/20 pt-8";
+
   return (
     <footer
       className={cn(
@@ -66,69 +120,42 @@ export default function Footer({
       )}
     >
       <div className="mx-auto max-w-[1400px] px-6 pt-20 pb-14 md:px-12 md:pt-24 md:pb-16 lg:pt-32 lg:pb-20">
-        <div className="grid gap-y-14 md:grid-cols-2 md:items-start md:gap-x-12 lg:gap-x-16">
-          {newsletter !== false && (
-            <NewsletterSignup
-              {...newsletter}
-              className={newsletter.className}
-              inputClassName={cn(
-                "border-(color:--cmr-quiet-edge) text-(color:--cmr-quiet-ink) placeholder:text-(color:--cmr-quiet-ink)",
-                newsletter.inputClassName,
-              )}
-            />
-          )}
-          {/* PR #4 final refinements: the wordmark takes you back to the top of the page. It sits left
-              without the newsletter, and on the right of it when the newsletter returns. */}
-          <BackToTopLink
-            label="Chicago Mountain Runners, back to top"
-            className={cn(
-              "block w-full max-w-[640px] rounded-xs motion-safe:transition-opacity hover:opacity-80",
-              newsletter !== false && "md:col-start-2 md:justify-self-end",
-            )}
-          >
-            <CmrWordmark decorative className="w-full" />
-          </BackToTopLink>
-        </div>
-
-        <div className="mt-14 border-t border-(color:--cmr-quiet-ink)/20 pt-8 md:mt-16 lg:mt-20 lg:flex lg:items-start lg:justify-between lg:gap-16">
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 lg:gap-x-8">
-          <nav aria-label="Footer">
-            <ul className="flex flex-wrap gap-x-5 gap-y-2 text-p-sm font-medium lg:gap-x-8">
-              {links.map((item) => (
-                <li key={item.href}>
-                  {item.external ? (
-                    <a href={item.href} className={linkClass}>
-                      {item.label}
-                    </a>
-                  ) : (
-                    <Link href={item.href} className={linkClass}>
-                      {item.label}
-                    </Link>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </nav>
-          {/* Owner direction (2026-11-09): the motion control sits in this row, right of the links. */}
-          <MotionToggle />
+        {newsletter === false ? (
+          /* No newsletter (v1). One copy of each part, placed by grid area: stacked wordmark, then links
+             with the motion control, then legal, below desktop; on desktop the links take the left half
+             beside the wordmark (the newsletter's old place) with the legal row under one hairline.
+             Owner direction 2026-11-09 (final refinements): restore the balance, no newsletter. */
+          <div className="grid lg:grid-cols-2 lg:items-center lg:gap-x-16">
+            {wordmark("lg:col-start-2 lg:row-start-1 lg:justify-self-end")}
+            <div
+              data-slot="footer-links"
+              className={cn("mt-14 md:mt-16", rule, "lg:col-start-1 lg:row-start-1 lg:mt-0 lg:border-t-0 lg:pt-0")}
+            >
+              {linkRow}
+            </div>
+            <div className={cn("mt-8 lg:col-span-2 lg:row-start-2 lg:mt-20", "lg:border-t lg:border-(color:--cmr-quiet-ink)/20 lg:pt-8")}>
+              {legalBlock}
+            </div>
           </div>
-
-          <div className="mt-8 max-w-[550px] lg:mt-0 lg:max-w-[448px]">
-            {visibleLegal.length > 0 && (
-              <ul aria-label="Legal" className="flex flex-wrap gap-x-5 gap-y-2 text-p-sm lg:gap-x-6">
-                {visibleLegal.map((l) => (
-                  <li key={l.href}>
-                    <Link href={l.href} className={linkClass}>
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <p className={cn("text-p-mini", visibleLegal.length > 0 && "mt-4")}>{riskNotice}</p>
-            <p className="mt-3 text-p-mini">© {year} Chicago Mountain Runners</p>
-          </div>
-        </div>
+        ) : (
+          <>
+            <div className="grid gap-y-14 md:grid-cols-2 md:items-start md:gap-x-12 lg:gap-x-16">
+              <NewsletterSignup
+                {...newsletter}
+                className={newsletter.className}
+                inputClassName={cn(
+                  "border-(color:--cmr-quiet-edge) text-(color:--cmr-quiet-ink) placeholder:text-(color:--cmr-quiet-ink)",
+                  newsletter.inputClassName,
+                )}
+              />
+              {wordmark("md:col-start-2 md:justify-self-end")}
+            </div>
+            <div className={cn("mt-14 md:mt-16 lg:mt-20 lg:flex lg:items-start lg:justify-between lg:gap-16", rule)}>
+              {linkRow}
+              <div className="mt-8 lg:mt-0">{legalBlock}</div>
+            </div>
+          </>
+        )}
       </div>
     </footer>
   );

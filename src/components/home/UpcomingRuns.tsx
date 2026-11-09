@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowLink } from "@/components/ArrowLink";
 import { Container } from "@/components/Container";
+import { Tooltip } from "@/components/Tooltip";
+import { JOIN_TOOLTIP } from "@/lib/navigation";
 import { ArrowUpRightIcon, ClockIcon, MapPinIcon } from "@/components/icons";
 import { FLUID_TYPE, fluidVars } from "@/lib/fluid";
 import { DISPLAY_HEADING, displayHeading } from "@/lib/headings";
@@ -209,9 +211,11 @@ function UpcomingRunsOnHold() {
           <ArrowLink href="/hills" className="text-p">
             Explore the hills
           </ArrowLink>
-          <ArrowLink href="/join" className="text-p">
-            Join the club
-          </ArrowLink>
+          <Tooltip text={JOIN_TOOLTIP}>
+            <ArrowLink href="/join" className="text-p">
+              Join the club
+            </ArrowLink>
+          </Tooltip>
         </div>
       </Container>
     </section>

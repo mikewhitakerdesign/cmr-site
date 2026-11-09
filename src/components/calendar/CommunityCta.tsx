@@ -2,7 +2,8 @@ import { Container } from "@/components/Container";
 import { CtaLink } from "@/components/CtaLink";
 import { FLUID_TYPE, fluidType } from "@/lib/fluid";
 import { DISPLAY_HEADING } from "@/lib/headings";
-import { joinCta } from "@/lib/navigation";
+import { Tooltip } from "@/components/Tooltip";
+import { JOIN_TOOLTIP, joinCta } from "@/lib/navigation";
 import { tintVars } from "@/lib/tints";
 import { cn } from "@/lib/utils";
 
@@ -24,9 +25,11 @@ export function CommunityCta() {
         <h2 id="community-heading" style={fluidType([44, 56, 72], [44, 56, 68])} className={cn(FLUID_TYPE, DISPLAY_HEADING, "max-w-[18ch] text-balance")}>
           Come for the hills. Stay for the people<span className="ss08">.</span>
         </h2>
-        <CtaLink href={joinCta.href} className="h-14 px-7 text-[18px] leading-[27px] font-medium">
-          {joinCta.label}
-        </CtaLink>
+        <Tooltip text={JOIN_TOOLTIP} align="end">
+          <CtaLink href={joinCta.href} className="h-14 px-7 text-[18px] leading-[27px] font-medium">
+            {joinCta.label}
+          </CtaLink>
+        </Tooltip>
       </Container>
     </section>
   );
