@@ -10,23 +10,23 @@ objective: >-
   the confirmation experience are Owner-directed; this Work Item records the
   evidence, a recommended approach, and the decisions the Owner must make
   before implementation.
-status: in-review
+status: complete
 stage: implementation
 active_capability: ui-implementation
 bundle_references:
   - web-ui-experience
   - content-publication
   - external-action-integration
-authority_requirement: owner-authorization-required
+authority_requirement: owner-authorization-satisfied
 validation_state: passed
-blocker_state: awaiting-owner-review
-current_responsibility: owner
+blocker_state: none
+current_responsibility: orchestrator
 created_at: '2026-11-08T22:00:00.000Z'
-updated_at: '2026-11-09T21:00:00.000Z'
+updated_at: '2026-11-09T23:30:00.000Z'
 ---
 ## Status
 
-**Implemented, validated and under Owner-authorized merge (2026-11-09). Final merge commits and production results are recorded in "Outcome" at the end of this section once they exist.** No real Formspree submission was made at any point; tests mock Formspree.
+**Complete: merged and live (2026-11-09).** PR #8 merged as **`2f3a176`** (branch head `27f0a03`); see Outcome. The Owner reviews the live site next. No real Formspree submission was made at any point; tests mock Formspree.
 
 Branch `feat/cmr-join-faq-policies` (worktree `../cmr-site-join`), PR #8. It was opened stacked on PR #6; PR #6 was merged by the Owner on 2026-11-09 (merge commit `57be02e`, head `df3a02a` unchanged, CI green), and PR #8 was then rebased onto `main` and retargeted. `plan/cmr-join-page` and its uncommitted records in the primary worktree are untouched.
 
@@ -78,7 +78,7 @@ Evidence is code inspection plus `tests/e2e/privacy-audit.spec.ts` (built site i
 | Newsletter | Hidden for v1; no provider; `NEXT_PUBLIC_NEWSLETTER_FORM_ACTION` unset |
 | Other personal data | None. No accounts, database, API route or stored submissions in this app |
 
-## Open operational items (not site blockers; Owner actions)
+## Open operational items (as raised at implementation; the final list is under "Operational follow-ups remaining")
 
 These were bracketed in the handoff and are not claims on the public pages. They are commitments the Privacy/Terms text relies on being true in practice.
 1. **Counsel review** of Terms (limitation language, governing law) and of the Participation Guidelines risk acknowledgment, and of any future separate release (OPEN-P2, OPEN-P7). Pages are published on the Owner's instruction; each document can be withdrawn by setting it to `null` in `src/content/legal.ts`.
@@ -101,9 +101,53 @@ Admin backend, authentication, member dashboard or database beyond Formspree and
 
 FAQ entries on photography and on a participation waiver (after the Owner decides each); newsletter provider and the footer block; a real sending address and unsubscribe flow; organizer checklist document; Strava/Instagram (separate projects); an admin view only if manual workflows prove insufficient.
 
-## Outcome
+## Outcome (2026-11-09)
 
-(Filled in after merge: merge commits, CI, production deployment and smoke checks, cleanup.)
+**Merge order.** PR #6 (Find a Run) was merged by the Owner as `57be02e` (head `df3a02a`, unchanged and CI green). PR #9 (run-page map refinement, `4ea54a9`) and PR #7 (AIOM close-out, `7e6fc7b`) then merged from other work. PR #8 was rebased onto `main` after #6, again after #9 (one conflict in `src/styles/cmr.css`: kept #9's run-map hover rule, dropped the tie-dye utility), and merged as **`2f3a176`** with a head-commit guard on `27f0a03`. #7 landed between the last validation and the merge; it changed only `.aiom/work/implement-cmr-find-a-run.md`, so the code validated on `27f0a03` is what shipped.
+
+**Validation.** On `27f0a03` (held): `eslint`, `tsc --noEmit`, `tokens:check`, `next build` pass; Vitest 414 pass; Playwright 351 pass, 102 skipped (visual and the open-state specs that apply only with the hold lifted); `@visual` 42 pass. With the hold lifted (flag set to `false`, then restored): Playwright 364 pass, Vitest 412 pass, 2 skipped. GitHub CI `validate` and `browser` passed on the PR head and on `main` at `2f3a176`; the same suite was re-run locally on `2f3a176`.
+
+**Production** (https://cmr-site-xi.vercel.app, Vercel "Deployment has completed"). Real-browser smoke, Formspree intercepted, so no submission reached the live form:
+- 200: `/`, `/join`, `/faq`, `/privacy`, `/terms`, `/participation-guidelines`, `/calendar`, `/hills`, `/hills/cricket-hill`, `/about`. `/calendar/cricket-mtn-repeats` redirects (307) to `/calendar`; `.ics` downloads return 404.
+- Join: three linked validation errors, age box unchecked by default, success state "YOU'RE IN." with the supporting line and "Explore the hills"; the only request attempted was `formspree.io/f/xrppvnln`.
+- Hold: black contour hero, no calendar, no run time anywhere on the homepage, hill pages show "Group runs are on hold."; the directory stays open.
+- Hill layout: drawing above the specs block, no tie-dye in the heading. Footer: FAQ added, newsletter block gone, Pause motion in the link row right of "Join the club".
+- **Privacy audit on production:** no cookies, empty local storage until Pause motion is used (then only `cmr-motion`), zero requests to other hosts, no external or Vercel Analytics / Speed Insights script in any of the ten pages. This supports the Privacy Policy section 3 statements.
+
+**Cleanup.** Removed after the merge: the implementation worktree `../cmr-site-join` and branch `feat/cmr-join-faq-policies` (local and remote). The documentation branch `docs/aiom-close-join-page` (this closeout, PR #10) is removed after PR #10 merges. Not touched: `plan/cmr-join-page` and its uncommitted planning records in the primary worktree (the superseded planning copy of this Work Item), the `feat/cmr-find-a-run` worktree, PR #5 and other Owner branches. `.aiom/profile.md` was not edited (see open item 7).
+
+## Implementation complete
+
+Closeout re-verification (production, real browser at 393 / 768 / 1440, 2026-11-09): all six refinements are present with no differences from the approved direction. Join hero: one contour field under the mesh-gradient wash at 20%. Hold: black ground, one contour field, glass panel at 10% white with a 12px blur. Hill page: no element inside the About heading, drawing above the specs block (and right of the heading from tablet up). Footer: links Find a Run, About, FAQ, Join the club; no newsletter form or heading; Pause motion inline right of the last link on tablet and desktop; on mobile it sits below at the left edge, inside the viewport, overlapping nothing, reachable by Tab from the last link, with no horizontal scroll.
+
+Verified in production on 2026-11-09 (https://cmr-site-xi.vercel.app) and on `main` at `2f3a176`:
+- Join experience (hero, essentials, form, validation, inline `YOU'RE IN.` success, Join Formspree endpoint only, Questions endpoint separate).
+- FAQ (23 questions, four categories), Participation Guidelines, Terms of Use and Privacy Policy published from the CMR-JOIN-001 handoff, with manual email opt-out.
+- Reversible permit hold (`OFFICIAL_RUNS_ON_HOLD`, currently on) covering the real Find a Run experience, run pages, `.ics` and the homepage and hill-page run sections.
+- Approved visual refinements: (1) no tie-dye on the hill word, (2) hill topographic art above the gray specs block, (3) Pause motion right of "Join the club" in the footer row on tablet and desktop, (4) Join hero with the contour field and homepage mesh-gradient wash, (5) black contour hero with a translucent glass panel on Find a Run, (6) footer newsletter block hidden.
+- Validation: lint, typecheck, token check, build, unit, browser, visual baselines, lifted-hold run, CI on the PR head and on `main`, production smoke and privacy audit (see Outcome).
+
+## Accepted behavior (Owner, 2026-11-09)
+
+- **Mobile footer:** on phones the four links fill the row and Pause motion wraps to its own line at the left edge below them (five items do not fit 345px). Accepted as intentional responsive behavior: it is keyboard accessible, does not overlap or clip, and causes no horizontal scroll (covered by e2e checks at 393). Tablet and desktop keep it inline, right of "Join the club". Do not force one cramped mobile row.
+- **CTA labels** stay sentence-case ("Join the club", "Explore the hills") to match the established site UI, not the capitals printed in the handoff.
+
+## Out of scope and pending (not part of this milestone)
+
+- `/about` is a separate milestone (still the original placeholder copy; unchanged here).
+- FAQ entries on photography and on a participation waiver wait on the Owner's operational decisions.
+- Manual email opt-out is the approved v1 approach. No member database, authentication, admin backend, newsletter automation or social integrations are authorized.
+
+## Operational follow-ups remaining (Owner; these do not mean the implementation is unfinished, and must not be lost)
+
+1. **Illinois legal review** of the Terms (limitation language, governing law) and the Participation Guidelines' risk wording, and of any future separate participation release. The pages are published on the Owner's instruction; any one can be withdrawn by setting it to `null` in `src/content/legal.ts`.
+2. **Entity and insurance decisions** (legal operator name; whether to form an entity or obtain insurance). The pages claim neither.
+3. **Chicago Park District permit clarification** (OPEN-P1) before the hold is lifted. The hold stays on until the Owner authorizes lifting it.
+4. **A real club contact and sending address.** Pages use the Questions form until one exists.
+5. **Manual member roster and unsubscribe procedures**: keep the roster private and access-restricted; document how an unsubscribe request is handled and recorded (OPEN-P3, P4).
+6. **Formspree account verification**: recipient, allowed domains (production and previews), plan, archive and retention. Also a documented retention and deletion procedure for the roster, unsubscribe records and Questions mail (OPEN-P4); Privacy states no periods. Vercel log retention is a dashboard setting not visible from the repo.
+7. **`.aiom/profile.md` amendment** enumerating both Formspree forms (Owner's durable-governance change; not edited here).
+8. **Run-safety procedures** (cancellation triggers, incident record, photo preferences; OPEN-P6) before official runs launch.
 
 ## Planning record (2026-11-08, preserved)
 
