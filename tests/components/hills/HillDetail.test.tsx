@@ -39,7 +39,7 @@ describe("hill detail page (refinement pass, PR #4)", () => {
     render(<Page slug="cricket-hill" />);
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent)).toEqual([
-      "The mountain at Montrose.",
+      "The hill at Montrose.",
       "How tall is it? How tall you need it?",
       "Run it with us",
       "Find what you've been looking for.",

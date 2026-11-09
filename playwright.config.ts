@@ -37,5 +37,7 @@ export default defineConfig({
     command: `npm run start -- -p ${PORT}`,
     port: PORT,
     reuseExistingServer: false,
+    // Canned weather: the suite never calls the live National Weather Service API.
+    env: { CMR_WEATHER_FIXTURE: "ok" },
   },
 });

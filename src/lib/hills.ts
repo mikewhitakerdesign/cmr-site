@@ -31,7 +31,7 @@ export type HillSource = { label: string; href: string };
 export interface HillPage {
   /** The large editorial line under the hero (provisional voice). */
   lede: string;
-  /** "The mountain at Montrose." */
+  /** "The hill at Montrose." */
   aboutHeading: string;
   /** Paragraphs: geographic context (sourced) plus a line of CMR voice. */
   about: string[];
@@ -143,7 +143,7 @@ export const hills: Hill[] = [
       "A grassy lakefront hill beside Montrose Harbor with just enough elevation to become considerably less charming after enough repeats.",
     page: {
       lede: "A grassy lakefront hill beside Montrose Harbor with just enough elevation to become considerably less charming after enough repeats.",
-      aboutHeading: "The mountain at Montrose.",
+      aboutHeading: "The hill at Montrose.",
       about: [
         "Cricket Hill sits just west of Montrose Harbor along Chicago's lakefront. In another city, it might be a pleasant little hill.",
         "Here, we have standards to maintain.",
@@ -254,7 +254,7 @@ export const hills: Hill[] = [
       "A former Evanston landfill, closed in 1965 and promoted to mountain. Garbage, it turns out, stacks well.",
     page: {
       lede: "A former Evanston landfill, closed in 1965 and promoted to mountain. Garbage, it turns out, stacks well.",
-      aboutHeading: "The mountain at James Park.",
+      aboutHeading: "The hill at James Park.",
       about: [
         "Mt. Trashmore rises in Robert E. James Park in Evanston. It was a solid-waste landfill until 1965, when it was closed and turned into a park, and it has been a popular sledding hill since. From 1973 it was briefly a ski slope, tow rope included.",
         "Every mountain range needs a backstory. This one's happens to be municipal waste.",

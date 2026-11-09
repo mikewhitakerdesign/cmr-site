@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { MOTION_EVENT, motionOff } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 /**
@@ -98,7 +99,8 @@ export function ContourField({
     gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    // The site-wide motion preference (footer control or system setting); see src/lib/motion.ts.
+    const reduce = { get matches() { return motionOff(); } };
     // Browser tests run on software WebGL; they set this flag to check the animation itself.
     // Reduced motion still wins. Nothing in the site sets it.
     const forceMotion = (window as { __CMR_CONTOUR_FORCE_MOTION__?: boolean }).__CMR_CONTOUR_FORCE_MOTION__ === true;
@@ -184,7 +186,7 @@ export function ContourField({
     });
     io.observe(canvas);
     document.addEventListener("visibilitychange", start);
-    reduce.addEventListener("change", start);
+    window.addEventListener(MOTION_EVENT, start);
 
     return () => {
       restartRef.current = undefined;
@@ -192,7 +194,7 @@ export function ContourField({
       ro.disconnect();
       io.disconnect();
       document.removeEventListener("visibilitychange", start);
-      reduce.removeEventListener("change", start);
+      window.removeEventListener(MOTION_EVENT, start);
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
   }, [scale, levels, lineWidth, speed, seed]);

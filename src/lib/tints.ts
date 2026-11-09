@@ -18,3 +18,10 @@ export const tintVars = (i: number) => {
     "--tie-accent": `var(--cmr-tint-${accent}-dye)`,
   } as CSSProperties;
 };
+
+/** The neutral version of the tie-dye (hill cards' "TBD" circles): very light greys. */
+export const grayTintVars = {
+  "--tie-wash": "var(--cmr-tint-gray-wash)",
+  "--tie-dye": "var(--cmr-tint-gray-dye)",
+  "--tie-accent": "var(--cmr-tint-gray-dye)",
+} as CSSProperties;

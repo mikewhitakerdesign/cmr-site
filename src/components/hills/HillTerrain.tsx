@@ -4,7 +4,9 @@ import { BODY, EYEBROW, SECTION_HEADING, sectionHeading } from "@/components/hil
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
 import { BODY_TEXT_COLOR } from "@/lib/headings";
 import { REPEAT_TARGETS_FT, formatMiles, routeCounts, type HillWithPage } from "@/lib/hills";
-import { tintVars } from "@/lib/tints";
+import { TieDyeWord } from "@/components/TieDyeWord";
+import { HillContourArt } from "@/components/hills/HillContourArt";
+import { grayTintVars, tintVars } from "@/lib/tints";
 import { cn } from "@/lib/utils";
 
 /**
@@ -33,12 +35,13 @@ export function HillAbout({ hill }: { hill: HillWithPage }) {
 
   return (
     <section aria-labelledby="about-heading" className="py-24">
-      <Container className="grid gap-16 md:grid-cols-2">
-        <div>
-          <h2 id="about-heading" style={sectionHeading()} className={cn(FLUID_TYPE, SECTION_HEADING)}>
-            {page.aboutHeading}
-          </h2>
-          <div className={cn(BODY, BODY_TEXT_COLOR, "max-w-[448px] space-y-5 pt-8")}>
+      <Container className="grid gap-x-16 gap-y-8 md:grid-cols-2 md:grid-rows-[auto_1fr]">
+        <h2 id="about-heading" style={sectionHeading()} className={cn(FLUID_TYPE, SECTION_HEADING, "md:col-start-1 md:row-start-1")}>
+          {/* The word "hill" or "mountain" gets the tie-dye fill; the heading text is unchanged. */}
+          {page.aboutHeading.split(/\b(hill|mountain)\b/i).map((part, i) => (i % 2 === 1 ? <TieDyeWord key={i}>{part}</TieDyeWord> : part))}
+        </h2>
+        <div className="md:col-start-1 md:row-start-2">
+          <div className={cn(BODY, BODY_TEXT_COLOR, "max-w-[448px] space-y-5")}>
             {page.about.map((p) => (
               <p key={p}>{p}</p>
             ))}
@@ -63,17 +66,21 @@ export function HillAbout({ hill }: { hill: HillWithPage }) {
           )}
         </div>
 
-        <div className="md:pt-3">
-          <h3 className={cn(EYEBROW, "text-muted-foreground")}>Know what you&apos;re running</h3>
+        {/* Starts level with the first line of the copy beside it (the heading is its own grid row). */}
+        <div data-slot="hill-specs" className="self-start rounded-xl bg-muted p-6 md:col-start-2 md:row-start-2 md:p-8">
+          <div className="flex items-start justify-between gap-4">
+            <h3 className={cn(EYEBROW, "max-w-[12ch] text-foreground/70 md:max-w-none")}>Know what you&apos;re running</h3>
+            <HillContourArt slug={hill.slug} className="size-[120px] shrink-0 text-foreground md:size-[160px] lg:size-[250px]" />
+          </div>
           <dl className="pt-6">
             {rows.map(([label, value]) => (
-              <div key={label} className="flex items-baseline justify-between gap-4 border-b border-border py-3 text-[14px] leading-5">
-                <dt className="font-mono text-muted-foreground">{label}</dt>
+              <div key={label} className="flex items-baseline justify-between gap-4 border-b border-foreground/15 py-3 text-[14px] leading-5 last:border-b-0">
+                <dt className="font-mono text-foreground/70">{label}</dt>
                 <dd className="text-right font-medium">{value}</dd>
               </div>
             ))}
           </dl>
-          <p className="pt-4 font-mono text-[14px] leading-5 text-muted-foreground">Surface conditions vary with weather.</p>
+          <p className="pt-4 font-mono text-[14px] leading-5 text-foreground/70">Surface conditions vary with weather.</p>
         </div>
       </Container>
     </section>
@@ -148,19 +155,18 @@ export function HillRepeats({ hill }: { hill: HillWithPage }) {
               <div
                 key={target}
                 data-slot="repeat-circle"
-                style={count ? tintVars(i) : undefined}
+                style={count ? tintVars(i) : grayTintVars}
                 className={cn(
-                  "relative isolate flex aspect-square w-full max-w-(--repeats-circle-a) flex-col items-center justify-center overflow-hidden rounded-full text-center",
+                  "relative isolate flex aspect-square w-full max-w-(--repeats-circle-a) flex-col items-center justify-center overflow-hidden rounded-full bg-(--tie-wash) text-center",
                   "md:w-(--repeats-circle-b) md:max-w-none",
-                  !count && "border border-dashed border-foreground/30",
                 )}
               >
-                {count && <span aria-hidden className="cmr-tie-dye absolute -z-10" />}
+                <span aria-hidden className="cmr-tie-dye absolute -z-10" />
                 <dt className="font-mono text-[13px] leading-4 lg:text-[15px] lg:leading-5">
                   {target.toLocaleString("en-US")} ft<span className="sr-only"> of climbing</span>
                 </dt>
                 <dd className="flex flex-col items-center">
-                  <span style={value} className={cn(FLUID_TYPE, "mt-1 font-black tracking-[-0.03em] lg:mt-2", !count && "text-muted-foreground")}>
+                  <span style={value} className={cn(FLUID_TYPE, "mt-1 font-black tracking-[-0.03em] lg:mt-2", !count && "text-foreground/75")}>
                     {count ? (
                       <Odometer value={String(count.repeats)} srLabel={`${count.repeats} repeats, about ${milesLabel(count.miles)}`} />
                     ) : (

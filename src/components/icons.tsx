@@ -84,3 +84,78 @@ export function RocketIcon(props: IconProps) {
     </svg>
   );
 }
+
+/** Find a Run icons (not in the Figma export set): Lucide geometry (ISC), 16px, same stroke as above. */
+export function ChevronLeftIcon(props: IconProps) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" strokeWidth="1.5" {...base} {...props}>
+      <path d="M10 3.5L5.5 8L10 12.5" />
+    </svg>
+  );
+}
+
+export function ChevronRightIcon(props: IconProps) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" strokeWidth="1.5" {...base} {...props}>
+      <path d="M6 3.5L10.5 8L6 12.5" />
+    </svg>
+  );
+}
+
+export function CalendarPlusIcon(props: IconProps) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" strokeWidth="1.16667" {...base} {...props}>
+      <rect x="2" y="3" width="12" height="11" rx="1.5" />
+      <path d="M2 6.5H14M5.5 1.75V4M10.5 1.75V4M8 8.5V12M6.25 10.25H9.75" />
+    </svg>
+  );
+}
+
+export function ShareIcon(props: IconProps) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" strokeWidth="1.16667" {...base} {...props}>
+      <path d="M8 10V2M5 4.75L8 1.75L11 4.75M3 8.5V13a1 1 0 0 0 1 1H12a1 1 0 0 0 1-1V8.5" />
+    </svg>
+  );
+}
+
+/** What to expect icons: Lucide "repeat", "activity", "mountain" and "backpack" (ISC, lucide.dev), 24-unit grid, stroke 1.5. */
+const lucide = { width: "24", height: "24", viewBox: "0 0 24 24", strokeWidth: "1.5", ...base } as const;
+
+export function RepeatIcon(props: IconProps) {
+  return (
+    <svg {...lucide} {...props}>
+      <path d="m17 2 4 4-4 4" />
+      <path d="M3 11v-1a4 4 0 0 1 4-4h14" />
+      <path d="m7 22-4-4 4-4" />
+      <path d="M21 13v1a4 4 0 0 1-4 4H3" />
+    </svg>
+  );
+}
+
+export function ActivityIcon(props: IconProps) {
+  return (
+    <svg {...lucide} {...props}>
+      <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" />
+    </svg>
+  );
+}
+
+export function MountainIcon(props: IconProps) {
+  return (
+    <svg {...lucide} {...props}>
+      <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+    </svg>
+  );
+}
+
+export function BackpackIcon(props: IconProps) {
+  return (
+    <svg {...lucide} {...props}>
+      <path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
+      <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+      <path d="M8 21v-5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5" />
+      <path d="M8 10h8" />
+    </svg>
+  );
+}

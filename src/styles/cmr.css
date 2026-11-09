@@ -51,6 +51,12 @@
   --cmr-tint-lavender-dye: #e8e0ff;
   --cmr-tint-blue-wash: #f2f8ff;
   --cmr-tint-blue-dye: #dbeafe;
+  /* Autumn weather art (Find a Run): a pale mauve beside the peach. Black text on it is >= 17:1. */
+  --cmr-tint-mauve-wash: #fbf3f7;
+  --cmr-tint-mauve-dye: #f1dce8;
+  /* Neutral tie-dye for the hill cards' "TBD" circles: black text on it is >= 16:1. */
+  --cmr-tint-gray-wash: #fafafa;
+  --cmr-tint-gray-dye: #e9e9e9;
 }
 
 @layer base {
@@ -81,4 +87,64 @@
     repeating-conic-gradient(from 18deg at 46% 54%, var(--tie-wash) 0deg 14deg, var(--tie-dye) 24deg 28deg, var(--tie-wash) 38deg 45deg),
     var(--tie-wash);
   filter: blur(10px);
+}
+
+/*
+ * Weather art motion (Find a Run). CSS only, transform and opacity only, and
+ * nothing moves unless the visitor allows motion. Each class is one small
+ * element in the weather glyph (src/components/weather/WeatherGlyph.tsx).
+ * Nothing flashes: lightning is a still bolt. They run only under
+ * `html[data-motion="on"]` (src/lib/motion.ts: the footer control, or the
+ * system reduced-motion setting when no choice was made).
+ */
+@keyframes wx-drift {
+  from { transform: translateX(-2.5px); }
+  to { transform: translateX(2.5px); }
+}
+
+@keyframes wx-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes wx-fall {
+  0% { transform: translateY(-3px); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(6px); opacity: 0; }
+}
+
+@keyframes wx-sway {
+  0% { transform: translate(-1.5px, -3px); opacity: 0; }
+  20% { opacity: 1; }
+  50% { transform: translate(1.5px, 1px); }
+  100% { transform: translate(-1px, 6px); opacity: 0; }
+}
+
+@keyframes wx-gust {
+  0% { transform: translateX(-3px); opacity: 0.35; }
+  50% { opacity: 1; }
+  100% { transform: translateX(4px); opacity: 0.35; }
+}
+
+html[data-motion="on"] .wx-drift { animation: wx-drift 5s ease-in-out infinite alternate; }
+html[data-motion="on"] .wx-drift-slow { animation: wx-drift 8s ease-in-out infinite alternate-reverse; }
+html[data-motion="on"] .wx-rays { transform-origin: 32px 32px; animation: wx-spin 60s linear infinite; }
+html[data-motion="on"] .wx-fall { animation: wx-fall 1.6s ease-in infinite; }
+html[data-motion="on"] .wx-sway { animation: wx-sway 3.2s ease-in-out infinite; }
+html[data-motion="on"] .wx-gust { animation: wx-gust 3s ease-in-out infinite alternate; }
+
+/*
+ * The tie-dye word: one word of a heading filled with the pale mint, peach,
+ * lavender and blue wash, held legible by a thin black outline (the fill alone
+ * is far too pale on white). Reusable: <TieDyeWord>. The outline is drawn
+ * behind the fill so letterforms keep their weight.
+ */
+@utility cmr-tie-dye-text {
+  color: transparent;
+  background-image:
+    linear-gradient(100deg, var(--cmr-tint-mint-dye) 0%, var(--cmr-tint-peach-dye) 34%, var(--cmr-tint-lavender-dye) 66%, var(--cmr-tint-blue-dye) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-stroke: 0.045em var(--foreground);
+  paint-order: stroke fill;
+  text-shadow: 0 0.03em 0 color-mix(in srgb, var(--foreground) 30%, transparent);
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { motionOff } from "@/lib/motion";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -79,7 +80,7 @@ export function Odometer({
   useEffect(() => {
     const el = ref.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    if (motionOff()) return;
     const section = el.closest("section");
     const target = watch === "section" ? (section ?? el) : el;
     const deps = after && section ? [...section.querySelectorAll(after)].filter((d) => d !== el) : [];
