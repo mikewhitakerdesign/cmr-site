@@ -9,27 +9,27 @@ const next = getUpcomingRuns(now, 1)[0];
 
 describe("HomeHero", () => {
   it("renders the single page h1 as designed", () => {
-    render(<HomeHero next={next} now={now} />);
+    render(<HomeHero held={false} next={next} now={now} />);
     const h1 = screen.getByRole("heading", { level: 1 });
     expect(h1).toHaveTextContent("MAKE YOUR OWN MTNS");
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
   });
 
   it("sets the headline in solid white: no opacity and no halo or shadow", () => {
-    render(<HomeHero next={next} now={now} />);
+    render(<HomeHero held={false} next={next} now={now} />);
     const classes = screen.getByRole("heading", { level: 1 }).className.split(/\s+/);
     expect(classes.filter((c) => /opacity|text-shadow|\[text-shadow/.test(c))).toEqual([]);
     expect(classes).toEqual(expect.arrayContaining(["font-black", "text-center"])); // typography unchanged
   });
 
   it("links the CTAs to the v1 routes", () => {
-    render(<HomeHero next={next} now={now} />);
+    render(<HomeHero held={false} next={next} now={now} />);
     expect(screen.getByRole("link", { name: "Find a Run" })).toHaveAttribute("href", "/calendar");
     expect(screen.getByRole("link", { name: "Join the club" })).toHaveAttribute("href", "/join");
   });
 
   it("shows the next run with its Chicago slot, place and detail link", () => {
-    render(<HomeHero next={next} now={now} />);
+    render(<HomeHero held={false} next={next} now={now} />);
     // Saturday night: this morning's Cricket run has passed, so Wednesday's Horner run is next.
     const card = screen.getByRole("article", { name: "Horner Hell Repeats" });
     expect(within(card).getByText("Next run")).toBeInTheDocument();
@@ -41,7 +41,7 @@ describe("HomeHero", () => {
   });
 
   it("shows no visible sample badge, but keeps the run's status on the card (Round 2)", () => {
-    render(<HomeHero next={next} now={now} />);
+    render(<HomeHero held={false} next={next} now={now} />);
     expect(next.run.status).toBe("provisional");
     const card = screen.getByRole("article");
     expect(card).toHaveAttribute("data-status", "provisional");
@@ -51,20 +51,20 @@ describe("HomeHero", () => {
   });
 
   it("pairs a solid black primary CTA with a solid white secondary (Round 2)", () => {
-    render(<HomeHero next={next} now={now} />);
+    render(<HomeHero held={false} next={next} now={now} />);
     expect(screen.getByRole("link", { name: "Find a Run" })).toHaveClass("bg-primary", "text-primary-foreground");
     expect(screen.getByRole("link", { name: "Join the club" })).toHaveClass("bg-primary-foreground", "text-primary");
   });
 
   it("keeps the card's place with no upcoming run, pointing to the calendar instead of inventing one", () => {
-    render(<HomeHero next={null} now={now} />);
+    render(<HomeHero held={false} next={null} now={now} />);
     const card = screen.getByRole("article", { name: "Schedule coming soon" });
     expect(within(card).getByRole("link", { name: "See the calendar" })).toHaveAttribute("href", "/calendar");
     expect(within(card).queryByRole("time")).not.toBeInTheDocument();
   });
 
   it("uses the Owner's original photograph as one source and keeps it decorative", () => {
-    const { container } = render(<HomeHero next={next} now={now} />);
+    const { container } = render(<HomeHero held={false} next={next} now={now} />);
     // One image for every breakpoint (crops by object-position), not two art-directed rasters.
     expect(container.querySelectorAll("picture")).toHaveLength(0);
     const img = container.querySelector("img")!;
@@ -79,7 +79,7 @@ describe("HomeHero", () => {
   });
 
   it("flips each CTA to its opposite on hover, with no border on either filled button", () => {
-    render(<HomeHero next={next} now={now} />);
+    render(<HomeHero held={false} next={next} now={now} />);
     const primary = screen.getByRole("link", { name: "Find a Run" });
     expect(primary).toHaveClass("hover:bg-primary-foreground", "hover:text-primary");
     const secondary = screen.getByRole("link", { name: "Join the club" });
@@ -88,7 +88,7 @@ describe("HomeHero", () => {
   });
 
   it("has no axe violations", async () => {
-    const { container } = render(<HomeHero next={next} now={now} />);
+    const { container } = render(<HomeHero held={false} next={next} now={now} />);
     expect(await axeViolations(container)).toEqual([]);
   });
 });

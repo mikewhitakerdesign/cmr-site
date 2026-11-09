@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Fragment } from "react";
 import { Container } from "@/components/Container";
 import { ContourField } from "@/components/ContourField";
@@ -16,6 +16,7 @@ import { WeatherGuidance } from "@/components/weather/WeatherGuidance";
 import { FLUID_TYPE, fluidType } from "@/lib/fluid";
 import { BODY_TEXT_COLOR, DISPLAY_HEADING, displayHeading } from "@/lib/headings";
 import { hillsWithPages } from "@/lib/hills";
+import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
 import { getRun, listedRuns, nextWithStatus, type Run } from "@/lib/runs";
 import { describeSchedule, formatLongDate, formatTime, toDateTimeAttr } from "@/lib/schedule";
 import { onDarkSurface } from "@/lib/surfaces";
@@ -24,9 +25,11 @@ import { cn } from "@/lib/utils";
 // The next occurrence and the weather depend on now; the weather fetch is cached by the fetch layer.
 export const dynamic = "force-dynamic";
 
-export const generateStaticParams = () => listedRuns().map((run) => ({ slug: run.slug }));
+// While official runs are on hold no run page is generated or served (src/lib/permit-hold.ts).
+export const generateStaticParams = () => (OFFICIAL_RUNS_ON_HOLD ? [] : listedRuns().map((run) => ({ slug: run.slug })));
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  if (OFFICIAL_RUNS_ON_HOLD) return { robots: { index: false } };
   const run = getRun((await params).slug);
   if (!run || run.status === "placeholder") return {};
   return { title: `${run.title} | Chicago Mountain Runners`, description: run.content?.headline ?? run.description };
@@ -40,6 +43,8 @@ const LABEL = "font-mono text-[13px] leading-5 tracking-[0.1em] uppercase";
  * hill profile appears here, only a link to the hill's page.
  */
 export default async function RunPage({ params }: { params: Promise<{ slug: string }> }) {
+  // Permit-pending hold: a saved or shared run link lands on the hold notice, never on run details.
+  if (OFFICIAL_RUNS_ON_HOLD) redirect("/calendar");
   const run = getRun((await params).slug);
   // The scaffold placeholder is not a real run and has no detail page.
   if (!run || run.status === "placeholder" || !run.content) notFound();

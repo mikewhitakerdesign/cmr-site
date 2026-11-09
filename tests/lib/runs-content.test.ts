@@ -1,7 +1,14 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { GET } from "@/app/calendar/[slug]/ics/route";
 import { getRun, getUpcomingWithStatus, listedRuns, nextWithStatus } from "@/lib/runs";
 import { NextRequest } from "next/server";
+
+// These tests cover the route as it behaves once the permit-pending hold is lifted;
+// tests/lib/permit-hold.test.ts covers the held state.
+vi.mock("@/lib/permit-hold", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/permit-hold")>()),
+  OFFICIAL_RUNS_ON_HOLD: false,
+}));
 
 const now = new Date("2026-11-09T18:00:00Z");
 

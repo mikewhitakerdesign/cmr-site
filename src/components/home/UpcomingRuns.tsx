@@ -4,6 +4,7 @@ import { Container } from "@/components/Container";
 import { ArrowUpRightIcon, ClockIcon, MapPinIcon } from "@/components/icons";
 import { FLUID_TYPE, fluidVars } from "@/lib/fluid";
 import { DISPLAY_HEADING, displayHeading } from "@/lib/headings";
+import { OFFICIAL_RUNS_ON_HOLD, PERMIT_HOLD_COPY } from "@/lib/permit-hold";
 import { workoutLabel, type RunOccurrence } from "@/lib/runs";
 import { formatSlot, toDateTimeAttr } from "@/lib/schedule";
 import { onDarkSurface } from "@/lib/surfaces";
@@ -32,7 +33,17 @@ import { cn } from "@/lib/utils";
  * and is moved to the top right on desktop with grid placement, so reading
  * and tab order are runs first, then the link.
  */
-export function UpcomingRuns({ occurrences, now }: { occurrences: RunOccurrence[]; now: Date }) {
+export function UpcomingRuns({
+  occurrences,
+  now,
+  held = OFFICIAL_RUNS_ON_HOLD,
+}: {
+  occurrences: RunOccurrence[];
+  now: Date;
+  /** Permit-pending hold (src/lib/permit-hold.ts): no runs or dates; the section says so. */
+  held?: boolean;
+}) {
+  if (held) return <UpcomingRunsOnHold />;
   const layout = fluidVars({
     "--runs-pt": [48, 48, 96],
     "--runs-pb": [50, 50, 96],
@@ -157,5 +168,52 @@ function UpcomingRunRow({ occurrence: o, now }: { occurrence: RunOccurrence; now
         )}
       />
     </li>
+  );
+}
+
+/**
+ * Permit-pending variant: the same black band and heading size, but no run, no
+ * date and no link into run details. Points to the hills and to Join.
+ */
+function UpcomingRunsOnHold() {
+  const layout = fluidVars({
+    "--runs-pt": [48, 48, 96],
+    "--runs-pb": [50, 50, 96],
+    "--runs-heading-mt": [13, 13, 16],
+    "--runs-list-mt": [32, 32, 40],
+  });
+  return (
+    <section
+      aria-labelledby="upcoming-runs-heading"
+      data-slot="runs-on-hold"
+      style={layout}
+      className={cn(
+        "bg-primary text-primary-foreground",
+        "pt-(--runs-pt-a) pb-(--runs-pb-a) md:pt-(--runs-pt-b) md:pb-(--runs-pb-b)",
+        onDarkSurface,
+      )}
+    >
+      <Container>
+        <p className="text-caption uppercase">Group runs</p>
+        <h2
+          id="upcoming-runs-heading"
+          style={displayHeading()}
+          className={cn(FLUID_TYPE, DISPLAY_HEADING, "mt-(--runs-heading-mt-a) md:mt-(--runs-heading-mt-b)")}
+        >
+          {PERMIT_HOLD_COPY.sectionHeading}
+        </h2>
+        <p className="mt-(--runs-list-mt-a) max-w-[60ch] text-p text-primary-foreground/90 md:mt-(--runs-list-mt-b)">
+          {PERMIT_HOLD_COPY.body} {PERMIT_HOLD_COPY.supporting}
+        </p>
+        <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:gap-10">
+          <ArrowLink href="/hills" className="text-p">
+            Explore the hills
+          </ArrowLink>
+          <ArrowLink href="/join" className="text-p">
+            Join the club
+          </ArrowLink>
+        </div>
+      </Container>
+    </section>
   );
 }

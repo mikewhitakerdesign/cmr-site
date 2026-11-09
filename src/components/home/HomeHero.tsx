@@ -49,7 +49,7 @@ import { cn } from "@/lib/utils";
  * band) reached ≥ 3.19:1 and is recorded in .aiom/work/implement-cmr-homepage.md
  * should the decision be revisited.
  */
-export function HomeHero({ next, now }: { next: RunOccurrence | null; now: Date }) {
+export function HomeHero({ next, now, held }: { next: RunOccurrence | null; now: Date; held?: boolean }) {
   const layout = fluidVars({
     "--hero-minh": [614, 670, 846],
     "--hero-pt": [52, 66, 115],
@@ -131,6 +131,7 @@ export function HomeHero({ next, now }: { next: RunOccurrence | null; now: Date 
           <NextRunCard
             next={next}
             now={now}
+            held={held}
             className={cn(
               "mt-(--hero-card-mt-a) w-full md:mt-(--hero-card-mt-b) md:ml-auto md:w-(--hero-card-w-b)",
               // Mobile: hang 96px below the hero, over the white page.

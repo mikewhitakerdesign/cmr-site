@@ -3,6 +3,7 @@ import { CtaLink } from "@/components/CtaLink";
 import { EYEBROW, SECTION_HEADING, sectionHeading } from "@/components/hills/styles";
 import { FLUID_TYPE } from "@/lib/fluid";
 import type { HillWithPage } from "@/lib/hills";
+import { OFFICIAL_RUNS_ON_HOLD, PERMIT_HOLD_COPY } from "@/lib/permit-hold";
 import { workoutLabel, type RunOccurrence } from "@/lib/runs";
 import { describeSchedule } from "@/lib/schedule";
 import { onDarkSurface } from "@/lib/surfaces";
@@ -26,7 +27,17 @@ const CTA = "h-14 px-7 text-[18px] leading-[27px] font-medium";
  * section display size (48 / 54 / 96) with a wider measure, and a hill with no
  * run says "No set weekly run." — the directory's wording.
  */
-export function HillRuns({ hill, runs }: { hill: HillWithPage; runs: RunOccurrence[] }) {
+export function HillRuns({
+  hill,
+  runs,
+  held = OFFICIAL_RUNS_ON_HOLD,
+}: {
+  hill: HillWithPage;
+  runs: RunOccurrence[];
+  /** Permit-pending hold (src/lib/permit-hold.ts): no run, schedule or "View run" link. */
+  held?: boolean;
+}) {
+  if (held) return <HillRunsOnHold />;
   return (
     <section aria-labelledby="runs-heading" className={cn("bg-primary py-24 text-primary-foreground", onDarkSurface)}>
       <Container>
@@ -86,6 +97,41 @@ export function HillRuns({ hill, runs }: { hill: HillWithPage; runs: RunOccurren
             </div>
           </div>
         )}
+      </Container>
+    </section>
+  );
+}
+
+/** Permit-pending variant of "Run it with us": same band, no run, no schedule, no link into run details. */
+function HillRunsOnHold() {
+  return (
+    <section
+      aria-labelledby="runs-heading"
+      data-slot="hill-runs-on-hold"
+      className={cn("bg-primary py-24 text-primary-foreground", onDarkSurface)}
+    >
+      <Container>
+        <h2 id="runs-heading" className={EYEBROW}>
+          Run it with us
+        </h2>
+        <div className="flex flex-col gap-8 pt-8 md:flex-row md:items-end md:justify-between">
+          <div className="max-w-[860px] min-w-0 md:flex-1">
+            <h3 style={sectionHeading()} className={cn(FLUID_TYPE, SECTION_HEADING)}>
+              {PERMIT_HOLD_COPY.sectionHeading}
+            </h3>
+            <p className="pt-4 text-[18px] leading-[27px] text-primary-foreground/80">
+              {PERMIT_HOLD_COPY.body} {PERMIT_HOLD_COPY.supporting}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3 md:shrink-0 md:flex-nowrap">
+            <CtaLink href="/join" variant="secondary" className={CTA}>
+              Join the club
+            </CtaLink>
+            <CtaLink href="/hills" variant="outlineOnDark" className={CTA}>
+              More hills
+            </CtaLink>
+          </div>
+        </div>
       </Container>
     </section>
   );

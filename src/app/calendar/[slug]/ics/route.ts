@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { icsFilename, occurrenceIcs, seriesIcs } from "@/lib/ics";
 import { isIsoDate } from "@/lib/calendar";
+import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
 import { getRun } from "@/lib/runs";
 
 /**
@@ -10,6 +11,8 @@ import { getRun } from "@/lib/runs";
  * A plain link with no JavaScript. Nothing is stored; the file is a snapshot.
  */
 export async function GET(request: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
+  // Permit-pending hold: no calendar files for runs that are not official yet.
+  if (OFFICIAL_RUNS_ON_HOLD) return new Response("Not found", { status: 404, headers: { "Cache-Control": "no-store" } });
   const { slug } = await ctx.params;
   const run = getRun(slug);
   if (!run || run.status === "placeholder") return new Response("Not found", { status: 404 });

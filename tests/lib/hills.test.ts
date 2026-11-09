@@ -129,7 +129,7 @@ describe("hill navigation helpers", () => {
   });
 
   it("lists directory entries in display order with when CMR runs each hill every week", () => {
-    const entries = directoryEntries(NOW);
+    const entries = directoryEntries(NOW, runs);
     expect(entries.map((e) => e.hill.slug)).toEqual(FIVE);
     const by = Object.fromEntries(entries.map((e) => [e.hill.slug, e.cadences]));
     expect(by["cricket-hill"]).toEqual(["Saturdays · 5:30 AM"]);
