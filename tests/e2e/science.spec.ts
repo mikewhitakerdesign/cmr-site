@@ -76,11 +76,18 @@ test.describe("content and layout", () => {
       for (const svg of svgs)
         for (const el of [svg, ...svg.querySelectorAll("*")]) {
           const cs = getComputedStyle(el);
-          for (const c of [cs.stroke, cs.fill]) if (c && c !== "none") out.add(c);
+          // Pattern fills (the runner's hatching) are drawn in currentColor; their lines are checked as strokes.
+          for (const c of [cs.stroke, cs.fill]) if (c && c !== "none" && !c.startsWith("url(")) out.add(c);
         }
       return [...out];
     });
     for (const c of colors) {
+      // Opacity variants of a token resolve to oklab(); neutral means zero chroma (a = b = 0).
+      const lab = c.match(/oklab\(\s*[\d.]+\s+(-?[\d.]+)\s+(-?[\d.]+)/);
+      if (lab) {
+        expect(Math.abs(Number(lab[1])) + Math.abs(Number(lab[2])), `${c} is not a neutral`).toBeLessThan(0.001);
+        continue;
+      }
       const m = c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
       expect(m, c).not.toBeNull();
       const [r, g, b] = m!.slice(1).map(Number);
@@ -235,6 +242,8 @@ test.describe("hero motion", () => {
 test.describe("interactive figures", () => {
   test("incline slider updates the geometry", async ({ page }) => {
     const slider = page.getByRole("slider", { name: "Grade" });
+    await slider.scrollIntoViewIfNeeded();
+    await expect(page.locator("[data-slot=incline-readout]")).toContainText(/Grade\s*10%/); // the introduction has finished
     await slider.focus();
     for (let i = 0; i < 5; i++) await page.keyboard.press("ArrowRight");
     await expect(page.locator("[data-slot=incline-readout]")).toContainText("15%");
@@ -282,3 +291,111 @@ test.describe("header with four links", () => {
     expect(rects.at(-1)!.x + rects.at(-1)!.w).toBeLessThanOrEqual(320.5);
   });
 });
+
+test.describe("refinement pass: fills, layout, figures", () => {
+  test("sections alternate white and black, starting white", async ({ page }) => {
+    const fills = await page.locator("main section[data-slot=science-section]").evaluateAll((els) => els.map((e) => getComputedStyle(e).backgroundColor));
+    expect(fills).toEqual(SECTIONS.map((_, i) => (i % 2 === 0 ? "rgb(255, 255, 255)" : "rgb(0, 0, 0)")));
+    // Text inverts with the fill.
+    expect(await page.locator("#physiology-heading").evaluate((e) => getComputedStyle(e).color)).toBe("rgb(255, 255, 255)");
+    expect(await page.locator("#training-heading").evaluate((e) => getComputedStyle(e).color)).toBe("rgb(0, 0, 0)");
+  });
+
+  test("eyebrows carry the section name only", async ({ page }) => {
+    const eyebrows = await page.locator("[data-slot=science-eyebrow]").allTextContents();
+    expect(eyebrows.map((t) => t.trim())).toEqual(LABELS);
+  });
+
+  test("every figure sits in a rounded, light tie-dye frame with its diagram dark on light", async ({ page }) => {
+    const frames = page.locator("[data-slot=figure-frame]");
+    await expect(frames).toHaveCount(7);
+    for (const f of await frames.all()) {
+      expect(await f.locator(".cmr-tie-dye").count()).toBe(1);
+      expect(parseFloat(await f.evaluate((e) => getComputedStyle(e).borderTopLeftRadius))).toBeGreaterThanOrEqual(12);
+      expect(parseFloat(await f.evaluate((e) => getComputedStyle(e).paddingTop))).toBeGreaterThanOrEqual(20);
+      expect(await f.evaluate((e) => getComputedStyle(e).color)).toBe("rgb(0, 0, 0)");
+    }
+  });
+
+  test("text and figure sit side by side from 1280px, alternating sides; stacked text-first below", async ({ page }, info) => {
+    const sides = { physics: "right", physiology: "left", training: "right", breathing: "left", "the-mind": "right", descending: "left" } as const;
+    for (const [id, side] of Object.entries(sides)) {
+      const row = page.locator(`#${id} [data-slot=split-row]`).first();
+      const text = await box(row.locator("[data-slot=split-text]").first());
+      const fig = await box(row.locator("[data-slot=split-figure]"));
+      if (info.project.name === "desktop") {
+        if (side === "right") expect(fig.x).toBeGreaterThan(text.x + text.width);
+        else expect(text.x).toBeGreaterThan(fig.x + fig.width);
+        expect(Math.abs(fig.y - text.y)).toBeLessThanOrEqual(8); // tops aligned
+        expect(fig.width).toBeGreaterThan(500);
+        expect(text.width).toBeGreaterThan(500);
+      } else {
+        expect(fig.y).toBeGreaterThan(text.y + text.height - 1); // text first
+      }
+    }
+    expect(await noHScroll(page)).toBe(true);
+  });
+
+  test("instructions name the figure's real position", async ({ page }, info) => {
+    const lines = page.locator("[data-slot=figure-instruction]");
+    await expect(lines).toHaveCount(3);
+    const texts = (await lines.allInnerTexts()).map((t) => t.replace(/\s+/g, " "));
+    if (info.project.name === "desktop") {
+      expect(texts[0]).toContain("in the figure to the right to explore the relationship between grade, angle, and elevation gain.");
+      expect(texts[1]).toContain("figure to the right");
+      expect(texts[2]).toContain("figure to the left");
+    } else {
+      for (const t of texts) expect(t).toContain("figure below");
+    }
+    for (const t of texts) expect(t).not.toMatch(/figure below figure|to the (left|right) figure/);
+  });
+
+  test("the incline starts flat, rises to 10% once on first view, and stays interactive", async ({ page }) => {
+    const readout = page.locator("[data-slot=incline-readout]");
+    await expect(readout).toContainText(/Grade\s*0%/);
+    await page.locator("[data-slot=incline-diagram]").evaluate((e) => {
+      document.documentElement.style.scrollBehavior = "auto";
+      e.scrollIntoView({ block: "center" });
+    });
+    await expect(page.locator("[data-slot=incline-diagram]")).toHaveAttribute("data-animating", "");
+    await expect(readout).toContainText(/Grade\s*10%/, { timeout: 4000 });
+    await expect(page.locator("[data-slot=incline-diagram]")).not.toHaveAttribute("data-animating");
+    // Once only: away and back, the visitor's value stays.
+    await page.getByRole("slider", { name: "Grade" }).fill("20");
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(300);
+    await page.locator("[data-slot=incline-diagram]").evaluate((e) => e.scrollIntoView({ block: "center" }));
+    await page.waitForTimeout(2200);
+    await expect(readout).toContainText(/Grade\s*20%/);
+  });
+
+  test("touching the slider during the introduction cancels it", async ({ page }) => {
+    const slider = page.getByRole("slider", { name: "Grade" });
+    await page.locator("[data-slot=incline-diagram]").evaluate((e) => {
+      document.documentElement.style.scrollBehavior = "auto";
+      e.scrollIntoView({ block: "center" });
+    });
+    await expect(page.locator("[data-slot=incline-diagram]")).toHaveAttribute("data-animating", "");
+    await slider.fill("33");
+    await page.waitForTimeout(2200);
+    await expect(page.locator("[data-slot=incline-readout]")).toContainText(/Grade\s*33%/);
+  });
+
+  test("under reduced motion the incline shows 10% without animating", async ({ browser }) => {
+    const context = await browser.newContext({ reducedMotion: "reduce", viewport: { width: 1440, height: 900 } });
+    const page = await context.newPage();
+    await page.goto("/the-science");
+    const fig = page.locator("[data-slot=incline-diagram]");
+    await fig.evaluate((e) => e.scrollIntoView({ block: "center" }));
+    await expect(page.locator("[data-slot=incline-readout]")).toContainText(/Grade\s*10%/, { timeout: 1000 });
+    await expect(fig).not.toHaveAttribute("data-animating");
+    await context.close();
+  });
+
+  test("the runner illustration names the three muscle groups", async ({ page }) => {
+    const fig = page.locator("[data-slot=runner-illustration] svg");
+    await expect(fig).toHaveAccessibleName(/gluteus maximus.*quadriceps.*calf/i);
+    for (const label of ["Gluteus maximus", "Quadriceps", "Calf muscles"]) await expect(fig.getByText(label, { exact: true })).toBeAttached();
+  });
+});
+

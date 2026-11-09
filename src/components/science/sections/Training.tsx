@@ -1,11 +1,31 @@
 import { ArrowLink } from "@/components/ArrowLink";
-import { Cite, Figure, Prose, ScienceSection, Subhead, TermList } from "@/components/science/editorial";
+import { Cite, Figure, Instruction, Prose, ScienceSection, SplitAfter, SplitRow, Subhead, TermList } from "@/components/science/editorial";
 import { ElevationAccumulator } from "@/components/science/ElevationAccumulator";
 
-/** 04 · Training. Accumulated work, training variables, and what the research does and doesn't show. */
+/** Training (white). Text left, the accumulator right; the rest of the section continues in the text column. */
 export function Training() {
   return (
     <ScienceSection id="training" heading="Small Hill. Real Work.">
+      <SplitRow
+        figureSide="right"
+        figure={
+          <Figure
+              label="Figure 4 · Elevation accumulator"
+              caption={
+                <>
+                  What this calculates: gain per climb multiplied by completed repeats. What it doesn&apos;t: the descents, how
+                  steep or fast each climb was, or how hard it felt. A watch or app may report a different total. The 40-foot
+                  default is an illustrative example, not a measurement of any particular hill.{" "}
+                  <ArrowLink href="/hills" className="text-foreground">
+                    Approximate figures for each hill
+                  </ArrowLink>
+                </>
+              }
+            >
+              <ElevationAccumulator />
+          </Figure>
+        }
+      >
       <Prose>
         <p>
           A single climb on a short hill may last well under a minute. The training stimulus comes from the whole session:
@@ -17,26 +37,17 @@ export function Training() {
       <Prose>
         <p>
           Repetition accumulates two things. One is vertical gain, which is simple arithmetic. The other is time spent
-          working against gravity, which matters more for training but is harder to count. The accumulator below handles
-          the arithmetic.
+          working against gravity, which matters more for training but is harder to count. The accumulator handles the
+          arithmetic.
         </p>
       </Prose>
 
-      <Figure
-        label="Figure 4 · Elevation accumulator"
-        caption={
-          <>
-            What this calculates: gain per climb multiplied by completed repeats. What it doesn&apos;t: the descents, how
-            steep or fast each climb was, or how hard it felt. A watch or app may report a different total. The 40-foot
-            default is an illustrative example, not a measurement of any particular hill.{" "}
-            <ArrowLink href="/hills" className="text-foreground">
-              Approximate figures for each hill
-            </ArrowLink>
-          </>
-        }
-      >
-        <ElevationAccumulator />
-      </Figure>
+      <Instruction
+        figureSide="right"
+        before="Enter the gain of one climb and the number of repeats in the"
+        after="to see the total."
+      />
+      <SplitAfter>
 
       <Subhead>One hill, different workouts</Subhead>
       <Prose>
@@ -89,6 +100,8 @@ export function Training() {
           what it does depends on how it&apos;s done and what it replaces.
         </p>
       </Prose>
+      </SplitAfter>
+      </SplitRow>
     </ScienceSection>
   );
 }

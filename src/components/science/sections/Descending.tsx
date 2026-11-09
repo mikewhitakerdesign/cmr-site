@@ -1,10 +1,21 @@
 import { AscentDescentDiagram } from "@/components/science/diagrams";
-import { Cite, Figure, Prose, ScienceSection, Subhead } from "@/components/science/editorial";
+import { Cite, Figure, Prose, ScienceSection, SplitRow, Subhead } from "@/components/science/editorial";
 
-/** 07 · Descending. Eccentric demands, muscle damage, the repeated-bout effect and gradual exposure. */
+/** Descending (black). Figure left, beside the whole section; text right. */
 export function Descending() {
   return (
     <ScienceSection id="descending" heading="What Goes Up Must Come Down.">
+      <SplitRow
+        figureSide="left"
+        figure={
+          <Figure
+            label="Figure 7 · Ascent and descent"
+            caption="Schematic, not to scale. It distinguishes the two kinds of work; it does not show their size."
+          >
+            <AscentDescentDiagram />
+          </Figure>
+        }
+      >
       <Prose>
         <p>
           Every repeat includes a descent, and the descent is not the climb in reverse. Going up, the leg muscles mostly
@@ -19,12 +30,6 @@ export function Descending() {
         </p>
       </Prose>
 
-      <Figure
-        label="Figure 7 · Ascent and descent"
-        caption="Schematic, not to scale. It distinguishes the two kinds of work; it does not show their size."
-      >
-        <AscentDescentDiagram />
-      </Figure>
 
       <Subhead>Soreness and the repeated-bout effect</Subhead>
       <Prose>
@@ -61,6 +66,7 @@ export function Descending() {
           larger amounts, and anyone with knee problems or a recent lower-leg injury should be cautious with it.
         </p>
       </Prose>
+      </SplitRow>
     </ScienceSection>
   );
 }

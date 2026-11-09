@@ -1,5 +1,4 @@
 import { Container } from "@/components/Container";
-import { EYEBROW } from "@/components/hills/styles";
 import { TerrainLines } from "@/components/science/TerrainLines";
 import { FLUID_TYPE, fluidType } from "@/lib/fluid";
 import { onDarkSurface } from "@/lib/surfaces";
@@ -8,10 +7,11 @@ import { cn } from "@/lib/utils";
 /**
  * 01 · Hero. Black, with the slow terrain-line background (TerrainLines) in
  * light gray. A black gradient sits over the left side so the copy reads on
- * near-solid black while the terrain shows toward the right; on phones, where
- * the copy spans the width, the wash is vertical and stronger at the top.
+ * near-solid black while the terrain shows toward the right; on phones and
+ * tablets, where the copy spans the width, the wash is vertical and stronger at the top.
  *
- * Copy is the Owner's approved hero text, verbatim. Left-aligned, white type,
+ * Copy is the Owner's approved hero text, verbatim; no eyebrow (refinement
+ * pass, 2026-11-09): the headline is the first text. Left-aligned, white type,
  * the CMR display weight and tracking (Join and hill heroes).
  */
 export function ScienceHero() {
@@ -25,25 +25,23 @@ export function ScienceHero() {
     >
       <div className="absolute inset-0 -z-10">
         <TerrainLines className="text-primary-foreground" />
-        {/* Readability wash: vertical on phones, from the left from tablet up. */}
+        {/* Readability wash: vertical on phones and tablets (the copy spans the width), from the left from 1024px. */}
         <div
           aria-hidden
           data-slot="science-hero-wash"
           className={cn(
             "absolute inset-0",
             "bg-linear-to-b from-primary from-30% via-primary/75 via-60% to-primary/25",
-            "md:bg-linear-to-r md:from-primary md:from-30% md:via-primary/85 md:via-50% md:to-primary/0 md:to-90%",
-            "lg:from-25% lg:via-45%",
+            "lg:bg-linear-to-r lg:from-primary lg:from-45% lg:via-primary/85 lg:via-62% lg:to-primary/0 lg:to-95%",
           )}
         />
       </div>
 
       <Container className="pt-16 pb-20 md:pt-24 md:pb-28 lg:pt-28 lg:pb-36">
-        <p className={cn(EYEBROW, "text-primary-foreground/75")}>The Science</p>
         <h1
           id="science-heading"
           style={heading}
-          className={cn(FLUID_TYPE, "mt-5 max-w-[11ch] font-black tracking-[-0.045em] text-balance md:mt-6")}
+          className={cn(FLUID_TYPE, "max-w-[11ch] font-black tracking-[-0.045em] text-balance")}
         >
           THE SCIENCE OF GOING NOWHERE.
         </h1>

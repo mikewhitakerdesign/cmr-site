@@ -1,5 +1,5 @@
 import { BreathingPacer } from "@/components/science/BreathingPacer";
-import { Cite, Figure, Prose, ScienceSection, Subhead, TermList } from "@/components/science/editorial";
+import { Cite, Figure, Instruction, Prose, ScienceSection, SplitAfter, SplitRow, Subhead, TermList } from "@/components/science/editorial";
 
 /**
  * The Owner-approved opening of the Breathing section. Preserve exactly: no
@@ -13,10 +13,22 @@ export const BREATHING_OPENING = [
   "The interesting part is that breathing is both automatic and something you can consciously control. That gives us a direct way to influence certain physiological and psychological responses.",
 ] as const;
 
-/** 05 · Breathing. Mechanics, controlled breathing, pressure breathing at altitude, breathing on the run. */
+/**
+ * Breathing (black). Figure left, text right: the breathing guide follows the
+ * opening, the mechanics and controlled breathing (where its instruction is)
+ * on phones, and stays in view beside the whole section from 1280px.
+ */
 export function Breathing() {
   return (
     <ScienceSection id="breathing" heading="Breathing. It's Kind of Important.">
+      <SplitRow
+        figureSide="left"
+        figure={
+          <Figure label="Figure 5 · Breathing patterns">
+            <BreathingPacer />
+          </Figure>
+        }
+      >
       <Prose>
         <div data-slot="breathing-opening" className="flex flex-col gap-5">
           {BREATHING_OPENING.map((p) => (
@@ -90,9 +102,12 @@ export function Breathing() {
         </p>
       </Prose>
 
-      <Figure label="Figure 5 · Breathing patterns">
-        <BreathingPacer />
-      </Figure>
+      <Instruction
+        figureSide="left"
+        before="Choose a pattern and press Start in the"
+        after="to follow it at your own pace. Pause or reset at any time."
+      />
+      <SplitAfter>
 
       <Subhead id="breathing-altitude">Pressure breathing at altitude</Subhead>
       <Prose>
@@ -159,6 +174,8 @@ export function Breathing() {
           pattern go and breathe to match the work.
         </p>
       </Prose>
+      </SplitAfter>
+      </SplitRow>
     </ScienceSection>
   );
 }

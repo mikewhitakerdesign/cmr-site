@@ -172,3 +172,37 @@ html[data-motion="on"] .wx-gust { animation: wx-gust 3s ease-in-out infinite alt
     scroll-behavior: smooth;
   }
 }
+
+/*
+ * The Science: alternating black and white sections (Owner direction,
+ * 2026-11-09). The theme is `@theme inline`, so utilities read these
+ * variables directly; redefining them on a section inverts everything inside
+ * it (text, rules, focus ring, filled buttons) with no per-component changes.
+ * Figure frames sit on a light tie-dye, so they restore the light values.
+ *   text        white on black: 21:1
+ *   muted       neutrals 400 #a3a3a3 on black: 8.6:1
+ */
+.science-dark {
+  --background: var(--mwd-color-general-primary);
+  --foreground: var(--mwd-color-general-primary-foreground);
+  --primary: var(--mwd-color-general-primary-foreground);
+  --primary-foreground: var(--mwd-color-general-primary);
+  --primary-hover: var(--mwd-brand-brand-neutrals-200);
+  --muted: var(--mwd-brand-brand-neutrals-900);
+  --muted-foreground: var(--mwd-brand-brand-neutrals-400);
+  --border: var(--mwd-brand-brand-neutrals-700);
+  --ring: var(--mwd-color-general-primary-foreground);
+  --focus-offset: var(--mwd-color-general-primary);
+}
+.science-light {
+  --background: var(--mwd-color-general-background);
+  --foreground: var(--mwd-color-general-foreground);
+  --primary: var(--mwd-color-general-primary);
+  --primary-foreground: var(--mwd-color-general-primary-foreground);
+  --primary-hover: var(--mwd-color-unofficial-primary-hover);
+  --muted: var(--mwd-color-general-muted);
+  --muted-foreground: var(--mwd-color-general-muted-foreground);
+  --border: var(--mwd-color-general-border);
+  --ring: var(--mwd-color-focus-ring);
+  --focus-offset: var(--cmr-tint-gray-wash);
+}

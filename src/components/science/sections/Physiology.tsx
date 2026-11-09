@@ -1,10 +1,21 @@
-import { JointActionDiagram } from "@/components/science/diagrams";
-import { Cite, Figure, Prose, ScienceSection, Subhead } from "@/components/science/editorial";
+import { JOINT_ACTIONS, RunnerIllustration } from "@/components/science/diagrams";
+import { Cite, Figure, Prose, ScienceSection, SplitRow, Subhead, TermList } from "@/components/science/editorial";
 
-/** 03 · Physiology. Stride, propulsion, muscle roles, cardiorespiratory demand, activation vs adaptation. */
+/** Physiology (black). Figure left, text right: the runner stays in view beside the whole section. */
 export function Physiology() {
   return (
     <ScienceSection id="physiology" heading="Your Legs Have Complaints.">
+      <SplitRow
+        figureSide="left"
+        figure={
+          <Figure
+            label="Figure 3 · Uphill push-off"
+            caption="A technical outline, not an anatomical dissection: the hatched areas mark where each muscle group lies on the pushing leg. The far limbs are shown in gray."
+          >
+            <RunnerIllustration />
+          </Figure>
+        }
+      >
       <Prose>
         <p>
           Uphill running is not flat running tilted a few degrees. The slope changes how the body moves, which muscles do
@@ -32,13 +43,25 @@ export function Physiology() {
           into the slope.
         </p>
       </Prose>
+      <TermList
+        className="mt-6"
+        items={JOINT_ACTIONS.map((j, i) => [
+          <>
+            {j.joint}
+            <span className="mt-0.5 block text-p-sm font-normal text-foreground/70">{j.muscles}</span>
+          </>,
+          <>
+            {j.action}
+            {i === 0 && (
+              <>
+                {" "}
+                <Cite ids={["khassetarash-2020"]} />
+              </>
+            )}
+          </>,
+        ])}
+      />
 
-      <Figure
-        label="Figure 3 · Joint actions in uphill stance"
-        caption="A functional schematic, not an anatomical drawing: limbs and joints, with the main muscle groups named by the action they produce. The trailing leg is shown in gray."
-      >
-        <JointActionDiagram citeHip={<Cite ids={["khassetarash-2020"]} />} />
-      </Figure>
 
       <Subhead>Heart and lungs</Subhead>
       <Prose>
@@ -63,6 +86,7 @@ export function Physiology() {
           adaptations is less certain than the activation data suggest <Cite ids={["tham-2026"]} />.
         </p>
       </Prose>
+      </SplitRow>
     </ScienceSection>
   );
 }

@@ -1,10 +1,21 @@
 import { RepeatWaveform } from "@/components/science/diagrams";
-import { Cite, Figure, Prose, ScienceSection, Subhead } from "@/components/science/editorial";
+import { Cite, Figure, Prose, ScienceSection, SplitAfter, SplitRow, Subhead } from "@/components/science/editorial";
 
-/** 06 · The Mind. Attention in repetition, exercise and mental health, effort, and the limits of training stress. */
+/** The Mind (white). Text left, the repeat waveform right of the opening; the rest continues in the text column. */
 export function TheMind() {
   return (
     <ScienceSection id="the-mind" heading="The Art of Doing It Again.">
+      <SplitRow
+        figureSide="right"
+        figure={
+          <Figure
+            label="Figure 6 · One hill, again"
+            caption="The same climb and descent, repeated. Schematic: it shows the structure of a repeat workout, not measured effort or elevation."
+          >
+            <RepeatWaveform />
+          </Figure>
+        }
+      >
       <Prose>
         <p>There is something unusual about running up a hill, coming back down, and deciding to do it again.</p>
         <p>The scenery hasn&apos;t changed. The destination hasn&apos;t changed. You&apos;re not getting anywhere particularly interesting.</p>
@@ -14,12 +25,6 @@ export function TheMind() {
         </p>
       </Prose>
 
-      <Figure
-        label="Figure 6 · One hill, again"
-        caption="The same climb and descent, repeated. Schematic: it shows the structure of a repeat workout, not measured effort or elevation."
-      >
-        <RepeatWaveform />
-      </Figure>
 
       <Prose>
         <p>
@@ -32,6 +37,7 @@ export function TheMind() {
           and neither has been studied much in hill repeats specifically.
         </p>
       </Prose>
+      <SplitAfter>
 
       <Subhead>Exercise and mental well-being</Subhead>
       <Prose>
@@ -85,6 +91,8 @@ export function TheMind() {
           next week.
         </p>
       </Prose>
+      </SplitAfter>
+      </SplitRow>
     </ScienceSection>
   );
 }

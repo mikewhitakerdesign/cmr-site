@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
  * moving contours on the homepage "Flat is a state of mind" and the hill
  * heroes), and borrows its restraint:
  *
- *   - slow: the terrain drifts and evolves at a walking pace, drawn at ≤ 24 fps
+ *   - slow: the terrain drifts and evolves at a walking pace, drawn at ≤ 20 fps
  *   - continuous noise in space and time, so there is no loop and no reset
  *   - paused when off screen or when the tab is hidden
  *   - the site-wide motion preference (footer control, else the system
@@ -57,7 +57,7 @@ export function TerrainLines({ className, seed = 7 }: TerrainLinesProps) {
     let raf = 0;
     let last = -Infinity;
     let elapsed = 0; // seconds of motion actually shown, so pauses don't jump the terrain
-    let frameMs = 1000 / 24;
+    let frameMs = 1000 / 20;
     let lineRgb = "255, 255, 255";
 
     const readColor = () => {
@@ -92,7 +92,7 @@ export function TerrainLines({ className, seed = 7 }: TerrainLinesProps) {
         last = now;
         const cost = draw() ?? 0;
         // A slow device gets fewer frames rather than a busy main thread.
-        if (cost > 14) frameMs = 1000 / 12;
+        if (cost > 18) frameMs = 1000 / 12;
       }
       raf = requestAnimationFrame(frame);
     };
@@ -165,63 +165,99 @@ type RenderInput = {
   lineRgb: string;
 };
 
-/** Contour levels (fractions of the peak height). The flat ground gets none. */
-const LEVELS = 11;
-/** Alpha buckets: one stroke call per bucket keeps the draw cheap. */
-const BUCKETS = 8;
-
 /**
- * Depth runs from Z_NEAR to Z_FAR in world units; the camera sits above the
- * ground, pitched down, slightly to the left of the terrain's centre on wide
- * screens so the hills gather on the right, away from the headline.
+ * The terrain (refinement pass, Owner direction 2026-11-09, closer to the
+ * reference's layered line formations): scattered peaks whose contour rings
+ * stack into tall, tapering spires, on low rolling ground whose contours
+ * meander between them, seen from above at about 33° so the field fills the
+ * frame to the top edge with no horizon.
+ *
+ * Peaks live on an unbounded jittered lattice in world space (a hash decides
+ * whether each cell has one, where, how wide and how tall), so as the field
+ * drifts toward the viewer new peaks arrive from the distance forever: there
+ * is no loop and no reset. Each peak's height breathes slowly on its own phase;
+ * the ground undulates with simplex noise; a light domain warp keeps the rings
+ * irregular rather than circular.
  */
-const Z_NEAR = 1.3;
-const Z_FAR = 9;
-const PEAK = 1.15; // world height of a full-height peak
-const FREQ = 0.5; // noise cycles per world unit
-const DRIFT = 0.055; // world units per second toward the viewer
-const EVOLVE = 0.022; // noise time units per second
+const LEVELS = 22; // contour levels, evenly spaced in height
+const LEVEL_STEP = 0.05; // in units of the peak height
+const BUCKETS = 10; // alpha buckets: one stroke call each
+const PEAK = 2.2; // world height of a full-height peak
+const CELL = 2.6; // lattice cell size; at most one peak per cell
+const DENSITY = 0.42; // share of cells with a peak
+const R_MIN = 0.6;
+const R_MAX = 1.5;
+const SHARPNESS = 1.5; // exp(−sharpness · d²/r²): tapering spires
+const GROUND = 0.15; // rolling ground, in peak heights
+const GROUND_FREQ = 0.3;
+const WARP = 0.3;
+const DRIFT = 0.15; // world units per second toward the viewer (a far peak takes about three minutes to arrive)
+const EVOLVE = 0.02; // ground noise time units per second
+const BREATHE = 0.05; // radians per second of each peak's slow rise and fall
+
+/** A uniform 0…1 hash of an integer cell and a salt. */
+function hash(x: number, z: number, salt: number): number {
+  let h = Math.imul(x | 0, 374761393) ^ Math.imul(z | 0, 668265263) ^ Math.imul(salt, 2246822519);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
 
 export function renderTerrain(ctx: CanvasRenderingContext2D, { width, height, dpr, time, noise, lineRgb }: RenderInput) {
-  const wide = width / height;
-  // Grid resolution: fewer cells on small screens.
-  const nx = width < 700 ? 60 : 128;
-  const nz = width < 700 ? 56 : 76;
-
-  // Camera. Portrait screens look further down so the hills sit low, under the text.
-  const pitch = wide < 1 ? 0.5 : 0.36;
-  const camY = wide < 1 ? 2.3 : 1.85;
-  const focal = Math.max(width, height) * (wide < 1 ? 0.95 : 0.78);
-  const cx = width * (wide >= 1.3 ? 0.66 : 0.5);
-  const cy = height * (wide < 1 ? 0.5 : 0.32);
+  const portrait = width / height < 1;
+  // Grid: columns uniform on screen, rows denser up close. Fewer cells on small screens.
+  const nx = width < 700 ? 64 : 116;
+  const nz = width < 700 ? 64 : 84;
+  // Camera: above the field, pitched down; on wide screens the view centre sits right, away from the headline.
+  const pitch = portrait ? 0.72 : 0.58;
+  const camY = portrait ? 6.5 : 6;
+  const zNear = portrait ? 1.6 : 3;
+  const zFar = 32;
+  const focal = Math.max(width, height) * 0.75;
+  const cx = width * (width / height >= 1.3 ? 0.6 : 0.5);
+  const cy = height * 0.5;
   const sinP = Math.sin(pitch);
   const cosP = Math.cos(pitch);
-  // Perspective-correct columns: each row spans the visible width at its depth
-  // (a little beyond each edge), so every cell is about the same size on screen.
-  const sx0 = -0.06 * width;
-  const sxSpan = 1.12 * width;
-  const xAt = (gi: number, Z: number) => ((sx0 + (gi / (nx - 1)) * sxSpan - cx) * (camY * sinP + Z * cosP)) / focal;
-  // Rows are denser up close, where perspective magnifies each cell.
+
   const zRow = new Float32Array(nz);
-  for (let j = 0; j < nz; j++) zRow[j] = Z_NEAR + (Z_FAR - Z_NEAR) * Math.pow(j / (nz - 1), 1.45);
+  for (let j = 0; j < nz; j++) zRow[j] = zNear + (zFar - zNear) * Math.pow(j / (nz - 1), 1.6);
   const zAt = (gj: number) => {
     const j = Math.min(nz - 2, Math.floor(gj));
     return zRow[j] + (zRow[j + 1] - zRow[j]) * (gj - j);
   };
+  // Perspective-correct columns: each row spans the visible width at its depth, a little past each edge.
+  const sx0 = -0.08 * width;
+  const sxSpan = 1.16 * width;
+  const xAt = (gi: number, Z: number) => ((sx0 + (gi / (nx - 1)) * sxSpan - cx) * (camY * sinP + Z * cosP)) / focal;
 
-  // Height field, 0…1, sampled once per frame.
-  const e = new Float32Array(nx * nz);
   const tN = time * EVOLVE;
   const zShift = time * DRIFT;
-  for (let j = 0; j < nz; j++) {
-    const wz = (zRow[j] + zShift) * FREQ;
-    for (let i = 0; i < nx; i++) {
-      const wx = xAt(i, zRow[j]) * FREQ;
-      const n = 0.72 * noise(wx, wz, tN) + 0.28 * noise(wx * 2.07 + 5.2, wz * 2.07 + 1.3, tN * 1.4 + 9.1);
-      // Peaks out of flat ground: below the shelf it's level (no contours).
-      const h = Math.max(0, (n + 0.08) / 0.95);
-      e[j * nx + i] = Math.min(1, h * h * 1.15);
+  const heightAt = (wx: number, wz: number) => {
+    const qx = wx + WARP * noise(wx * 0.35, wz * 0.35, tN);
+    const qz = wz + WARP * noise(wx * 0.35 + 17, wz * 0.35 + 5, tN);
+    let h = GROUND * (0.5 + 0.5 * noise(qx * GROUND_FREQ, qz * GROUND_FREQ, tN * 0.7));
+    const gx = Math.floor(qx / CELL);
+    const gz = Math.floor(qz / CELL);
+    for (let a = -1; a <= 1; a++) {
+      for (let b = -1; b <= 1; b++) {
+        const X = gx + a;
+        const Z = gz + b;
+        if (hash(X, Z, 1) > DENSITY) continue;
+        const px = (X + 0.15 + 0.7 * hash(X, Z, 2)) * CELL;
+        const pz = (Z + 0.15 + 0.7 * hash(X, Z, 3)) * CELL;
+        const r = R_MIN + (R_MAX - R_MIN) * hash(X, Z, 4);
+        const d2 = ((qx - px) ** 2 + (qz - pz) ** 2) / (r * r);
+        if (d2 > 4) continue;
+        const amp = (0.4 + 0.6 * hash(X, Z, 5)) * (0.82 + 0.18 * Math.sin(time * BREATHE + 6.283 * hash(X, Z, 6)));
+        h += amp * Math.exp(-d2 * SHARPNESS);
+      }
     }
+    return h;
+  };
+
+  const e = new Float32Array(nx * nz);
+  for (let j = 0; j < nz; j++) {
+    const Z = zRow[j];
+    for (let i = 0; i < nx; i++) e[j * nx + i] = heightAt(xAt(i, Z), Z + zShift);
   }
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -233,7 +269,7 @@ export function renderTerrain(ctx: CanvasRenderingContext2D, { width, height, dp
   const paths: Path2D[] = Array.from({ length: BUCKETS }, () => new Path2D());
   const counts = new Uint32Array(BUCKETS);
 
-  // Project a ground point (grid coords) at world height y; returns screen [x, y, depth].
+  // A grid point (fractional grid coords) at world height y → screen [x, y, depth].
   const project = (gi: number, gj: number, y: number): [number, number, number] => {
     const Z = zAt(gj);
     const X = xAt(gi, Z);
@@ -244,10 +280,10 @@ export function renderTerrain(ctx: CanvasRenderingContext2D, { width, height, dp
   };
 
   for (let k = 1; k <= LEVELS; k++) {
-    const level = k / (LEVELS + 1);
+    const level = k * LEVEL_STEP;
     const y = level * PEAK;
-    // Higher contours read a little brighter, like light catching the tops.
-    const levelGain = 0.6 + 0.4 * level;
+    // Higher rings read a little brighter, like light catching the tops.
+    const levelGain = 0.5 + 0.5 * Math.min(1, level / 0.9);
     for (let j = 0; j < nz - 1; j++) {
       for (let i = 0; i < nx - 1; i++) {
         const a = e[j * nx + i];
@@ -272,9 +308,9 @@ export function renderTerrain(ctx: CanvasRenderingContext2D, { width, height, dp
           const [bi, bj] = edge(segs[s + 1]);
           const [sx1, sy1, z1] = project(ai, aj, y);
           const [sx2, sy2] = project(bi, bj, y);
-          // Fade in from the horizon, and out right at the near edge.
-          const far = 1 - smoothstep(Z_FAR * 0.45, Z_FAR, z1);
-          const near = smoothstep(Z_NEAR, Z_NEAR + 1.4, z1);
+          // Soft at both ends of the depth range, like a shallow depth of field.
+          const far = 1 - smoothstep(zFar * 0.45, zFar, z1);
+          const near = smoothstep(zNear, zNear + 1.6, z1);
           const alpha = far * near * levelGain;
           if (alpha < 0.03) continue;
           const bucket = Math.min(BUCKETS - 1, Math.floor(alpha * BUCKETS));

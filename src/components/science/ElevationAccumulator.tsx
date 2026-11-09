@@ -26,9 +26,9 @@ export function ElevationAccumulator() {
   const repeatsId = `${id}-repeats`;
 
   return (
-    <div data-slot="elevation-accumulator" className="max-w-[900px] border-y border-foreground py-8 md:py-10">
-      <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)] md:items-start md:gap-10">
-        <Field id={gainId} label={`${ACCUMULATOR.gain.label} (feet)`} error={gain.ok ? undefined : gain.error}>
+    <div data-slot="elevation-accumulator">
+      <div className="grid gap-6 sm:grid-cols-2 sm:gap-8">
+        <Field id={gainId} label={`${ACCUMULATOR.gain.label} (ft)`} error={gain.ok ? undefined : gain.error}>
           <Input
             id={gainId}
             inputMode="numeric"
@@ -52,7 +52,7 @@ export function ElevationAccumulator() {
             className="h-12 text-[18px] tabular-nums"
           />
         </Field>
-        <div>
+        <div className="sm:col-span-2">
           <p id={`${id}-total-label`} className="text-p-sm font-medium">
             Total accumulated gain
           </p>

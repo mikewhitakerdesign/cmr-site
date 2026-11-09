@@ -76,7 +76,7 @@ export function BreathingPacer() {
   const primaryLabel = status === "running" ? "Pause" : status === "paused" ? "Resume" : "Start";
 
   return (
-    <div data-slot="breathing-pacer" data-status={status} className="max-w-[900px] border-y border-foreground py-8 md:py-10">
+    <div data-slot="breathing-pacer" data-status={status}>
       <fieldset>
         <legend className="text-p-sm font-medium">Pattern</legend>
         <div className="mt-3 inline-flex flex-wrap gap-2">
@@ -136,7 +136,7 @@ export function BreathingPacer() {
         </div>
       </div>
 
-      <p className="mt-8 max-w-[680px] text-p-sm text-foreground/75">
+      <p className="mt-8 text-p-sm text-foreground/75">
         Breathe in a way that stays comfortable, and stop if you feel lightheaded or short of breath. These timings are
         examples, not a recommendation for everyone. Don&apos;t practice breath holds during hard exercise, in or near water,
         while driving, or anywhere fainting would be dangerous. This is not a treatment for any medical condition.

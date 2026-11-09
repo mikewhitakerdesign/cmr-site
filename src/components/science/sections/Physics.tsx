@@ -1,11 +1,19 @@
 import { CostChart } from "@/components/science/CostChart";
-import { Cite, Figure, Prose, ScienceSection, Subhead } from "@/components/science/editorial";
+import { Cite, Figure, Instruction, Prose, ScienceSection, SplitRow, Subhead } from "@/components/science/editorial";
 import { InclineDiagram } from "@/components/science/InclineDiagram";
 
-/** 02 · Physics. Mechanical work against gravity, the metabolic cost of grade, and why short hills work. */
+/** Physics (white). Text left, figures right: the incline beside the geometry, the cost chart beside the cost. */
 export function Physics() {
   return (
     <ScienceSection id="physics" heading="Gravity Is Doing Its Job.">
+      <SplitRow
+        figureSide="right"
+        figure={
+          <Figure label="Figure 1 · Incline geometry">
+            <InclineDiagram />
+          </Figure>
+        }
+      >
       <Prose>
         <p>
           Running on flat ground is mostly a matter of moving forward. Running uphill adds a second job: raising your body
@@ -16,7 +24,7 @@ export function Physics() {
 
       <p
         data-slot="equation"
-        className="my-10 font-mono text-[28px] leading-9 tracking-[-0.02em] md:my-12 md:text-[36px] md:leading-[44px]"
+        className="my-8 font-mono text-[28px] leading-9 tracking-[-0.02em] md:my-12 md:text-[36px] md:leading-[44px]"
         aria-label="W equals m times g times h"
       >
         W = m · g · h
@@ -47,10 +55,30 @@ export function Physics() {
         </p>
       </Prose>
 
-      <Figure label="Figure 1 · Incline geometry">
-        <InclineDiagram />
-      </Figure>
+      <Instruction
+        figureSide="right"
+        before="Adjust the controls in the"
+        after="to explore the relationship between grade, angle, and elevation gain."
+      />
+      </SplitRow>
 
+      <SplitRow
+        figureSide="right"
+        figure={
+          <Figure
+            label="Figure 2 · Energy cost of running by gradient"
+            caption={
+              <>
+                The four values reported in the abstract of Minetti et al. (2002), from 10 runners on a treadmill, in joules
+                per kilogram of body mass per meter traveled. Points only: the curve between them isn&apos;t drawn because
+                these four values don&apos;t define it. <Cite ids={["minetti-2002"]} />
+              </>
+            }
+          >
+            <CostChart />
+          </Figure>
+        }
+      >
       <Subhead>The cost of going up</Subhead>
       <Prose>
         <p>
@@ -67,18 +95,6 @@ export function Physics() {
         </p>
       </Prose>
 
-      <Figure
-        label="Figure 2 · Energy cost of running by gradient"
-        caption={
-          <>
-            The four values reported in the abstract of Minetti et al. (2002), from 10 runners on a treadmill, in joules
-            per kilogram of body mass per meter traveled. Points only: the curve between them isn&apos;t drawn because
-            these four values don&apos;t define it. <Cite ids={["minetti-2002"]} />
-          </>
-        }
-      >
-        <CostChart />
-      </Figure>
 
       <Prose>
         <p>
@@ -96,6 +112,7 @@ export function Physics() {
         </p>
         <p>A short hill limits how long each climb lasts. It doesn&apos;t limit how much climbing you can do.</p>
       </Prose>
+      </SplitRow>
     </ScienceSection>
   );
 }

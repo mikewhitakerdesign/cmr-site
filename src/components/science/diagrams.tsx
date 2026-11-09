@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { RUNNER } from "@/components/science/runner";
 import { cn } from "@/lib/utils";
 
 /**
@@ -8,15 +8,6 @@ import { cn } from "@/lib/utils";
  * HTML next to the drawing, keyed to numbered markers, rather than inside a
  * scaled-down SVG.
  */
-
-const Marker = ({ x, y, n }: { x: number; y: number; n: number }) => (
-  <g>
-    <circle cx={x} cy={y} r={15} className="fill-current" />
-    <text x={x} y={y + 6} textAnchor="middle" className="fill-background text-[17px] font-semibold">
-      {n}
-    </text>
-  </g>
-);
 
 const Arrowhead = ({ x, y, angle, open = false }: { x: number; y: number; angle: number; open?: boolean }) => (
   <path
@@ -29,136 +20,96 @@ const Arrowhead = ({ x, y, angle, open = false }: { x: number; y: number; angle:
   />
 );
 
-/** An arc around (cx, cy) from a0 to a1 degrees (screen angles, clockwise from +x). */
-function arc(cx: number, cy: number, r: number, a0: number, a1: number) {
-  const p = (a: number) => [cx + r * Math.cos((a * Math.PI) / 180), cy + r * Math.sin((a * Math.PI) / 180)];
-  const [x0, y0] = p(a0);
-  const [x1, y1] = p(a1);
-  const large = Math.abs(a1 - a0) > 180 ? 1 : 0;
-  const sweep = a1 > a0 ? 1 : 0;
-  return { d: `M${x0} ${y0} A${r} ${r} 0 ${large} ${sweep} ${x1} ${y1}`, start: [x0, y0], end: [x1, y1] };
-}
-
 /* ------------------------------------------------------------------ */
-/* Physiology: joint actions in uphill stance                          */
+/* Physiology: a runner pushing off uphill                             */
 /* ------------------------------------------------------------------ */
 
-export const JOINT_ACTIONS: { n: number; joint: string; muscles: string; action: string }[] = [
+export const JOINT_ACTIONS: { joint: string; muscles: string; action: string }[] = [
   {
-    n: 1,
     joint: "Hip extensors",
-    muscles: "Gluteus maximus and hamstrings",
+    muscles: "Gluteus maximus, with the hamstrings",
     action: "Extend the hip, driving the body up and forward. The hip supplies a larger share of the work on steeper grades at faster speeds.",
   },
-  { n: 2, joint: "Knee extensors", muscles: "Quadriceps", action: "Straighten the knee against body weight during stance." },
-  { n: 3, joint: "Ankle plantar flexors", muscles: "Gastrocnemius and soleus (the calf)", action: "Push the foot against the slope toward the end of stance." },
+  { joint: "Knee extensors", muscles: "Quadriceps", action: "Straighten the knee against body weight during stance." },
+  { joint: "Ankle plantar flexors", muscles: "Gastrocnemius and soleus (the calf)", action: "Push the foot against the slope toward the end of stance." },
 ];
 
-export function JointActionDiagram({ citeHip }: { citeHip?: ReactNode }) {
-  // A 10° incline (≈ 17.5% grade).
-  const s = (x: number) => 380 - (x - 20) * 0.175;
-  const hip = [252, 170];
-  const knee = [300, 246];
-  const ankle = [262, 318];
-  const heel = [248, s(248) - 3];
-  const toe = [302, s(302) - 3];
-  const shoulder = [290, 66];
-
-  const hipArc = arc(hip[0], hip[1], 38, 30, 100);
-  const kneeArc = arc(knee[0], knee[1], 30, 140, 215);
-  const ankleArc = arc(ankle[0], ankle[1], 30, -15, 55);
-
+/** Stroke under, fill over: overlapping parts read as one continuous outline. */
+function Silhouette({ paths, className, width }: { paths: string[]; className: string; width: number }) {
   return (
-    <div data-slot="joint-diagram" className="grid gap-10 md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] md:items-center lg:gap-16">
+    <g className={className}>
+      {paths.map((d, i) => (
+        <path key={`s${i}`} d={d} fill="none" stroke="currentColor" strokeWidth={width * 2} strokeLinejoin="round" />
+      ))}
+      {paths.map((d, i) => (
+        <path key={`f${i}`} d={d} className="fill-background" />
+      ))}
+    </g>
+  );
+}
+
+const LABELS = [
+  { key: "gluteus", text: "Gluteus maximus", x: 40, y: 262, anchor: "start" },
+  { key: "quadriceps", text: "Quadriceps", x: 520, y: 462, anchor: "end" },
+  { key: "calf", text: "Calf muscles", x: 40, y: 400, anchor: "start" },
+] as const;
+
+/**
+ * Figure 3 (refinement pass, Owner direction 2026-11-09): a technical line
+ * drawing of a runner pushing off up a 10° slope, in the manner of an exercise
+ * physiology textbook figure: one continuous outline, the far limbs in gray,
+ * the three muscle groups the text names hatched in place and labelled with
+ * short leader lines. Geometry: ./runner.ts. Each group's joint action is in
+ * the text beside it (JOINT_ACTIONS, rendered by the Physiology section), so
+ * the framed drawing stays short enough to remain in view.
+ */
+export function RunnerIllustration() {
+  const { ground, anchors, muscles } = RUNNER;
+  return (
+    <div data-slot="runner-illustration">
       <svg
-        viewBox="0 0 560 400"
+        viewBox="30 70 500 460"
         role="img"
-        aria-label="Schematic of a runner's stance leg on a 10 degree incline, with the trunk leaning into the slope. Numbered markers show the hip, knee and ankle; curved arrows show each joint extending to push the body up the slope."
-        className="w-full max-w-[560px] text-foreground"
+        aria-label="Side view of a runner pushing off up a slope, leaning into the hill, with the trailing leg extended and the other knee driven forward. The gluteus maximus behind the hip, the quadriceps along the front of the thigh and the calf muscles on the back of the lower leg are hatched and labelled on the pushing leg."
+        className="w-full text-foreground"
       >
-        {/* Slope */}
-        <path d={`M20 ${s(20)} L540 ${s(540)} L540 400 L20 400 Z`} className="fill-current" fillOpacity={0.05} />
-        <line x1={20} y1={s(20)} x2={540} y2={s(540)} stroke="currentColor" strokeWidth={2} />
-        <line x1={20} y1={380} x2={540} y2={380} stroke="currentColor" strokeOpacity={0.3} strokeDasharray="4 6" />
-
-        {/* Direction of travel */}
-        <line x1={372} y1={s(372) - 34} x2={470} y2={s(470) - 34} stroke="currentColor" strokeOpacity={0.6} strokeWidth={1.5} />
-        <Arrowhead x={474} y={s(474) - 34} angle={-9.93} />
-        <text x={421} y={s(421) - 50} textAnchor="middle" transform={`rotate(-9.93 421 ${s(421) - 50})`} className="fill-current text-[17px]" fillOpacity={0.7}>
-          Up the slope
-        </text>
-
-        {/* Trailing (swing) leg, in gray */}
-        <polyline
-          points={`${hip[0]},${hip[1]} 220,236 178,272 162,266`}
-          fill="none"
-          stroke="currentColor"
-          strokeOpacity={0.28}
-          strokeWidth={9}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-
-        {/* Trunk and head */}
-        <line x1={hip[0]} y1={hip[1]} x2={shoulder[0]} y2={shoulder[1]} stroke="currentColor" strokeWidth={9} strokeLinecap="round" />
-        <circle cx={301} cy={36} r={17} className="fill-current" />
-
-        {/* Stance leg */}
-        <polyline
-          points={`${hip[0]},${hip[1]} ${knee[0]},${knee[1]} ${ankle[0]},${ankle[1]}`}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={9}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <polyline points={`${ankle[0]},${ankle[1]} ${heel[0]},${heel[1]} ${toe[0]},${toe[1]} ${ankle[0]},${ankle[1]}`} className="fill-current" stroke="currentColor" strokeWidth={4} strokeLinejoin="round" />
-
-        {/* Joint actions */}
-        <g fill="none" stroke="currentColor" strokeWidth={2}>
-          <path d={hipArc.d} />
-          <path d={kneeArc.d} />
-          <path d={ankleArc.d} />
+        <defs>
+          <pattern id="runner-hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="5" stroke="currentColor" strokeWidth={1.1} />
+          </pattern>
+        </defs>
+        <line {...ground} stroke="currentColor" strokeWidth={2} />
+        <Silhouette paths={RUNNER.farArm} className="text-foreground/40" width={1} />
+        <Silhouette paths={RUNNER.farLeg} className="text-foreground/40" width={1} />
+        <Silhouette paths={RUNNER.body} className="text-foreground" width={1.25} />
+        <g stroke="currentColor" strokeWidth={1.1}>
+          <path d={muscles.gluteus} fill="url(#runner-hatch)" />
+          <path d={muscles.quadriceps} fill="url(#runner-hatch)" />
+          <path d={muscles.calf} fill="url(#runner-hatch)" />
         </g>
-        <Arrowhead x={hipArc.end[0]} y={hipArc.end[1]} angle={190} />
-        <Arrowhead x={kneeArc.start[0]} y={kneeArc.start[1]} angle={50} />
-        <Arrowhead x={kneeArc.end[0]} y={kneeArc.end[1]} angle={305} />
-        <Arrowhead x={ankleArc.end[0]} y={ankleArc.end[1]} angle={145} />
-
-        {/* Joints */}
-        {[hip, knee, ankle].map(([x, y]) => (
-          <circle key={`${x}-${y}`} cx={x} cy={y} r={7} className="fill-background" stroke="currentColor" strokeWidth={2.5} />
-        ))}
-
-        {/* Numbered markers */}
-        <line x1={hip[0] - 8} y1={hip[1] - 4} x2={196} y2={150} stroke="currentColor" strokeOpacity={0.5} />
-        <Marker x={184} y={146} n={1} />
-        <line x1={knee[0] + 8} y1={knee[1] - 2} x2={352} y2={236} stroke="currentColor" strokeOpacity={0.5} />
-        <Marker x={366} y={232} n={2} />
-        <line x1={ankle[0] - 8} y1={ankle[1]} x2={214} y2={308} stroke="currentColor" strokeOpacity={0.5} />
-        <Marker x={200} y={306} n={3} />
+        <path d={RUNNER.ear} fill="none" stroke="currentColor" strokeWidth={1.1} />
+        <Silhouette paths={RUNNER.nearArm} className="text-foreground" width={1.25} />
+        {LABELS.map((l) => {
+          const a = anchors[l.key];
+          const textEnd = l.anchor === "start" ? l.x + 8 : l.x - 8;
+          const lineY = l.y + 9;
+          return (
+            <g key={l.key} data-slot={`label-${l.key}`}>
+              <polyline
+                points={`${l.anchor === "start" ? l.x : l.x} ${lineY} ${l.anchor === "start" ? textEnd + 140 : textEnd - 110} ${lineY} ${a.x} ${a.y}`}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1}
+              />
+              <circle cx={a.x} cy={a.y} r={3} className="fill-current" />
+              <text x={l.x} y={l.y} textAnchor={l.anchor} className="fill-current text-[19px] font-semibold">
+                {l.text}
+              </text>
+            </g>
+          );
+        })}
       </svg>
 
-      <ol className="flex flex-col border-b border-foreground/15">
-        {JOINT_ACTIONS.map((j) => (
-          <li key={j.n} className="grid grid-cols-[32px_minmax(0,1fr)] gap-4 border-t border-foreground/15 py-5">
-            <span aria-hidden className="flex size-8 items-center justify-center rounded-full bg-foreground text-[15px] font-semibold text-background">
-              {j.n}
-            </span>
-            <div>
-              <p className="text-[18px] leading-[26px] font-semibold">
-                <span className="sr-only">{j.n}. </span>
-                {j.joint}
-              </p>
-              <p className="mt-0.5 text-p-sm text-foreground/70">{j.muscles}</p>
-              <p className="mt-2 text-[17px] leading-[27px] text-foreground/85">
-                {j.action}
-                {j.n === 1 && citeHip ? <> {citeHip}</> : null}
-              </p>
-            </div>
-          </li>
-        ))}
-      </ol>
     </div>
   );
 }
@@ -219,8 +170,9 @@ function Waveform({ count, width, className }: { count: number; width: number; c
 export function RepeatWaveform() {
   return (
     <div data-slot="repeat-waveform">
-      <Waveform count={6} width={640} className="md:hidden" />
-      <Waveform count={12} width={1240} className="hidden md:block" />
+      {/* Six repeats where the figure is narrow (phones, and beside the text from 1280); twelve where it spans the column. */}
+      <Waveform count={6} width={640} className="md:hidden xl:block" />
+      <Waveform count={12} width={1240} className="hidden md:block xl:hidden" />
     </div>
   );
 }

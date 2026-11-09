@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { BreathingPacer } from "@/components/science/BreathingPacer";
@@ -11,11 +11,76 @@ afterEach(() => {
   document.documentElement.removeAttribute("data-motion");
 });
 
+/** A controllable IntersectionObserver: `fire(ratio)` reports the figure's visibility. */
+function mockIntersection() {
+  let cb: IntersectionObserverCallback = () => {};
+  const observer = { observe: vi.fn(), disconnect: vi.fn(), unobserve: vi.fn() };
+  vi.stubGlobal(
+    "IntersectionObserver",
+    vi.fn(function (this: unknown, c: IntersectionObserverCallback) {
+      cb = c;
+      return observer;
+    }),
+  );
+  return {
+    fire: (ratio: number) =>
+      act(() => cb([{ isIntersecting: ratio > 0, intersectionRatio: ratio } as IntersectionObserverEntry], observer as unknown as IntersectionObserver)),
+    observer,
+  };
+}
+const fakeFrames = () => vi.useFakeTimers({ toFake: ["requestAnimationFrame", "cancelAnimationFrame", "performance", "setTimeout", "Date"] });
+const readout = () => document.querySelector("[data-slot=incline-readout]")!;
+
+describe("InclineDiagram introduction", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("starts flat and rises smoothly to 10% once the figure is half in view, then holds", () => {
+    fakeFrames();
+    const io = mockIntersection();
+    render(<InclineDiagram />);
+    expect(readout()).toHaveTextContent("0%");
+    io.fire(0.2);
+    act(() => vi.advanceTimersByTime(500));
+    expect(readout()).toHaveTextContent(/^Grade0%/); // not yet meaningfully visible
+    io.fire(0.6);
+    act(() => vi.advanceTimersByTime(800));
+    const mid = Number(readout().textContent!.match(/Grade([\d.]+)%/)![1]);
+    expect(mid).toBeGreaterThan(0);
+    expect(mid).toBeLessThan(10);
+    act(() => vi.advanceTimersByTime(1500));
+    expect(readout()).toHaveTextContent(/^Grade10%/);
+    expect(screen.getByRole("slider", { name: "Grade" })).toHaveValue("10");
+    expect(io.observer.disconnect).toHaveBeenCalled(); // plays once
+  });
+
+  it("a visitor's slider input cancels the animation and stands", () => {
+    fakeFrames();
+    const io = mockIntersection();
+    render(<InclineDiagram />);
+    io.fire(1);
+    act(() => vi.advanceTimersByTime(400));
+    fireEvent.change(screen.getByRole("slider", { name: "Grade" }), { target: { value: "30" } });
+    act(() => vi.advanceTimersByTime(3000));
+    expect(readout()).toHaveTextContent(/^Grade30%/);
+  });
+
+  it("shows 10% without a transition under reduced motion", () => {
+    fakeFrames();
+    document.documentElement.setAttribute("data-motion", "off");
+    const io = mockIntersection();
+    render(<InclineDiagram />);
+    io.fire(1);
+    expect(readout()).toHaveTextContent(/^Grade10%/);
+    expect(document.querySelector("[data-slot=incline-diagram]")).not.toHaveAttribute("data-animating");
+  });
+});
+
 describe("InclineDiagram", () => {
-  it("starts at 10 percent and recomputes the geometry from the slider", () => {
+  it("shows the illustrative 10 percent and recomputes the geometry from the slider", async () => {
     render(<InclineDiagram />);
     const slider = screen.getByRole("slider", { name: "Grade" });
-    expect(slider).toHaveValue("10");
+    // jsdom has no IntersectionObserver: the figure shows 10% on the next frame.
+    await waitFor(() => expect(slider).toHaveValue("10"));
     expect(slider).toHaveAttribute("aria-valuetext", "10 percent grade: 5.7 degrees, rising 10.0 feet over 100 feet");
     fireEvent.change(slider, { target: { value: "45" } });
     const readout = document.querySelector("[data-slot=incline-readout]")!;
@@ -39,7 +104,7 @@ describe("ElevationAccumulator", () => {
     const user = userEvent.setup();
     render(<ElevationAccumulator />);
     expect(total()).toHaveTextContent("1,000 ft");
-    const gain = screen.getByLabelText("Elevation gain per climb (feet)");
+    const gain = screen.getByLabelText("Elevation gain per climb (ft)");
     await user.clear(gain);
     await user.type(gain, "60");
     expect(total()).toHaveTextContent("1,500 ft");

@@ -19,10 +19,9 @@ export const SCIENCE_SECTIONS = [
 
 export type ScienceSectionId = (typeof SCIENCE_SECTIONS)[number]["id"];
 
-/** "02" for the first section: the hero is 01 in the editorial numbering. */
-export function sectionNumber(id: ScienceSectionId): string {
-  const i = SCIENCE_SECTIONS.findIndex((s) => s.id === id);
-  return String(i + 2).padStart(2, "0");
+/** Sections alternate fills, starting white: Physics white, Physiology black, … Sources black. */
+export function sectionTone(id: ScienceSectionId): "light" | "dark" {
+  return SCIENCE_SECTIONS.findIndex((s) => s.id === id) % 2 === 0 ? "light" : "dark";
 }
 
 /* ------------------------------------------------------------------ */

@@ -19,7 +19,7 @@ import {
   formatMeters,
   inclineGeometry,
   parseWhole,
-  sectionNumber,
+  sectionTone,
 } from "@/lib/science";
 import { axeViolations } from "../axe";
 
@@ -118,8 +118,8 @@ describe("breathing timeline", () => {
 describe("section bar", () => {
   it("uses the brief's labels, in page order", () => {
     expect(SCIENCE_SECTIONS.map((s) => s.label)).toEqual(["Physics", "Physiology", "Training", "Breathing", "The Mind", "Descending", "Workouts", "Sources"]);
-    expect(sectionNumber("physics")).toBe("02");
-    expect(sectionNumber("sources")).toBe("09");
+    // Fills alternate, starting white: Physics white … Sources black.
+    expect(SCIENCE_SECTIONS.map((s) => sectionTone(s.id))).toEqual(["light", "dark", "light", "dark", "light", "dark", "light", "dark"]);
   });
 
   it("marks the last section whose top has passed the line, and none above the first", () => {
@@ -222,6 +222,48 @@ describe("The Science page", () => {
   it("carries an educational-information disclaimer with the sources", () => {
     const { container } = render(<SciencePage />);
     expect(container.querySelector("#sources [data-slot=science-disclaimer]")).toHaveTextContent(/not medical advice/);
+  });
+
+  it("labels each section with its name only (no numbers) and alternates white and black fills", () => {
+    const { container } = render(<SciencePage />);
+    const sections = [...container.querySelectorAll("section[data-slot=science-section]")];
+    expect(sections.map((s) => s.querySelector("[data-slot=science-eyebrow]")!.textContent)).toEqual(SCIENCE_SECTIONS.map((s) => s.label));
+    expect(sections.map((s) => s.getAttribute("data-tone"))).toEqual(["light", "dark", "light", "dark", "light", "dark", "light", "dark"]);
+    for (const s of sections) expect(s.classList.contains("science-dark")).toBe(s.getAttribute("data-tone") === "dark");
+  });
+
+  it("alternates the figure side by section and keeps the text first in reading order", () => {
+    const { container } = render(<SciencePage />);
+    const firstSide = (id: string) => container.querySelector(`#${id} [data-slot=split-row]`)!.getAttribute("data-figure-side");
+    expect(["physics", "physiology", "training", "breathing", "the-mind", "descending"].map(firstSide)).toEqual(["right", "left", "right", "left", "right", "left"]);
+    for (const row of container.querySelectorAll("[data-slot=split-row]")) {
+      const kids = [...row.children].map((c) => c.getAttribute("data-slot"));
+      if (kids.includes("split-figure")) expect(kids[0]).toBe("split-text");
+    }
+  });
+
+  it("frames every figure in the grayscale tie-dye of the homepage TBD circles", () => {
+    const { container } = render(<SciencePage />);
+    const figures = [...container.querySelectorAll("[data-slot=science-figure]")];
+    expect(figures).toHaveLength(7);
+    for (const f of figures) {
+      const frame = f.querySelector<HTMLElement>("[data-slot=figure-frame]")!;
+      expect(frame.querySelector(".cmr-tie-dye")).not.toBeNull();
+      expect(frame.style.getPropertyValue("--tie-wash")).toBe("var(--cmr-tint-gray-wash)");
+      expect(frame.className).toMatch(/\bscience-light\b/);
+      expect(frame.className).toMatch(/\brounded-2xl\b/);
+    }
+  });
+
+  it("tells visitors where each interactive figure is, accurately at every width", () => {
+    const { container } = render(<SciencePage />);
+    const lines = [...container.querySelectorAll("[data-slot=figure-instruction]")];
+    expect(lines.map((l) => l.closest("section")!.id)).toEqual(["physics", "training", "breathing"]);
+    const phys = lines[0];
+    expect(phys.querySelector(".xl\\:hidden")).toHaveTextContent("figure below");
+    expect(phys.querySelector(".xl\\:inline")).toHaveTextContent("figure to the right");
+    expect(lines[2].querySelector(".xl\\:inline")).toHaveTextContent("figure to the left");
+    expect(phys.textContent).toMatch(/Adjust the controls in the .* to explore the relationship between grade, angle, and elevation gain\./);
   });
 
   it("has no axe violations", async () => {
