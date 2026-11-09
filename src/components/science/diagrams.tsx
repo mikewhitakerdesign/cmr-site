@@ -1,4 +1,5 @@
 import { RUNNER } from "@/components/science/runner";
+import { grayTintVars } from "@/lib/tints";
 import { cn } from "@/lib/utils";
 
 /**
@@ -34,82 +35,70 @@ export const JOINT_ACTIONS: { joint: string; muscles: string; action: string }[]
   { joint: "Ankle plantar flexors", muscles: "Gastrocnemius and soleus (the calf)", action: "Push the foot against the slope toward the end of stance." },
 ];
 
-/** Stroke under, fill over: overlapping parts read as one continuous outline. */
-function Silhouette({ paths, className, width }: { paths: string[]; className: string; width: number }) {
-  return (
-    <g className={className}>
-      {paths.map((d, i) => (
-        <path key={`s${i}`} d={d} fill="none" stroke="currentColor" strokeWidth={width * 2} strokeLinejoin="round" />
-      ))}
-      {paths.map((d, i) => (
-        <path key={`f${i}`} d={d} className="fill-background" />
-      ))}
-    </g>
-  );
-}
-
-const LABELS = [
-  { key: "gluteus", text: "Gluteus maximus", x: 40, y: 262, anchor: "start" },
-  { key: "quadriceps", text: "Quadriceps", x: 520, y: 462, anchor: "end" },
-  { key: "calf", text: "Calf muscles", x: 40, y: 400, anchor: "start" },
+const MUSCLE_KEY = [
+  { key: "gluteus", n: 1, name: "Gluteus maximus" },
+  { key: "quadriceps", n: 2, name: "Quadriceps" },
+  { key: "calf", n: 3, name: "Calf (gastrocnemius, soleus)" },
 ] as const;
 
 /**
- * Figure 3 (refinement pass, Owner direction 2026-11-09): a technical line
- * drawing of a runner pushing off up a 10° slope, in the manner of an exercise
- * physiology textbook figure: one continuous outline, the far limbs in gray,
- * the three muscle groups the text names hatched in place and labelled with
- * short leader lines. Geometry: ./runner.ts. Each group's joint action is in
- * the text beside it (JOINT_ACTIONS, rendered by the Physiology section), so
- * the framed drawing stays short enough to remain in view.
+ * Figure 3 (final pass, Owner direction 2026-11-09): a clean silhouette of a
+ * runner pushing off up a 10° slope, near limbs black and far limbs gray, with
+ * the three muscle groups the text names marked as light patches on the pushing
+ * leg and numbered; the key below names them, so there are no leader lines.
+ * Geometry: ./runner.ts. Each group's joint action is in the text beside it
+ * (JOINT_ACTIONS, rendered by the Physiology section).
  */
 export function RunnerIllustration() {
-  const { ground, anchors, muscles } = RUNNER;
+  const { ground, markers, muscles } = RUNNER;
   return (
     <div data-slot="runner-illustration">
       <svg
-        viewBox="30 70 500 460"
+        viewBox="140 78 320 448"
         role="img"
-        aria-label="Side view of a runner pushing off up a slope, leaning into the hill, with the trailing leg extended and the other knee driven forward. The gluteus maximus behind the hip, the quadriceps along the front of the thigh and the calf muscles on the back of the lower leg are hatched and labelled on the pushing leg."
-        className="w-full text-foreground"
+        aria-label="Silhouette of a runner pushing off up a slope, leaning into the hill, the trailing leg extended and the other knee driven forward. Numbered patches on the pushing leg mark 1, the gluteus maximus behind the hip; 2, the quadriceps along the front of the thigh; and 3, the calf muscles on the back of the lower leg."
+        className="mx-auto w-full max-w-[360px] text-foreground"
       >
-        <defs>
-          <pattern id="runner-hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-            <line x1="0" y1="0" x2="0" y2="5" stroke="currentColor" strokeWidth={1.1} />
-          </pattern>
-        </defs>
         <line {...ground} stroke="currentColor" strokeWidth={2} />
-        <Silhouette paths={RUNNER.farArm} className="text-foreground/40" width={1} />
-        <Silhouette paths={RUNNER.farLeg} className="text-foreground/40" width={1} />
-        <Silhouette paths={RUNNER.body} className="text-foreground" width={1.25} />
-        <g stroke="currentColor" strokeWidth={1.1}>
-          <path d={muscles.gluteus} fill="url(#runner-hatch)" />
-          <path d={muscles.quadriceps} fill="url(#runner-hatch)" />
-          <path d={muscles.calf} fill="url(#runner-hatch)" />
+        {/* Group opacity, so where the far limbs overlap they stay one even gray. */}
+        <g className="fill-current" opacity={0.38}>
+          {RUNNER.far.map((d, i) => (
+            <path key={i} d={d} />
+          ))}
         </g>
-        <path d={RUNNER.ear} fill="none" stroke="currentColor" strokeWidth={1.1} />
-        <Silhouette paths={RUNNER.nearArm} className="text-foreground" width={1.25} />
-        {LABELS.map((l) => {
-          const a = anchors[l.key];
-          const textEnd = l.anchor === "start" ? l.x + 8 : l.x - 8;
-          const lineY = l.y + 9;
-          return (
-            <g key={l.key} data-slot={`label-${l.key}`}>
-              <polyline
-                points={`${l.anchor === "start" ? l.x : l.x} ${lineY} ${l.anchor === "start" ? textEnd + 140 : textEnd - 110} ${lineY} ${a.x} ${a.y}`}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1}
-              />
-              <circle cx={a.x} cy={a.y} r={3} className="fill-current" />
-              <text x={l.x} y={l.y} textAnchor={l.anchor} className="fill-current text-[19px] font-semibold">
-                {l.text}
-              </text>
-            </g>
-          );
-        })}
+        <g className="fill-current">
+          {RUNNER.body.map((d, i) => (
+            <path key={i} d={d} />
+          ))}
+        </g>
+        {/* Light patches on the black silhouette: the page background at 82%, so about neutral 200. */}
+        <g className="fill-background" fillOpacity={0.82}>
+          <path data-slot="muscle-gluteus" d={muscles.gluteus} />
+          <path data-slot="muscle-quadriceps" d={muscles.quadriceps} />
+          <path data-slot="muscle-calf" d={muscles.calf} />
+        </g>
+        {MUSCLE_KEY.map(({ key, n }) => (
+          <g key={key} data-slot={`marker-${key}`}>
+            <circle cx={markers[key].x} cy={markers[key].y} r={11} className="fill-current stroke-background" strokeWidth={2} />
+            <text x={markers[key].x} y={markers[key].y + 5} textAnchor="middle" className="fill-background text-[14px] font-bold">
+              {n}
+            </text>
+          </g>
+        ))}
       </svg>
-
+      <ol data-slot="muscle-key" className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-p-sm">
+        {MUSCLE_KEY.map(({ n, name }) => (
+          <li key={n} className="flex items-start gap-2">
+            <span aria-hidden className="flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground text-[12px] font-bold text-background">
+              {n}
+            </span>
+            <span className="pt-0.5 font-medium">
+              <span className="sr-only">{n}. </span>
+              {name}
+            </span>
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }
@@ -200,7 +189,7 @@ export function AscentDescentDiagram() {
       <svg
         viewBox="0 0 800 300"
         role="img"
-        aria-label="One hill profile. On the ascent, solid arrows point up the slope: propulsion. On the descent, the direction of travel is down the slope while open arrows point back up it: braking."
+        aria-label="One hill profile. On the ascent, solid arrows point up the slope: propulsion. On the descent, open arrows point down the slope, from the summit toward the bottom, where braking and eccentric loading take over."
         className="w-full max-w-[900px] text-foreground"
       >
         <path
@@ -222,14 +211,14 @@ export function AscentDescentDiagram() {
           const dx = Math.cos((angUp * Math.PI) / 180) * 34;
           const dy = Math.sin((angUp * Math.PI) / 180) * 34;
           return (
-            <g key={t}>
+            <g key={t} data-slot="ascent-arrow">
               <line x1={ax - dx} y1={ay - dy} x2={ax} y2={ay} stroke="currentColor" strokeWidth={2.5} />
               <Arrowhead x={ax + dx * 0.25} y={ay + dy * 0.25} angle={angUp} />
             </g>
           );
         })}
 
-        {/* Descent: travel down the slope (thin), braking back up it (open arrows) */}
+        {/* Descent: open arrows pointing down the slope, from the summit toward the bottom */}
         {[0.25, 0.5, 0.75].map((t) => {
           const x = down.x0 + t * (down.x1 - down.x0);
           const y = slopeDown(x);
@@ -238,9 +227,9 @@ export function AscentDescentDiagram() {
           const dx = Math.cos((angDown * Math.PI) / 180) * 30;
           const dy = Math.sin((angDown * Math.PI) / 180) * 30;
           return (
-            <g key={t}>
-              <line x1={ax + dx} y1={ay + dy} x2={ax} y2={ay} stroke="currentColor" strokeWidth={2} />
-              <Arrowhead x={ax - dx * 0.2} y={ay - dy * 0.2} angle={angDown + 180} open />
+            <g key={t} data-slot="descent-arrow">
+              <line x1={ax - dx} y1={ay - dy} x2={ax} y2={ay} stroke="currentColor" strokeWidth={2} />
+              <Arrowhead x={ax + dx * 0.25} y={ay + dy * 0.25} angle={angDown} open />
             </g>
           );
         })}
@@ -296,17 +285,37 @@ export function AscentDescentDiagram() {
 /* Workouts: small profile icons                                       */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Workout icons (final pass, Owner direction 2026-11-09): thin black line
+ * drawings, one stroke weight and one scale, each in a circle filled with the
+ * homepage TBD circles' grayscale tie-dye.
+ *   short-steep  a narrow, steep hill in side profile
+ *   long-slow    a wider hill at a gentler gradient
+ *   up-down      two thin diagonal arrows, one uphill and one downhill
+ */
 export function WorkoutIcon({ kind }: { kind: "short-steep" | "long-slow" | "up-down" }) {
-  const d = {
-    "short-steep": "M2 34 H30 L42 6 L50 6 L54 34 H78",
-    "long-slow": "M2 34 H8 L66 10 L72 10 L74 34 H78",
-    "up-down": "M2 34 H14 L36 8 L44 8 L66 34 H78",
-  }[kind];
+  const stroke = { fill: "none", stroke: "currentColor", strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "round" } as const;
   return (
-    <svg viewBox="0 0 80 40" aria-hidden className="h-10 w-20 text-foreground">
-      <path d={`${d} V40 H2 Z`} className="fill-current" fillOpacity={0.08} />
-      <path d={d} fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
-      {kind === "up-down" && <path d="M44 8 L66 34" fill="none" stroke="currentColor" strokeWidth={2.5} strokeDasharray="4 3" className="text-background" />}
-    </svg>
+    <span
+      data-slot="workout-icon"
+      style={grayTintVars}
+      className="relative isolate flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-full bg-(--tie-wash) text-foreground md:size-28"
+    >
+      <span aria-hidden className="cmr-tie-dye absolute -z-10" />
+      <svg viewBox="0 0 48 48" aria-hidden className="size-12 md:size-14">
+        {kind === "short-steep" && <path d="M6 36 H17 L23 12 H26 L32 36 H42" {...stroke} />}
+        {kind === "long-slow" && <path d="M4 36 H8 L27 22 H31 L44 36" {...stroke} />}
+        {kind === "up-down" && (
+          <>
+            {/* Uphill: up and to the right. */}
+            <path d="M8 30 L28 12" {...stroke} />
+            <path d="M21.5 12.5 H28 V19" {...stroke} />
+            {/* Downhill: back down and to the left. */}
+            <path d="M40 18 L20 36" {...stroke} />
+            <path d="M26.5 35.5 H20 V29" {...stroke} />
+          </>
+        )}
+      </svg>
+    </span>
   );
 }

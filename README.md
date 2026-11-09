@@ -111,8 +111,9 @@ in `src/components/science/sections/`; sources in
 `src/content/science-sources.ts` (one record per source, numbered by first
 citation; an inline `<Cite ids={[…]} />` must use an existing id, and a unit test
 checks the order). Pure logic (geometry, accumulator, breathing timeline, section
-list) is in `src/lib/science.ts`. The hero background is `TerrainLines` (Canvas
-2D, follows the site motion preference). Details and the research verification
+list) is in `src/lib/science.ts`. The hero background is the hill pages' own
+(`HillHeroBackground` in `src/components/hills/HillHero.tsx`); the section bar is
+the shared `SectionNav`. Details and the research verification
 log: [`.aiom/work/implement-cmr-the-science-page.md`](./.aiom/work/implement-cmr-the-science-page.md).
 
 ## Questions panel

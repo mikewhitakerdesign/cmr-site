@@ -96,6 +96,23 @@ Same PR (#13), same branch. Copy, sources, citations, sticky section bar and int
 
 Refinement validation: lint, tsc, tokens:check, build pass; Vitest 469/469; Playwright 466 passed / 0 failed (new tests: fills alternate, eyebrows unnumbered, frames, sides alternate with tops aligned, text-first stacking, instruction wording per width, incline animates once / cancels / reduced motion, runner labels, monochrome check including oklab neutrals); `@visual`: header baselines pass, and the same 23 pre-existing failures as `main` (see Validation). Screenshots reviewed at 1440 / 768 / 393, including Figure 1 at 0% (before) and 10% (after), 25% and 45%.
 
+## Final pass (Owner authorization 2026-11-09: refine, merge, verify, close out)
+
+`main` had moved to `23687ef` (PRs #14–#17: permit hold lifted, footer rebuilt with a "Navigate" list, FAQ sticky category bar) and PR #13 conflicted. `main` was merged into the branch (a merge commit, no history rewrite or force-push). One conflict, in `src/styles/cmr.css`: the FAQ's scroll-padding rule and this page's now share one rule (`faq-nav`, `science-nav`).
+
+| # | Direction | Implementation |
+|---|---|---|
+| 1 | Hero background | The hill pages' own background, extracted unchanged into `HillHeroBackground` (`src/components/hills/HillHero.tsx`) and used by both `HillHero` and `ScienceHero`: the same ContourField, props, colour, fallback, reduced-motion and Pause motion behaviour. The custom `TerrainLines` animation was deleted. The black wash over the left side was kept for the copy's contrast |
+| 1 | Headline | "The science behind hill repeats?" as written; balanced wrapping, no line breaks. Title "The science behind hill repeats \| Chicago Mountain Runners", description updated; route `/the-science` and nav label "The Science" unchanged |
+| — | Section bar | Adopted the shared `SectionNav` that PR #16 generalized from this page's bar (same behaviour plus environment guards); `ScienceNav` deleted, so there is one implementation |
+| 2 | Footer | "The Science" in the footer Navigate list, in the primary navigation's order (Find a Run, Chicago Mtns, The Science, About, FAQ, Join the club) |
+| 3 | Figure 3 | A solid silhouette of a runner pushing off uphill (near limbs black, far limbs gray), corrected stride (the swing knee no longer rises above the hip), the gluteus maximus, quadriceps and calf marked as light patches with numbered markers and a key, so there are no leader lines. The Owner's "running silhouette reference" from an earlier review did not reach this session (no image was attached), so the direction followed the written brief |
+| 4 | Figure 7 | Descent arrows reversed to point downhill; geometry, explanations and line weights unchanged; checked visually and by a browser test of each arrow's head position |
+| 5 | Workout icons | Thin-stroke steep hill, gentler hill, and paired up/down arrows, each in a grayscale tie-dye circle above its title; column numbers removed |
+| 6 | Workouts CTA | The closing line and "Explore the hills" sit on a shared rule directly beneath the three columns, aligned with the grid |
+
+Pre-merge validation (macOS, final tree): lint, tsc, tokens:check, build pass; Vitest 467 passed (2 skipped: hold-dependent tests that `main` now skips because the hold is lifted); Playwright 505 passed. One run-details test (`final-pass.spec.ts`, "cricket-mtn-repeats") failed once under full parallel load and passed 3/3 alone; this work does not touch that page. `@visual`: 34 failures, identical to unmodified `main` at `23687ef` (full-page and footer baselines that PRs #11 and #14–#16 changed without re-baselining; visual specs do not run in CI). Not re-baselined here.
+
 ## Remaining for the Owner's review
 
 - The rebuilt hero animation's pace and density in a real browser (screenshots are still frames).

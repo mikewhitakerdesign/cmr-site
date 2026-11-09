@@ -71,7 +71,11 @@ const WORKOUTS: Workout[] = [
   },
 ];
 
-/** 08 · Workouts. Three understated approaches, typographic, not promotional cards. */
+/**
+ * Workouts (white). Three understated approaches as one grid, each headed by
+ * its icon in a tie-dye circle (no numbers), with the closing line and link on
+ * a shared rule directly beneath the columns.
+ */
 export function Workouts() {
   return (
     <ScienceSection id="workouts" heading="Put the Science to Work.">
@@ -83,47 +87,45 @@ export function Workouts() {
         </p>
       </Prose>
 
-      <ol className="mt-12 grid border-t border-foreground lg:grid-cols-3 md:mt-16">
-        {WORKOUTS.map((w, i) => (
-          <li
-            key={w.kind}
-            data-slot="workout"
-            className={cn(
-              "flex flex-col border-b border-foreground/15 py-10 lg:border-b-0 lg:py-12",
-              i > 0 && "lg:border-l lg:border-foreground/15 lg:pl-10",
-              i < WORKOUTS.length - 1 && "lg:pr-10",
-            )}
-          >
-            <div className="flex items-center justify-between gap-6">
-              <span className="font-mono text-[14px] leading-5 tracking-[0.1em] text-foreground/65" aria-hidden>
-                {String(i + 1).padStart(2, "0")}
-              </span>
+      {/* One unit: the three columns and, beneath them on a shared rule, the closing line and link. */}
+      <div data-slot="workouts" className="mt-12 md:mt-16">
+        <ol className="grid border-t border-foreground lg:grid-cols-3">
+          {WORKOUTS.map((w, i) => (
+            <li
+              key={w.kind}
+              data-slot="workout"
+              className={cn(
+                "flex flex-col border-b border-foreground/15 py-10 last:border-b-0 lg:border-b-0 lg:py-12",
+                i > 0 && "lg:border-l lg:border-foreground/15 lg:pl-10",
+                i < WORKOUTS.length - 1 && "lg:pr-10",
+              )}
+            >
               <WorkoutIcon kind={w.kind} />
-            </div>
-            <h3 className="mt-6 text-[30px] leading-[34px] font-black tracking-[-0.03em] uppercase md:text-[34px] md:leading-[38px]">
-              <span className="sr-only">{i + 1}. </span>
-              {w.name}
-            </h3>
-            <p className="mt-3 max-w-[40ch] text-[18px] leading-[28px] text-foreground/85">{w.purpose}</p>
-            <dl className="mt-6 flex flex-col gap-5">
-              {w.rows.map(([k, v]) => (
-                <div key={k}>
-                  <dt className="font-mono text-[12px] leading-5 tracking-[0.1em] text-foreground/65 uppercase">{k}</dt>
-                  <dd className="mt-1 text-[16px] leading-[25px] text-foreground/85">{v}</dd>
-                </div>
-              ))}
-            </dl>
-          </li>
-        ))}
-      </ol>
+              <h3 className="mt-6 text-[30px] leading-[34px] font-black tracking-[-0.03em] uppercase md:mt-8 md:text-[34px] md:leading-[38px]">
+                {w.name}
+              </h3>
+              <p className="mt-3 max-w-[40ch] text-[18px] leading-[28px] text-foreground/85">{w.purpose}</p>
+              <dl className="mt-6 flex flex-col gap-5">
+                {w.rows.map(([k, v]) => (
+                  <div key={k}>
+                    <dt className="font-mono text-[12px] leading-5 tracking-[0.1em] text-foreground/65 uppercase">{k}</dt>
+                    <dd className="mt-1 text-[16px] leading-[25px] text-foreground/85">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+            </li>
+          ))}
+        </ol>
 
-      <div className="mt-12 flex flex-col gap-3 md:mt-14">
-        <p className="max-w-[680px] text-[18px] leading-[30px] text-foreground/85">
-          Any of these works on a short hill. Chicago has a few.
-        </p>
-        <ArrowLink href="/hills" className="self-start text-[18px] leading-7">
-          Explore the hills
-        </ArrowLink>
+        <div
+          data-slot="workouts-footer"
+          className="flex flex-col gap-3 border-t border-foreground pt-6 md:flex-row md:items-center md:justify-between md:gap-8 md:pt-8"
+        >
+          <p className="text-[18px] leading-[30px] text-foreground/85">Any of these works on a short hill. Chicago has a few.</p>
+          <ArrowLink href="/hills" className="self-start text-[18px] leading-7 md:self-auto">
+            Explore the hills
+          </ArrowLink>
+        </div>
       </div>
     </ScienceSection>
   );

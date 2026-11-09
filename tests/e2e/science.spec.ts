@@ -53,9 +53,9 @@ test.beforeEach(async ({ page }) => {
 
 test.describe("content and layout", () => {
   test("title, metadata, hero copy and the nine parts in order", async ({ page }) => {
-    await expect(page).toHaveTitle("The Science | Chicago Mountain Runners");
+    await expect(page).toHaveTitle("The science behind hill repeats | Chicago Mountain Runners");
     await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /hill repeats/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("THE SCIENCE OF GOING NOWHERE.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("The science behind hill repeats?");
     await expect(page.getByText("The surprisingly legitimate benefits of running uphill. Repeatedly. In Chicago.")).toBeVisible();
     const ids = await page.locator("main section[data-slot=science-section]").evaluateAll((els) => els.map((e) => e.id));
     expect(ids).toEqual(SECTIONS);
@@ -207,35 +207,50 @@ test.describe("sticky section bar", () => {
   });
 });
 
-test.describe("hero motion", () => {
-  test("animates when motion is allowed, and pauses with the footer control", async ({ page }) => {
-    const terrain = page.locator("[data-slot=terrain-lines]");
-    await expect(terrain).toHaveAttribute("data-state", "animating");
+const forceMotion = (p: Page) =>
+  p.addInitScript(() => {
+    (window as { __CMR_CONTOUR_FORCE_MOTION__?: boolean }).__CMR_CONTOUR_FORCE_MOTION__ = true;
+  });
+
+test.describe("hero background (the hill pages' own)", () => {
+  const field = (p: Page) => p.locator("[data-slot=science-hero] [data-slot=hill-hero-background] [data-slot=contour-field]");
+
+  test("is the hill hero background: the same contour field, in the same grey, behind the copy", async ({ page }) => {
+    await expect(field(page)).toHaveCount(1);
+    await expect(field(page)).not.toHaveAttribute("data-state", "pending");
+    expect(await field(page).locator("canvas").evaluate((c) => getComputedStyle(c).color)).toBe("rgb(115, 115, 115)");
+    expect(await field(page).evaluate((e) => getComputedStyle(e).pointerEvents)).toBe("none");
+    await expect(page.locator("[data-slot=terrain-lines]")).toHaveCount(0);
+  });
+
+  test("animates (as a GPU would run it) and stops with the footer's Pause motion", async ({ browser }) => {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    await forceMotion(page);
+    await page.goto("/the-science");
+    await expect(field(page)).toHaveAttribute("data-state", "animating");
     await page.getByRole("button", { name: /Pause motion/ }).first().click();
-    await expect(terrain).toHaveAttribute("data-state", "still");
+    await expect(field(page)).toHaveAttribute("data-state", "still");
+    await expect(field(page)).toHaveAttribute("data-still", "reduced-motion");
+    await page.close();
   });
 
   test("draws one still frame under reduced motion, and the section links jump", async ({ browser }) => {
     const context = await browser.newContext({ reducedMotion: "reduce", viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
+    await forceMotion(page);
     await page.goto("/the-science");
-    await expect(page.locator("[data-slot=terrain-lines]")).toHaveAttribute("data-state", "still");
+    await expect(field(page)).toHaveAttribute("data-state", "still");
+    await expect(field(page)).toHaveAttribute("data-still", "reduced-motion");
     expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe("auto");
     await context.close();
   });
 
-  test("the canvas has drawn lines, behind the text", async ({ page }) => {
-    // The first frame is drawn after hydration; on a slow runner that can follow page load.
-    await expect(page.locator("[data-slot=terrain-lines]")).not.toHaveAttribute("data-state", "pending");
-    const lit = () =>
-      page.locator("[data-slot=terrain-lines] canvas").evaluate((c: HTMLCanvasElement) => {
-        const d = c.getContext("2d")!.getImageData(0, 0, c.width, c.height).data;
-        let n = 0;
-        for (let i = 3; i < d.length; i += 4) if (d[i] > 0) n++;
-        return n;
-      });
-    await expect.poll(lit).toBeGreaterThan(1000);
-    expect(await page.locator("[data-slot=terrain-lines]").evaluate((e) => getComputedStyle(e).pointerEvents)).toBe("none");
+  test("the headline wraps naturally and stays inside the column", async ({ page }) => {
+    const h1 = page.getByRole("heading", { level: 1 });
+    await expect(h1.locator("br")).toHaveCount(0);
+    const b = await box(h1);
+    expect(b.x + b.width).toBeLessThanOrEqual(page.viewportSize()!.width);
+    expect(await noHScroll(page)).toBe(true);
   });
 });
 
@@ -392,10 +407,62 @@ test.describe("refinement pass: fills, layout, figures", () => {
     await context.close();
   });
 
-  test("the runner illustration names the three muscle groups", async ({ page }) => {
-    const fig = page.locator("[data-slot=runner-illustration] svg");
-    await expect(fig).toHaveAccessibleName(/gluteus maximus.*quadriceps.*calf/i);
-    for (const label of ["Gluteus maximus", "Quadriceps", "Calf muscles"]) await expect(fig.getByText(label, { exact: true })).toBeAttached();
+  test("the runner illustration marks and names the three muscle groups, without leader lines", async ({ page }) => {
+    const fig = page.locator("[data-slot=runner-illustration]");
+    await expect(fig.locator("svg")).toHaveAccessibleName(/gluteus maximus.*quadriceps.*calf/i);
+    for (const k of ["gluteus", "quadriceps", "calf"]) {
+      await expect(fig.locator(`[data-slot=muscle-${k}]`)).toHaveCount(1);
+      await expect(fig.locator(`[data-slot=marker-${k}]`)).toHaveCount(1);
+    }
+    await expect(fig.locator("svg polyline")).toHaveCount(0);
+    await expect(fig.locator("[data-slot=muscle-key] li")).toHaveText([/Gluteus maximus/, /Quadriceps/, /Calf \(gastrocnemius, soleus\)/]);
+  });
+
+  test("Figure 7: ascent arrows point uphill, descent arrows point downhill", async ({ page }) => {
+    // Each arrow's head is at the end of its shaft farther along the direction it points.
+    const dirs = await page.locator("[data-slot=ascent-descent] svg").evaluate((svg) => {
+      const read = (sel: string) =>
+        [...svg.querySelectorAll(sel)].map((g) => {
+          const line = g.querySelector("line")!;
+          const head = g.querySelector("path")!.getBoundingClientRect();
+          const [x1, y1, x2, y2] = ["x1", "y1", "x2", "y2"].map((a) => Number(line.getAttribute(a)));
+          const hx = head.x + head.width / 2;
+          const shaft = line.getBoundingClientRect();
+          const toRight = hx > shaft.x + shaft.width / 2;
+          return { toRight, rises: (x2 - x1) * (y2 - y1) < 0 };
+        });
+      return { up: read("[data-slot=ascent-arrow]"), down: read("[data-slot=descent-arrow]") };
+    });
+    expect(dirs.up).toHaveLength(3);
+    expect(dirs.down).toHaveLength(3);
+    // Ascent side rises to the right; its heads are on the right (uphill). Descent side falls to the right; heads on the right (downhill).
+    for (const a of dirs.up) expect(a).toEqual({ toRight: true, rises: true });
+    for (const a of dirs.down) expect(a).toEqual({ toRight: true, rises: false });
+  });
+
+  test("workouts: icons in tie-dye circles above each title, no numbers, the closing line on a shared rule", async ({ page }) => {
+    const items = page.locator("[data-slot=workout]");
+    await expect(items).toHaveCount(3);
+    for (const item of await items.all()) {
+      const icon = item.locator("[data-slot=workout-icon]");
+      await expect(icon.locator(".cmr-tie-dye")).toHaveCount(1);
+      expect(await icon.evaluate((e) => getComputedStyle(e).borderTopLeftRadius)).not.toBe("0px");
+      expect((await box(icon)).y + (await box(icon)).height).toBeLessThanOrEqual((await box(item.locator("h3"))).y);
+      await expect(item).not.toContainText(/^\s*0?[1-3]\b/);
+    }
+    const footer = page.locator("[data-slot=workouts-footer]");
+    await expect(footer).toContainText("Any of these works on a short hill. Chicago has a few.");
+    await expect(footer.getByRole("link", { name: "Explore the hills" })).toHaveAttribute("href", "/hills");
+    const grid = await box(page.locator("[data-slot=workouts] ol"));
+    const f = await box(footer);
+    expect(f.y - (grid.y + grid.height)).toBeLessThanOrEqual(2); // directly beneath the columns
+    expect(Math.abs(f.x - grid.x)).toBeLessThanOrEqual(1); // aligned with the grid
+    expect(await footer.evaluate((e) => getComputedStyle(e).borderTopWidth)).toBe("1px");
+  });
+
+  test("The Science is in the footer navigation", async ({ page }) => {
+    const link = page.locator("footer").getByRole("link", { name: "The Science" });
+    await expect(link).toHaveAttribute("href", "/the-science");
   });
 });
 

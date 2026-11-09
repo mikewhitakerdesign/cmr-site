@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { render, screen, within } from "@testing-library/react";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import SciencePage from "@/app/the-science/page";
-import { activeSection } from "@/components/science/ScienceNav";
+import { activeSection } from "@/components/SectionNav";
 import { BREATHING_OPENING } from "@/components/science/sections/Breathing";
 import { SCIENCE_SOURCES, shortCitation, sourceAnchor, sourceNumber } from "@/content/science-sources";
 import { primaryNav } from "@/lib/navigation";
@@ -169,7 +169,7 @@ describe("The Science page", () => {
 
   it("renders the approved hero copy", () => {
     render(<SciencePage />);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("THE SCIENCE OF GOING NOWHERE.");
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("The science behind hill repeats?");
     expect(screen.getByText("The surprisingly legitimate benefits of running uphill. Repeatedly. In Chicago.")).toBeInTheDocument();
     expect(screen.getByText("Let's examine the evidence.")).toBeInTheDocument();
   });

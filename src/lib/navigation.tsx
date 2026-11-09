@@ -54,6 +54,8 @@ export function buildFooterNav(social: SocialLinks): NavItem[] {
   return [
     { label: "Find a Run", href: "/calendar" },
     primaryNav[1],
+    // The Science: in the primary navigation's order, between Chicago Mtns and About.
+    primaryNav.find((i) => i.href === "/the-science")!,
     { label: "About", href: "/about" },
     { label: "FAQ", href: "/faq" },
     { label: "Join the club", href: "/join" },

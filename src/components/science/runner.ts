@@ -12,7 +12,8 @@
  * Catmull-Rom splines. The muscle overlays are bands inside those same
  * profiles, so they sit where the muscles are: gluteus maximus behind the hip,
  * quadriceps along the front of the thigh, gastrocnemius and soleus on the
- * back of the shank. It is a technical outline, not a dissection.
+ * back of the shank. Rendered as a solid silhouette (Owner direction,
+ * 2026-11-09: a simple, credible silhouette over a detailed drawing).
  */
 type Pt = { x: number; y: number };
 const P = (x: number, y: number): Pt => ({ x, y });
@@ -84,22 +85,26 @@ function belly(l: Limb, side: "anterior" | "posterior", t0: number, t1: number, 
 }
 
 // Skeleton, in the figure's coordinates (facing right; the slope rises to the right at 10°).
+// Late stance on an incline: the trailing leg nearly extended at push-off, the
+// other thigh swung forward to about 15° below horizontal with the shank hanging
+// under the knee, the trunk leaning ≈ 20° into the hill, arms bent ≈ 90° and
+// swinging opposite the legs.
 const hip = P(300, 300);
 const knee = P(262, 396);
-const ankle = P(224, 480);
-const farKnee = P(390, 282);
-const farAnkle = P(372, 376);
-const shoulder = P(344, 180);
-const elbow = P(378, 244);
-const hand = P(422, 212);
-const farElbow = P(300, 238);
-const farHand = P(300, 286);
+const ankle = P(226, 482);
+const farKnee = P(398, 328);
+const farAnkle = P(378, 420);
+const shoulder = P(342, 182);
+const elbow = P(366, 250);
+const hand = P(414, 236);
+const farElbow = P(302, 244);
+const farHand = P(326, 290);
 
-const THIGH: Profile = [[-0.12, 24, 30], [0.1, 30, 29], [0.38, 28, 23], [0.62, 23.5, 19], [0.84, 18, 15], [0.97, 16, 13], [1.06, 14, 12]];
-const SHANK: Profile = [[-0.06, 13.5, 13], [0.1, 11, 19], [0.28, 10, 22.5], [0.5, 8.5, 16], [0.75, 7, 9], [1.04, 7, 7.5]];
-const UPPER_ARM: Profile = [[-0.08, 13, 12], [0.35, 11.5, 11], [0.8, 9, 9], [1.04, 8, 8]];
-const FOREARM: Profile = [[-0.04, 8.5, 8.5], [0.3, 9, 8.5], [0.8, 6.5, 6], [1.0, 6, 5.5]];
-const TORSO: Profile = [[-0.06, 25, 26], [0.15, 25, 25], [0.4, 22, 21], [0.62, 27, 23], [0.82, 28, 25], [0.97, 22, 22], [1.07, 11, 12]];
+const THIGH: Profile = [[-0.12, 26, 31], [0.1, 29, 29], [0.38, 27, 22.5], [0.62, 22.5, 18.5], [0.84, 17.5, 14.5], [0.97, 15.5, 12.5], [1.06, 13.5, 11.5]];
+const SHANK: Profile = [[-0.06, 13, 12.5], [0.1, 11, 18.5], [0.28, 10, 21.5], [0.5, 8.5, 15.5], [0.75, 7, 8.5], [1.04, 6.5, 7]];
+const UPPER_ARM: Profile = [[-0.1, 13, 12], [0.35, 11.5, 11], [0.8, 9, 8.5], [1.04, 8, 7.5]];
+const FOREARM: Profile = [[-0.04, 8.5, 8], [0.3, 8.5, 8], [0.8, 6.5, 6], [1.06, 6.5, 6]];
+const TORSO: Profile = [[0.0, 24, 25], [0.12, 25, 26], [0.4, 22.5, 22], [0.62, 26, 23], [0.82, 27.5, 25], [0.97, 22, 22], [1.08, 10, 11]];
 
 const thigh = limb(hip, knee, THIGH, -1);
 const shank = limb(knee, ankle, SHANK, -1);
@@ -111,29 +116,32 @@ const farUpperArm = limb(shoulder, farElbow, UPPER_ARM, 1);
 const farForearm = limb(farElbow, farHand, FOREARM, 1);
 const torso = limb(hip, shoulder, TORSO, 1);
 
-const buttock = smooth([P(296, 268), P(275, 276), P(262, 298), P(262, 322), P(275, 337), P(293, 336), P(305, 318), P(307, 290)]);
-const foot = smooth([P(210, 488), P(216, 472), P(234, 470), P(252, 488), P(276, 500), P(279, 508), P(256, 510), P(230, 501)]);
-const farFoot = smooth([P(358, 388), P(364, 368), P(382, 372), P(410, 384), P(412, 393), P(390, 395), P(368, 395)]);
-// Head in profile, facing right: crown, brow, nose, lips, chin, jaw, nape.
-const head = smooth([P(354, 90), P(372, 84), P(390, 94), P(396, 108), P(400, 120), P(396, 124), P(397, 132), P(392, 140), P(380, 147), P(366, 146), P(354, 138), P(347, 122), P(347, 104)]);
-const neck = smooth([P(352, 132), P(372, 142), P(372, 166), P(356, 176), P(338, 168)]);
+// Pelvis and buttock (gluteus maximus mass), blending trunk and thighs at the hip.
+const pelvis = smooth([P(276, 282), P(300, 270), P(326, 280), P(334, 304), P(322, 326), P(298, 332), P(278, 322), P(272, 302)]);
+const buttock = smooth([P(301, 272), P(284, 280), P(269, 297), P(268, 318), P(280, 333), P(298, 332), P(308, 312), P(308, 288)]);
+// Trailing foot at push-off: heel up, ball of the foot on the slope.
+const foot = smooth([P(212, 492), P(216, 476), P(234, 474), P(254, 490), P(276, 500), P(280, 507), P(258, 510), P(232, 502)]);
+// Swinging foot, toes up (dorsiflexed), under the knee.
+const farFoot = smooth([P(364, 430), P(368, 412), P(386, 414), P(410, 424), P(412, 432), P(392, 436), P(372, 435)]);
+// Head in profile, facing right, carried in line with the trunk; short neck.
+const head = smooth([P(352, 100), P(370, 92), P(388, 100), P(396, 114), P(399, 126), P(396, 130), P(396, 138), P(390, 146), P(378, 152), P(364, 151), P(352, 143), P(346, 128), P(346, 112)]);
+const neck = smooth([P(352, 140), P(368, 148), P(366, 172), P(352, 180), P(341, 172)]);
+const hand1 = smooth([P(404, 228), P(418, 226), P(424, 236), P(418, 246), P(404, 244)]);
+const hand2 = smooth([P(318, 284), P(332, 282), P(336, 292), P(328, 300), P(316, 296)]);
 
 export const RUNNER = {
-  /** Near side of the body, drawn as one silhouette (stroke under, fill over). */
-  body: [outline(torso), buttock, neck, head, outline(thigh), outline(shank), foot],
-  /** The far leg and far arm, drawn in gray behind the body. */
-  farLeg: [outline(farThigh), outline(farShank), farFoot],
-  farArm: [outline(farUpperArm), outline(farForearm)],
-  /** The near arm, drawn over the trunk as its own silhouette. */
-  nearArm: [outline(upperArm), outline(forearm)],
-  ear: "M366 116 C370 112 375 116 373 122 C372 127 367 127 365 124",
+  /** The near side of the body: one solid silhouette. */
+  body: [outline(torso), pelvis, buttock, neck, head, outline(thigh), outline(shank), foot, outline(upperArm), outline(forearm), hand1],
+  /** The far leg and arm, in a lighter tone behind. */
+  far: [outline(farUpperArm), outline(farForearm), hand2, outline(farThigh), outline(farShank), farFoot],
+  /** Muscle groups on the pushing (near) leg, as patches inside the silhouette. */
   muscles: {
-    gluteus: smooth([P(296, 275), P(279, 283), P(269, 301), P(270, 320), P(281, 331), P(296, 325), P(303, 303)]),
-    quadriceps: belly(thigh, "anterior", 0.06, 0.93, -0.15, 0.9),
-    calf: belly(shank, "posterior", 0.04, 0.66, -0.2, 0.92),
+    gluteus: smooth([P(293, 279), P(281, 287), P(275, 302), P(278, 318), P(288, 325), P(298, 316), P(300, 296)]),
+    quadriceps: belly(thigh, "anterior", 0.1, 0.9, 0.05, 0.82),
+    calf: belly(shank, "posterior", 0.06, 0.62, 0.05, 0.85),
   },
-  /** Leader-line anchors (on each muscle) for the labels. */
-  anchors: { gluteus: P(278, 302), quadriceps: P(292, 352), calf: P(226, 420) },
+  /** Where each numbered marker sits (on its patch). */
+  markers: { gluteus: P(287, 303), quadriceps: P(292, 356), calf: P(233, 420) },
   /** The ground: the 10° slope through the push-off foot. */
-  ground: { x1: 30, y1: 509 + (262 - 30) * 0.176, x2: 530, y2: 509 - (530 - 262) * 0.176 },
+  ground: { x1: 120, y1: 509 + (262 - 120) * 0.176, x2: 500, y2: 509 - (500 - 262) * 0.176 },
 };

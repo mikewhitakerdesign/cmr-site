@@ -1,18 +1,18 @@
 import { Container } from "@/components/Container";
-import { TerrainLines } from "@/components/science/TerrainLines";
+import { HillHeroBackground, seedFor } from "@/components/hills/HillHero";
 import { FLUID_TYPE, fluidType } from "@/lib/fluid";
 import { onDarkSurface } from "@/lib/surfaces";
 import { cn } from "@/lib/utils";
 
 /**
- * 01 · Hero. Black, with the slow terrain-line background (TerrainLines) in
- * light gray. A black gradient sits over the left side so the copy reads on
- * near-solid black while the terrain shows toward the right; on phones and
- * tablets, where the copy spans the width, the wash is vertical and stronger at the top.
+ * 01 · Hero. The black hill-hero background (HillHeroBackground: the same
+ * animated contour field as the individual hill pages, with its reduced-motion
+ * and Pause motion behaviour), under a black wash from the left (vertical on
+ * phones and tablets) so the copy reads on near-solid black.
  *
- * Copy is the Owner's approved hero text, verbatim; no eyebrow (refinement
- * pass, 2026-11-09): the headline is the first text. Left-aligned, white type,
- * the CMR display weight and tracking (Join and hill heroes).
+ * Headline (Owner direction, 2026-11-09): "The science behind hill repeats?",
+ * as written, wrapping naturally (balanced, no fixed breaks). Subtitle and
+ * intro are the Owner's approved text, verbatim. No eyebrow.
  */
 export function ScienceHero() {
   const heading = fluidType([46, 84, 120], [44, 76, 108]);
@@ -23,8 +23,8 @@ export function ScienceHero() {
       data-slot="science-hero"
       className={cn("relative isolate overflow-hidden bg-primary text-primary-foreground", onDarkSurface)}
     >
+      <HillHeroBackground seed={seedFor("the-science")} />
       <div className="absolute inset-0 -z-10">
-        <TerrainLines className="text-primary-foreground" />
         {/* Readability wash: vertical on phones and tablets (the copy spans the width), from the left from 1024px. */}
         <div
           aria-hidden
@@ -41,9 +41,9 @@ export function ScienceHero() {
         <h1
           id="science-heading"
           style={heading}
-          className={cn(FLUID_TYPE, "max-w-[11ch] font-black tracking-[-0.045em] text-balance")}
+          className={cn(FLUID_TYPE, "max-w-[13ch] font-black tracking-[-0.045em] text-balance")}
         >
-          THE SCIENCE OF GOING NOWHERE.
+          The science behind hill repeats?
         </h1>
         <p className="mt-6 max-w-[30ch] text-[22px] leading-[1.25] font-semibold tracking-[-0.4px] text-balance md:mt-8 md:max-w-[34ch] md:text-[28px] lg:text-[32px]">
           The surprisingly legitimate benefits of running uphill. Repeatedly. In Chicago.

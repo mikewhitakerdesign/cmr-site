@@ -10,7 +10,29 @@ import { onDarkSurface } from "@/lib/surfaces";
 import { cn } from "@/lib/utils";
 
 /** A stable per-hill seed, so each hill gets its own terrain in the background. */
-const seedFor = (slug: string) => [...slug].reduce((n, c) => (n * 31 + c.charCodeAt(0)) % 997, 7) / 13;
+export const seedFor = (slug: string) => [...slug].reduce((n, c) => (n * 31 + c.charCodeAt(0)) % 997, 7) / 13;
+
+/**
+ * The black hill-hero background: slow animated contour lines in grey on black
+ * (ContourField, `--cmr-quiet-edge`). One still frame under reduced motion or
+ * the footer's Pause motion; the static pattern without WebGL2. Shared with The
+ * Science hero (Owner direction, 2026-11-09), so both use this one
+ * implementation. Fills its positioned parent, behind the content.
+ */
+export function HillHeroBackground({ seed }: { seed: number }) {
+  return (
+    <div data-slot="hill-hero-background" className="absolute inset-0 -z-10">
+      <ContourField
+        // Final pass: larger, sparser contours in a lighter grey (neutral 500), still smooth and slow.
+        className="bg-primary text-(--cmr-quiet-edge)"
+        scale={940}
+        levels={4.5}
+        seed={seed}
+        fallback={<TopoPattern className="text-(--cmr-contour-on-dark)" />}
+      />
+    </div>
+  );
+}
 
 /**
  * Hill hero — Figma "Hero / Cricket Hill original photo" 1:6673 (desktop),
@@ -48,16 +70,7 @@ export function HillHero({ hill }: { hill: HillWithPage }) {
         onDarkSurface,
       )}
     >
-      <div className="absolute inset-0 -z-10">
-        <ContourField
-          // Final pass: larger, sparser contours in a lighter grey (neutral 500), still smooth and slow.
-          className="bg-primary text-(--cmr-quiet-edge)"
-          scale={940}
-          levels={4.5}
-          seed={seedFor(hill.slug)}
-          fallback={<TopoPattern className="text-(--cmr-contour-on-dark)" />}
-        />
-      </div>
+      <HillHeroBackground seed={seedFor(hill.slug)} />
 
       <Container className="mt-auto pt-24 pb-14 md:pb-16 lg:pb-20">
         <h1

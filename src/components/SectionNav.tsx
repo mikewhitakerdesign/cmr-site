@@ -19,8 +19,7 @@ export function activeSection(tops: number[], line: number): number {
 export type SectionNavItem = { id: string; label: string };
 
 /**
- * Sticky subsection navigation (FAQ now; the same treatment as The Science's ScienceNav, PR #13,
- * which can adopt this component once it is merged), directly under the site header.
+ * Sticky subsection navigation (the FAQ and The Science, PR #13), directly under the site header.
  *
  * Position: sticky, with `top` set to the bottom edge of the site header's
  * visible bar, measured, not assumed. The header keeps its layout box but
