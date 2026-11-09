@@ -45,37 +45,37 @@ describe("buildFooterNav", () => {
   });
 });
 
-describe("environment configuration reaches the footer and /join", () => {
+describe("environment configuration reaches the footer nav", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.resetModules();
   });
 
   it("renders no social links when unconfigured", async () => {
-    const { default: JoinPage } = await import("@/app/join/page");
     const { footerNav } = await import("@/lib/navigation");
-    render(<JoinPage />);
-    expect(screen.queryByRole("link")).not.toBeInTheDocument();
     expect(footerNav.map((i) => i.label)).toEqual(["Find a Run", "About", "Join the club"]);
   });
 
-  it("renders configured links on /join and in the footer nav", async () => {
+  it("renders configured links in the footer nav", async () => {
     vi.stubEnv("NEXT_PUBLIC_INSTAGRAM_URL", "https://www.instagram.com/cmr");
     vi.stubEnv("NEXT_PUBLIC_STRAVA_URL", "https://www.strava.com/clubs/cmr");
     vi.resetModules();
-    const { default: JoinPage } = await import("@/app/join/page");
     const { footerNav } = await import("@/lib/navigation");
-    render(<JoinPage />);
-    expect(screen.getByRole("link", { name: "Instagram" })).toHaveAttribute("href", "https://www.instagram.com/cmr");
-    expect(screen.getByRole("link", { name: "Strava" })).toHaveAttribute("href", "https://www.strava.com/clubs/cmr");
     expect(footerNav.map((i) => i.label)).toEqual(["Find a Run", "About", "Join the club", "Instagram", "Strava"]);
   });
 
   it("ignores a configured value that isn't a genuine destination", async () => {
     vi.stubEnv("NEXT_PUBLIC_INSTAGRAM_URL", "https://instagram.com/REPLACE_WITH_CMR_INSTAGRAM_HANDLE");
     vi.resetModules();
+    const { footerNav } = await import("@/lib/navigation");
+    expect(footerNav.map((i) => i.label)).not.toContain("Instagram");
+  });
+
+  it("the Join page carries no social links; its only link is the Privacy Policy", async () => {
+    vi.stubEnv("NEXT_PUBLIC_INSTAGRAM_URL", "https://www.instagram.com/cmr");
+    vi.resetModules();
     const { default: JoinPage } = await import("@/app/join/page");
     render(<JoinPage />);
-    expect(screen.queryByRole("link", { name: "Instagram" })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("link").map((a) => a.textContent)).toEqual(["Privacy Policy"]);
   });
 });

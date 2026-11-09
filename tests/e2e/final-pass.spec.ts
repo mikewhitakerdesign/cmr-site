@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { OFFICIAL_RUNS_ON_HOLD } from "../../src/lib/permit-hold";
 
 /** Final MVP refinements: run details, hill pages and the global motion control. */
 const AXE_PATH = require.resolve("axe-core");
@@ -38,6 +39,7 @@ test.describe("run map hover zoom", () => {
 });
 
 test.describe("run details", () => {
+  test.skip(OFFICIAL_RUNS_ON_HOLD, "Run pages are not served while official runs are on hold.");
   for (const slug of ["cricket-mtn-repeats", "horner-hell-repeats"]) {
     test(`${slug}: icons, map, tie-dye circles, no overflow`, async ({ page }, info) => {
       await page.goto(`/calendar/${slug}`);
@@ -151,13 +153,17 @@ test.describe("motion control", () => {
     await page.locator("footer").getByRole("link", { name: "Find a Run" }).click();
     await expect(page).toHaveURL(/\/calendar$/);
     await expect(page.getByRole("button", { name: "Resume motion" })).toBeVisible();
-    expect(await page.locator('[data-slot="weather-art"] .wx-drift').first().evaluate((n) => getComputedStyle(n).animationName)).toBe("none");
+    if (!OFFICIAL_RUNS_ON_HOLD) {
+      expect(await page.locator('[data-slot="weather-art"] .wx-drift').first().evaluate((n) => getComputedStyle(n).animationName)).toBe("none");
+    }
     // reload keeps it paused, before anything animates
     await page.reload();
     await expect(page.locator("html")).toHaveAttribute("data-motion", "off");
     // resume
     await page.getByRole("button", { name: "Resume motion" }).click();
-    expect(await page.locator('[data-slot="weather-art"] .wx-drift').first().evaluate((n) => getComputedStyle(n).animationName)).toBe("wx-drift");
+    if (!OFFICIAL_RUNS_ON_HOLD) {
+      expect(await page.locator('[data-slot="weather-art"] .wx-drift').first().evaluate((n) => getComputedStyle(n).animationName)).toBe("wx-drift");
+    }
     await page.goto("/hills/cricket-hill");
     await expect(field(page)).toHaveAttribute("data-state", "animating");
   });
@@ -168,9 +174,13 @@ test.describe("motion control", () => {
     await expect(page.locator("html")).toHaveAttribute("data-motion", "off");
     const btn = page.getByRole("button", { name: "Resume motion" });
     await btn.scrollIntoViewIfNeeded();
-    expect(await page.locator('[data-slot="weather-art"] .wx-drift').first().evaluate((n) => getComputedStyle(n).animationName)).toBe("none");
+    if (!OFFICIAL_RUNS_ON_HOLD) {
+      expect(await page.locator('[data-slot="weather-art"] .wx-drift').first().evaluate((n) => getComputedStyle(n).animationName)).toBe("none");
+    }
     await btn.click();
-    expect(await page.locator('[data-slot="weather-art"] .wx-drift').first().evaluate((n) => getComputedStyle(n).animationName)).toBe("wx-drift");
+    if (!OFFICIAL_RUNS_ON_HOLD) {
+      expect(await page.locator('[data-slot="weather-art"] .wx-drift').first().evaluate((n) => getComputedStyle(n).animationName)).toBe("wx-drift");
+    }
     await page.reload();
     await expect(page.getByRole("button", { name: "Pause motion" })).toBeVisible();
   });

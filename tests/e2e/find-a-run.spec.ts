@@ -1,4 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
+import { OFFICIAL_RUNS_ON_HOLD } from "../../src/lib/permit-hold";
+
+// The open-state Find a Run experience. While official runs are on hold (src/lib/permit-hold.ts)
+// these checks do not apply; tests/e2e/permit-hold.spec.ts covers the held state instead.
+test.skip(OFFICIAL_RUNS_ON_HOLD, "Official runs are on hold; Find a Run is not served.");
 
 /**
  * Find a Run (/calendar) and run detail pages at 393 / 768 / 1440.

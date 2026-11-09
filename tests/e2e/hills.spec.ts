@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { OFFICIAL_RUNS_ON_HOLD } from "../../src/lib/permit-hold";
 import { measureTextContrast } from "./contrast.mjs";
 
 /**
@@ -319,7 +320,9 @@ test.describe("hill detail pages", () => {
     const f = spec(info.project.name);
     await page.goto("/hills/cricket-hill");
     await page.evaluate(() => document.fonts.ready);
-    for (const sel of ["#about-heading", "#repeats-heading", "#find-heading", "#more-heading", "#runs-heading + ul h3"]) {
+    // "Run it with us": the run title, or the hold notice's heading while official runs are on hold.
+    const runTitle = OFFICIAL_RUNS_ON_HOLD ? "#runs-heading + div h3" : "#runs-heading + ul h3";
+    for (const sel of ["#about-heading", "#repeats-heading", "#find-heading", "#more-heading", runTitle]) {
       expect(parseFloat(await css(page.locator(sel), "font-size")), sel).toBeCloseTo(f.display, 0);
     }
     if (info.project.name === "mobile") return; // 48px can't hold "How tall you need it?" in 345px
@@ -381,6 +384,7 @@ test.describe("hill detail pages", () => {
   });
 
   test("Hill → Run → Hill: the run band links the run, whose page links back", async ({ page }) => {
+    test.skip(OFFICIAL_RUNS_ON_HOLD, "Run pages are not served while official runs are on hold.");
     await page.goto("/hills/cricket-hill");
     await page.getByRole("link", { name: "View run: Cricket Mtn Repeats" }).click();
     await expect(page).toHaveURL(/\/calendar\/cricket-mtn-repeats$/);
@@ -389,6 +393,7 @@ test.describe("hill detail pages", () => {
   });
 
   test("a hill without a CMR run says so", async ({ page }) => {
+    test.skip(OFFICIAL_RUNS_ON_HOLD, "Every hill shows the hold notice while official runs are on hold.");
     await page.goto("/hills/schiller-hill");
     await expect(page.getByRole("heading", { name: "No set weekly run." })).toBeVisible();
   });

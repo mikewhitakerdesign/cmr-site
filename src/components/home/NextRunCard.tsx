@@ -62,6 +62,9 @@ export function NextRunCard({
       className={cn(
         "relative isolate overflow-hidden rounded-lg bg-primary p-6 pb-[30px] text-primary-foreground lg:p-8",
         "shadow-[0_24px_30px_rgba(65,65,65,0.55)]", // Figma drop shadow; not in MWDS
+        // Same footprint as the run card (measured: 245 / – / 244px), so the hero layout does not
+        // shift when the permit-pending hold (src/lib/permit-hold.ts) is lifted.
+        held && "max-md:min-h-[245px] lg:min-h-[244px]",
         className,
       )}
     >
