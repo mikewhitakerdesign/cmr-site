@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 const LOOPS = 1;
 const DIGITS = "0123456789";
 
-type Phase = "settled" | "armed" | "rolling";
+type Phase = "settled" | "armed" | "rolling" | "done";
 
 /** Position (in digit cells) of the final digit in its strip. */
 export const finalIndex = (digit: number) => LOOPS * 10 + digit;
@@ -18,6 +18,18 @@ export const countdownStart = (from: number) => (LOOPS + 1) * 10 + from;
 /** Roll timing (PR #4 final pass: a little slower than the Round 2 1.1–1.6 s). */
 export const rollDuration = (order: number) => 1500 + order * 200;
 export const rollDelay = (order: number) => order * 80;
+
+/** Digits that move: all of them, or (counting down) those that differ from `from`. */
+export function movingDigits(value: string, from?: string): number {
+  const start = from && from.length === value.length ? from : undefined;
+  return [...value].filter((ch, i) => /\d/.test(ch) && (!start || start[i] !== ch)).length;
+}
+
+/** How long a roll takes, start to last digit settled (ms). */
+export const rollTotal = (value: string, from?: string) => {
+  const n = movingDigits(value, from);
+  return n === 0 ? 0 : rollDuration(n - 1) + rollDelay(n - 1);
+};
 
 /**
  * A displayed figure ("132K", "2.5K", "240") whose digits roll vertically,
@@ -35,6 +47,12 @@ export const rollDelay = (order: number) => order * 80;
  *     others stay put. (The club totals' moon distance.)
  *   - `watch="section"`: start when the enclosing <section> comes into view
  *     (25%), so several figures in one section roll together.
+ *   - `after` (a selector within the enclosing <section>): wait until those
+ *     odometers have finished (`data-odometer="done"`, or "settled" if they
+ *     never rolled), and until this one is 40% visible, whichever is later.
+ *     (The moon distance waits for the four club totals.)
+ *   - Phases, on `data-odometer`: settled (static) · armed (parked, waiting) ·
+ *     rolling · done (finished rolling).
  *
  * Only transforms animate, so there is no layout shift: each digit cell is
  * sized by its final digit. Assistive technology gets the final value as text
@@ -46,12 +64,14 @@ export function Odometer({
   srLabel,
   className,
   watch = "self",
+  after,
 }: {
   value: string;
   from?: string;
   srLabel?: string;
   className?: string;
   watch?: "self" | "section";
+  after?: string;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const [phase, setPhase] = useState<Phase>("settled");
@@ -60,26 +80,51 @@ export function Odometer({
     const el = ref.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
-    const target = watch === "section" ? (el.closest("section") ?? el) : el;
+    const section = el.closest("section");
+    const target = watch === "section" ? (section ?? el) : el;
+    const deps = after && section ? [...section.querySelectorAll(after)].filter((d) => d !== el) : [];
+    const depsDone = () => deps.every((d) => ["done", "settled"].includes(d.getAttribute("data-odometer") ?? ""));
     let first = true;
+    let visible = false;
+    let started = false;
+    let mo: MutationObserver | undefined;
+    const tryStart = () => {
+      if (started || !visible || !depsDone()) return;
+      started = true;
+      io.disconnect();
+      mo?.disconnect();
+      setPhase("rolling");
+    };
     const io = new IntersectionObserver(
       ([entry]) => {
         if (first) {
           first = false;
-          if (entry.isIntersecting) io.disconnect(); // visible at load: leave it be
-          else setPhase("armed");
+          if (entry.isIntersecting) return io.disconnect(); // visible at load: leave it be
+          setPhase("armed");
           return;
         }
-        if (entry.isIntersecting) {
-          io.disconnect();
-          setPhase("rolling");
-        }
+        visible = entry.isIntersecting;
+        tryStart();
       },
       { threshold: watch === "section" ? 0.25 : 0.4 },
     );
     io.observe(target);
-    return () => io.disconnect();
-  }, [watch]);
+    if (deps.length > 0 && section) {
+      mo = new MutationObserver(tryStart);
+      mo.observe(section, { subtree: true, attributes: true, attributeFilter: ["data-odometer"] });
+    }
+    return () => {
+      io.disconnect();
+      mo?.disconnect();
+    };
+  }, [watch, after]);
+
+  // Mark the end of the roll, so figures that wait on this one can start.
+  useEffect(() => {
+    if (phase !== "rolling") return;
+    const t = setTimeout(() => setPhase("done"), rollTotal(value, from));
+    return () => clearTimeout(t);
+  }, [phase, value, from]);
 
   // A countdown only makes sense from a value of the same shape.
   const start = from && from.length === value.length ? from : undefined;
@@ -102,6 +147,7 @@ export function Odometer({
           const moves = parked !== finalIndex(digit);
           const order = moves ? digitIndex++ : 0;
           const target = phase === "armed" ? parked : finalIndex(digit);
+          const animated = phase === "rolling" || phase === "done";
           const length = Math.max(parked, finalIndex(digit)) + 1;
           return (
             <span key={i} className="relative block h-[1em] overflow-y-clip">
@@ -111,7 +157,7 @@ export function Odometer({
                 style={{
                   transform: `translateY(-${target}em)`,
                   transition:
-                    phase === "rolling" && moves
+                    animated && moves
                       ? `transform ${rollDuration(order)}ms cubic-bezier(0.16, 1, 0.3, 1) ${rollDelay(order)}ms`
                       : "none",
                 }}

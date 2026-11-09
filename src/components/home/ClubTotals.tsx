@@ -21,9 +21,14 @@ import { cn } from "@/lib/utils";
  *     (Odometer; static under reduced motion)
  *
  *                 circles                      figure   label
- *   mobile 393    2 × 2, ≤162, gap 20 / 24     40       13/18
+ *   mobile 393    2 × 2, ≈172, gap 24 / 24     40       13/18 (no wrap)
  *   tablet 768    4 across, ≤150, gap 24       40       13/18
  *   desktop 1400  4 across, ≤280, gap 32       80       16/24
+ *
+ * PR #4 final refinements (Owner direction, 2026-11-09): on mobile the grid
+ * bleeds 12px into the page margins and the gap is 24 both ways, so the
+ * circles grow (≈ 172 at 393, 191 at 430, 136 at 320; were ≤ 162) and labels
+ * never wrap.
  *
  * Semantics: a description list; each value (<dd>) is shown above its label
  * (<dt>) visually, so assistive tech reads "Vertical climbed: 132K ft".
@@ -37,8 +42,8 @@ export function ClubTotals({ totals }: { totals: ClubTotalsData | null }) {
     "--totals-pt": [56, 64, 136],
     "--totals-pb": [64, 86, 128],
     "--totals-grid-mt": [36, 40, 72],
-    "--totals-gap-x": [20, 24, 32],
-    "--totals-circle": [162, 150, 280],
+    "--totals-gap-x": [24, 24, 32],
+    "--totals-circle": [200, 150, 280],
     "--totals-label-mt": [6, 6, 12],
   });
   // Owner direction (2026-11-08): the "Get high in the city." size (was 32 / 44 / 64).
@@ -60,7 +65,7 @@ export function ClubTotals({ totals }: { totals: ClubTotalsData | null }) {
 
         <dl
           className={cn(
-            "grid grid-cols-2 justify-items-center gap-y-6 md:grid-cols-4",
+            "grid grid-cols-2 justify-items-center gap-y-6 max-md:-mx-3 md:grid-cols-4",
             "mt-(--totals-grid-mt-a) gap-x-(--totals-gap-x-a) md:mt-(--totals-grid-mt-b) md:gap-x-(--totals-gap-x-b)",
           )}
         >
@@ -70,20 +75,24 @@ export function ClubTotals({ totals }: { totals: ClubTotalsData | null }) {
               data-slot="total"
               style={tintVars(i)}
               className={cn(
-                "relative isolate flex aspect-square w-full flex-col items-center justify-center overflow-hidden rounded-full px-[12%] text-center",
+                "relative isolate flex aspect-square w-full flex-col items-center justify-center overflow-hidden rounded-full px-[4%] text-center md:px-[12%]",
                 "max-w-(--totals-circle-a) md:max-w-(--totals-circle-b)",
               )}
             >
               <span aria-hidden className="cmr-tie-dye absolute -z-10" />
               <dt
                 style={label}
-                className={cn(FLUID_TYPE, "order-2 mt-(--totals-label-mt-a) font-medium md:mt-(--totals-label-mt-b)")}
+                className={cn(FLUID_TYPE, "order-2 mt-(--totals-label-mt-a) font-medium whitespace-nowrap md:mt-(--totals-label-mt-b)")}
               >
                 {item.label}
               </dt>
               <dd style={value} className={cn(FLUID_TYPE, "order-1 font-black tracking-[-0.02em] whitespace-nowrap")}>
                 <span className="inline-flex items-end leading-none">
-                  <Odometer watch="section" value={item.value} srLabel={item.unit ? `${item.value} ${item.unit}` : item.value} />
+                  <Odometer
+                    watch="section"
+                    value={item.value}
+                    srLabel={item.unit ? `${item.value} ${item.unit}` : item.value}
+                  />
                   {item.unit && (
                     <span aria-hidden className="mb-[0.12em] ml-[0.04em] text-[0.3em] leading-none tracking-[-0.02em]">
                       {item.unit}
@@ -106,11 +115,14 @@ const feet = (n: number) => n.toLocaleString("en-US");
 /**
  * "We're going to the moon!" — a small editorial aside under the totals (PR #4
  * final pass, Owner direction 2026-11-09). Centred, much smaller than the
- * circles: an outlined rocket and a short heading, then one sentence whose
- * distance is bold and a touch larger. The distance counts down, odometer
- * style, from the full Earth–Moon distance to what's left, starting with the
- * totals when the section comes into view (once per page load; still under
- * reduced motion; assistive tech reads the final figure).
+ * circles: an outlined rocket and a short heading, then one sentence in which
+ * only the number is bold and a touch larger ("feet away" is ordinary text).
+ *
+ * The number counts down, odometer style, from the full Earth–Moon distance
+ * to what's left: a second moment, after the four totals have finished
+ * rolling and once the line itself is on screen (Odometer `after`), so it
+ * never plays unseen. Once per page load; still under reduced motion;
+ * assistive tech reads the final figure.
  */
 function MoonLine({ moon }: { moon: NonNullable<ClubTotalsData["moon"]> }) {
   return (
@@ -122,14 +134,9 @@ function MoonLine({ moon }: { moon: NonNullable<ClubTotalsData["moon"]> }) {
       <p className="mt-2 text-p text-foreground/70 lg:text-p-lg">
         Join the club and help us get there. We&apos;re only{" "}
         <strong className="text-[1.15em] font-bold whitespace-nowrap text-foreground tabular-nums">
-          <Odometer
-            watch="section"
-            value={feet(moon.remainingFt)}
-            from={feet(moon.startFt)}
-          />{" "}
-          feet away
+          <Odometer value={feet(moon.remainingFt)} from={feet(moon.startFt)} after="[data-slot=total] [data-odometer]" />
         </strong>
-        .
+        {" feet away."}
       </p>
     </div>
   );

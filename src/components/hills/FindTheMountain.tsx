@@ -16,8 +16,12 @@ const ACTION = "h-11 gap-2 px-5 text-[16px] leading-6 font-medium";
  * icon, "View map" outlined, the map beside them). Padding 96.
  *
  * Refinement pass (Owner direction, 2026-11-08):
- *   - the heading is the new line, on two lines at the display size, so it
- *     spans the section above the two columns (half a column is too narrow)
+ *   - the heading is the new line, "Find what you've been looking for."
+ *     (PR #4 final refinements, 2026-11-09: it sits in the left column with
+ *     the address, actions and note, opposite the map, which is centred
+ *     vertically against them; three lines on desktop, "Find what / you've
+ *     been / looking for."; natural wrapping on tablet and phones, stacked
+ *     above the map on phones)
  *   - the placeholder is now a real map: a static, greyscale OpenStreetMap
  *     image centred on the place (scripts/assets/build-hill-maps.mjs), with a
  *     pin at the centre and the required attribution. No embed and no map
@@ -35,13 +39,14 @@ export function FindTheMountain({ hill }: { hill: HillWithPage }) {
 
   return (
     <section aria-labelledby="find-heading" className="py-24">
-      <Container className="grid gap-x-12 gap-y-10 md:grid-cols-2 md:items-start">
-        <h2 id="find-heading" style={sectionHeading()} className={cn(FLUID_TYPE, SECTION_HEADING, "md:col-span-2")}>
-          <span className="block">Find what you&apos;ve</span> <span className="block">been looking for.</span>
-        </h2>
-
+      <Container className="grid gap-x-12 gap-y-10 md:grid-cols-2 md:items-center">
         <div>
-          <address className={cn(BODY, "not-italic text-foreground/70")}>
+          {/* Three lines on desktop; natural wrapping below (spaces kept for the accessible name). */}
+          <h2 id="find-heading" style={sectionHeading()} className={cn(FLUID_TYPE, SECTION_HEADING)}>
+            <span className="lg:block">Find what</span> <span className="lg:block">you&apos;ve been</span>{" "}
+            <span className="lg:block">looking for.</span>
+          </h2>
+          <address className={cn(BODY, "pt-6 not-italic text-foreground/70 md:pt-8")}>
             {page.address.map((line) => (
               <span key={line} className="block">
                 {line}

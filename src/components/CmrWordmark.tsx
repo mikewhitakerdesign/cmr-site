@@ -14,11 +14,13 @@ const mask: CSSProperties = {
  * public/brand/cmr-wordmark.svg). Drawn as a mask over the current text color,
  * so it takes the color of its surroundings. Fixed proportions (1858:888).
  */
-export function CmrWordmark({ className }: { className?: string }) {
+export function CmrWordmark({ className, decorative = false }: { className?: string; decorative?: boolean }) {
   return (
     <span
-      role="img"
-      aria-label="Chicago Mountain Runners"
+      // Decorative when its container already carries the name (e.g. a labelled link).
+      role={decorative ? undefined : "img"}
+      aria-label={decorative ? undefined : "Chicago Mountain Runners"}
+      aria-hidden={decorative || undefined}
       data-slot="cmr-wordmark"
       style={mask}
       className={cn("block aspect-[1858/888] bg-current", className)}

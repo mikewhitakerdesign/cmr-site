@@ -184,9 +184,10 @@ export const hills: Hill[] = [
     page: {
       lede: "A park hill in West Ridge that our elevation data hasn't found yet. The sledders seem confident it exists.",
       aboutHeading: "The hill at Warren Park.",
+      // Owner copy (PR #4 final refinements, 2026-11-09), verbatim.
       about: [
-        "Warren Park covers about 89 acres on Western Avenue, with a nine-hole golf course and an ice rink.",
-        "We haven't found the hill in elevation data yet, so this page doesn't give it a height.",
+        "Warren Park covers roughly 89 acres and has a nine-hole golf course and an ice rink. The hill is proving less cooperative.",
+        "At this point, locating it may count as the first repeat.",
       ],
       sources: [CPD("warren-laurence-park", "Chicago Park District: Warren (Laurence) Park")],
       locality: "Chicago",
@@ -230,9 +231,10 @@ export const hills: Hill[] = [
     page: {
       lede: "A forest preserve sledding hill on the city's northwest edge. Modest, as mountains go. That's what repeats are for.",
       aboutHeading: "The hill at Schiller Woods.",
+      // Owner copy (PR #4 final refinements, 2026-11-09), verbatim.
       about: [
-        "Schiller Woods is a Forest Preserves of Cook County site along Irving Park Road. The hill's exact spot in the woods still needs confirming.",
-        "Bring your own sense of scale.",
+        "Schiller Woods sits along Irving Park Road. Somewhere in the vicinity is a hill we intend to run up repeatedly.",
+        "Its exact location remains a closely guarded secret. Apparently, even from us.",
       ],
       // The Forest Preserves pages refused automated reads (2026-11-08), so no source is cited.
       sources: [],

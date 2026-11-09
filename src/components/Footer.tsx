@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackToTopLink } from "@/components/BackToTopLink";
 import { CmrWordmark } from "@/components/CmrWordmark";
 import NewsletterSignup, { type NewsletterSignupProps } from "@/components/NewsletterSignup";
 import { footerNav, legalLinks, riskNotice as defaultRiskNotice, type LegalLink, type NavItem } from "@/lib/navigation";
@@ -71,7 +72,13 @@ export default function Footer({
               )}
             />
           )}
-          <CmrWordmark className="w-full max-w-[640px] md:col-start-2 md:justify-self-end" />
+          {/* PR #4 final refinements: the wordmark takes you back to the top of the page. */}
+          <BackToTopLink
+            label="Chicago Mountain Runners, back to top"
+            className="block w-full max-w-[640px] rounded-xs motion-safe:transition-opacity hover:opacity-80 md:col-start-2 md:justify-self-end"
+          >
+            <CmrWordmark decorative className="w-full" />
+          </BackToTopLink>
         </div>
 
         <div className="mt-14 border-t border-(color:--cmr-quiet-ink)/20 pt-8 md:mt-16 lg:mt-20 lg:flex lg:items-start lg:justify-between lg:gap-16">
