@@ -51,7 +51,8 @@ screen-space derivatives (constant hairline). No dependency, about 3 KB. Directi
 only from the Owner's four reference videos (watched as frame sheets; nothing
 from them is used or loaded). Restraint: ≤ 30 fps, paused off screen and in hidden
 tabs, pixel budget ≈ 2.5 MP; `prefers-reduced-motion: reduce` → one still frame,
-following the setting live; no pointer input (the Round 2 liquid cursor stays
+following the setting live; a software WebGL renderer (SwiftShader / llvmpipe — no
+usable GPU) → the same still frame, so it never burns the CPU every frame; no pointer input (the Round 2 liquid cursor stays
 removed); `aria-hidden`; the lines fade in after the first frame; without WebGL2
 the static `TopoPattern` renders. Colors come from CSS tokens:
 `--cmr-contour-on-dark` (MWDS neutrals 600, #525252) and `--cmr-contour-on-light`
@@ -353,7 +354,10 @@ the park/landmark and say so; runs come only from `src/lib/runs.ts`.
   cadences, hero name words and spacing, breadcrumb after the hero, lede alone,
   TBD circles, More hills, footer, axe.
 - Playwright (393 / 768 / 1440): **224 pass, 10 skipped**. New: contour hero and
-  Flat animate (frames differ) and are one still frame under reduced motion;
+  Flat animate (frames differ — test browsers render WebGL in software, so these
+  tests opt in with a test-only `__CMR_CONTOUR_FORCE_MOTION__` flag), hold one
+  still frame on software WebGL as shipped, and under reduced motion (which wins
+  over the flag);
   grey line colors; text doesn't move; hero name fits 320–1440; headline
   "Mountains" on line 2 at 320–1920; section headings = homepage display size;
   two-line headings from tablet; 2 × 2 quadrant beside the copy; Cricket counts
@@ -371,14 +375,17 @@ the park/landmark and say so; runs come only from `src/lib/runs.ts`.
 ## Delivery
 
 **Refinement pass:** commits `01f2e20` (implementation), `f14b171` (tests and
-baselines), `c91c7ea` (record and evidence), `20587b6` (CI fix). Verified head
-**`20587b6`**: GitHub CI `validate` and `browser` pass (run 42571352930); Vercel
-Preview rebuilt from it (same branch URL below, SSO-protected). The first run on
-`c91c7ea` (42570866595) failed one test: the homepage photo-text contrast sweep
-hit the 30s timeout on the Linux runner while the software-rendered contour
-animation ran; the sweep now holds the background still (reduced motion) and
-thresholds are unchanged. PR #4 description updated. Not merged; no production
-deployment.
+baselines), `c91c7ea` (record and evidence), `20587b6` (contrast-sweep fix),
+`ede9a00` (record), then the software-renderer change (see the commit after
+`ede9a00`; the verified head and CI run are given in the PR thread and the final
+report). CI history: run 42570866595 (`c91c7ea`) failed the homepage
+photo-text contrast sweep (30s timeout); run 42571352930 (`20587b6`) passed; run
+42571799005 (`ede9a00`, record-only) failed the hill hero contrast test the same
+way. Cause, both times: on the GPU-less Linux runner Chromium renders WebGL in
+software, and the full-size contour animation starved screenshot-heavy tests.
+Fix in the component (not only the tests): software renderers get the still
+frame, which is also right for real visitors without a usable GPU. Thresholds
+unchanged. PR #4 description updated. Not merged; no production deployment.
 
 Milestone delivery (history):
 

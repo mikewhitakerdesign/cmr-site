@@ -552,6 +552,7 @@ test.describe("Round 2 interactions", () => {
     const field = flat(reduced).locator("[data-slot=contour-field]");
     await field.scrollIntoViewIfNeeded();
     await expect(field).toHaveAttribute("data-state", "still");
+    await expect(field).toHaveAttribute("data-still", "reduced-motion");
     const a = await field.locator("canvas").screenshot();
     await reduced.waitForTimeout(1000);
     expect(Buffer.compare(a, await field.locator("canvas").screenshot())).toBe(0);
@@ -604,6 +605,9 @@ test.describe("Round 2 interactions", () => {
   });
 
   test("the topography moves on its own in grey; the pointer and the statement don't move it (refinement pass)", async ({ page }) => {
+    // Tests run on software WebGL, where ContourField holds still by design: force the animation on.
+    await page.addInitScript(() => Object.assign(window, { __CMR_CONTOUR_FORCE_MOTION__: true }));
+    await page.reload();
     const field = flat(page).locator("[data-slot=contour-field]");
     await flat(page).scrollIntoViewIfNeeded();
     await expect(field).toHaveAttribute("data-state", "animating");

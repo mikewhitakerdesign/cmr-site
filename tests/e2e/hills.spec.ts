@@ -45,6 +45,11 @@ async function loadAll(page: Page) {
   });
 }
 
+/** Wait for CSS transitions on an element (the contour canvas fades in). */
+const settled = (l: Locator) => l.evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
+/** Browser tests run on software WebGL, where ContourField holds still by design; this opts a page into the animation. */
+const forceMotion = (p: Page) => p.addInitScript(() => Object.assign(window, { __CMR_CONTOUR_FORCE_MOTION__: true }));
+
 const overflowX = (page: Page) => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 
 test.beforeEach(async ({ page }) => {
@@ -214,22 +219,40 @@ test.describe("hill detail pages", () => {
     }
   });
 
-  test("hero background: animated contour lines, still under reduced motion", async ({ browser, page }) => {
+  test("hero background: animated contour lines, still under reduced motion or software WebGL", async ({ browser, page }) => {
+    // As shipped, on this (software) renderer: one still frame.
     await page.goto("/hills/horner-hill");
     const field = page.locator("section[aria-labelledby=hill-heading] [data-slot=contour-field]");
-    await expect(field).toHaveAttribute("data-state", "animating");
+    await expect(field).not.toHaveAttribute("data-state", "pending");
     await expect(field).toHaveAttribute("aria-hidden", "true");
     const canvas = field.locator("canvas");
-    const a = await canvas.screenshot();
-    await page.waitForTimeout(1500);
-    expect(Buffer.compare(a, await canvas.screenshot()), "the lines move").not.toBe(0);
+    if ((await field.getAttribute("data-still")) === "software") {
+      await settled(canvas);
+      const s1 = await canvas.screenshot();
+      await page.waitForTimeout(1000);
+      expect(Buffer.compare(s1, await canvas.screenshot()), "software WebGL: one still frame").toBe(0);
+    }
     // Grey lines (MWDS neutrals 600), not white.
     expect(await css(canvas, "color")).toBe("rgb(82, 82, 82)");
 
+    // The animation itself (forced on, as a GPU would run it).
+    const moving = await browser.newPage({ viewport: page.viewportSize()! });
+    await forceMotion(moving);
+    await moving.goto("/hills/horner-hill");
+    const mField = moving.locator("section[aria-labelledby=hill-heading] [data-slot=contour-field]");
+    await expect(mField).toHaveAttribute("data-state", "animating");
+    const a = await mField.locator("canvas").screenshot();
+    await moving.waitForTimeout(1500);
+    expect(Buffer.compare(a, await mField.locator("canvas").screenshot()), "the lines move").not.toBe(0);
+    await moving.close();
+
+    // Reduced motion wins, even when forced.
     const reduced = await browser.newPage({ reducedMotion: "reduce", viewport: page.viewportSize()! });
+    await forceMotion(reduced);
     await reduced.goto("/hills/horner-hill");
     const still = reduced.locator("section[aria-labelledby=hill-heading] [data-slot=contour-field]");
     await expect(still).toHaveAttribute("data-state", "still");
+    await expect(still).toHaveAttribute("data-still", "reduced-motion");
     const s1 = await still.locator("canvas").screenshot();
     await reduced.waitForTimeout(1000);
     expect(Buffer.compare(s1, await still.locator("canvas").screenshot()), "reduced motion: one still frame").toBe(0);
