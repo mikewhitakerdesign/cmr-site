@@ -42,12 +42,20 @@ describe("hill page refinements", () => {
     }
   });
 
-  it("applies the tie-dye word once, to 'hills' in the More hills heading, keeping the heading text", () => {
+  it("applies the tie-dye word to 'hill' or 'mountain' in each About heading, and not to More hills", () => {
+    for (const h of hillsWithPages()) {
+      const { container, unmount } = render(<HillAbout hill={h} />);
+      const heading = screen.getByRole("heading", { level: 2 });
+      expect(heading).toHaveTextContent(h.page.aboutHeading);
+      const words = heading.querySelectorAll(".cmr-tie-dye-text");
+      expect(words, h.slug).toHaveLength(1);
+      expect(words[0].textContent).toMatch(/^(hill|mountain)$/i);
+      unmount();
+      void container;
+    }
     const { container } = render(<MoreHills hills={hillsWithPages().slice(1)} />);
     expect(screen.getByRole("heading", { level: 2, name: "More hills on repeat." })).toBeInTheDocument();
-    const words = container.querySelectorAll(".cmr-tie-dye-text");
-    expect(words).toHaveLength(1);
-    expect(words[0]).toHaveTextContent("hills");
+    expect(container.querySelector(".cmr-tie-dye-text")).toBeNull();
   });
 
   it("TieDyeWord is a plain span", () => {

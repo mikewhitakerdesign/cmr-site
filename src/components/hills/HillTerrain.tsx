@@ -4,6 +4,7 @@ import { BODY, EYEBROW, SECTION_HEADING, sectionHeading } from "@/components/hil
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
 import { BODY_TEXT_COLOR } from "@/lib/headings";
 import { REPEAT_TARGETS_FT, formatMiles, routeCounts, type HillWithPage } from "@/lib/hills";
+import { TieDyeWord } from "@/components/TieDyeWord";
 import { HillContourArt } from "@/components/hills/HillContourArt";
 import { grayTintVars, tintVars } from "@/lib/tints";
 import { cn } from "@/lib/utils";
@@ -36,7 +37,8 @@ export function HillAbout({ hill }: { hill: HillWithPage }) {
     <section aria-labelledby="about-heading" className="py-24">
       <Container className="grid gap-x-16 gap-y-8 md:grid-cols-2 md:grid-rows-[auto_1fr]">
         <h2 id="about-heading" style={sectionHeading()} className={cn(FLUID_TYPE, SECTION_HEADING, "md:col-start-1 md:row-start-1")}>
-          {page.aboutHeading}
+          {/* The word "hill" or "mountain" gets the tie-dye fill; the heading text is unchanged. */}
+          {page.aboutHeading.split(/\b(hill|mountain)\b/i).map((part, i) => (i % 2 === 1 ? <TieDyeWord key={i}>{part}</TieDyeWord> : part))}
         </h2>
         <div className="md:col-start-1 md:row-start-2">
           <div className={cn(BODY, BODY_TEXT_COLOR, "max-w-[448px] space-y-5")}>

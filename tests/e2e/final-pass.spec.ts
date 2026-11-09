@@ -84,13 +84,16 @@ test.describe("hill pages", () => {
     expect(await axe(page)).toEqual([]);
   });
 
-  test("the third hill/mountain heading carries the tie-dye word", async ({ page }) => {
+  test("the word 'hill' in the About heading carries the tie-dye; More hills does not", async ({ page }) => {
     await page.goto("/hills/cricket-hill");
-    const word = page.locator(".cmr-tie-dye-text");
+    const word = page.locator("#about-heading .cmr-tie-dye-text");
     await expect(word).toHaveCount(1);
-    await expect(word).toHaveText("hills");
-    await expect(page.locator("#more-heading")).toHaveText("More hills on repeat.");
+    await expect(word).toHaveText("hill");
+    await expect(page.locator("#about-heading")).toHaveText("The hill at Montrose.");
+    await expect(page.locator("#more-heading .cmr-tie-dye-text")).toHaveCount(0);
     expect(await word.evaluate((e) => getComputedStyle(e).webkitTextStrokeWidth)).not.toBe("0px");
+    await page.goto("/hills/mt-trashmore");
+    await expect(page.locator("#about-heading .cmr-tie-dye-text")).toHaveText("hill");
   });
 
   test("the hero shows a calm, sparse contour field", async ({ page }) => {

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowLink } from "@/components/ArrowLink";
 import { Container } from "@/components/Container";
-import { TieDyeWord } from "@/components/TieDyeWord";
 import { ArrowUpRightIcon } from "@/components/icons";
 import { SECTION_HEADING, sectionHeading } from "@/components/hills/styles";
 import { FLUID_TYPE, fluidType } from "@/lib/fluid";
@@ -28,7 +27,7 @@ export function MoreHills({ hills }: { hills: HillWithPage[] }) {
       <Container>
         <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4 pb-10 md:pb-14">
           <h2 id="more-heading" style={sectionHeading()} className={cn(FLUID_TYPE, SECTION_HEADING)}>
-            More <TieDyeWord>hills</TieDyeWord> on repeat.
+            More hills on repeat.
           </h2>
           <ArrowLink href="/hills" className="text-p">
             All hills
