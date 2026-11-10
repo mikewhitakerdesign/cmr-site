@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Container } from "@/components/Container";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
 import { onDarkSurface } from "@/lib/surfaces";
@@ -20,16 +19,11 @@ function Signature() {
 
 const EMAIL = "michael@whitaker.design";
 
-/** Circular photo: no stroke, the site's subtle map-image shadow (still visible on black as a soft edge). */
-const photo = "relative aspect-square w-full overflow-hidden rounded-full shadow-[0_8px_14px_rgba(65,65,65,0.28)]";
-const caption = "mt-4 text-[13px] leading-[18px] text-primary-foreground/70 md:text-[14px] md:leading-5";
-
 /**
  * "From mountains to molehills." — the extended full-width black founder
- * section (Figma About 02, 1:5433). Two authentic, unedited photographs are
- * cropped to equal, separate circles with captions (stacked at lg and up,
- * side by side below). The top padding leaves room for the hero circles that
- * overlap this section.
+ * section (Figma About 02, 1:5433): the heading on the left and the story in a
+ * generous right column from lg, stacked below. The top padding leaves room for
+ * the hero circles that overlap this section. Photographs live in Members.
  */
 export function FounderStory() {
   const layout = fluidVars({
@@ -45,39 +39,16 @@ export function FounderStory() {
       style={layout}
       className={cn("bg-primary text-primary-foreground pt-(--founder-pt-a) pb-(--founder-py-a) md:pt-(--founder-pt-b) md:pb-(--founder-py-b)", onDarkSurface)}
     >
-      <Container className="grid items-start gap-14 lg:grid-cols-[5fr_7fr] lg:gap-16">
-        <div className="order-2 mx-auto grid w-full max-w-[560px] grid-cols-2 items-start gap-6 md:gap-10 lg:order-1 lg:mx-0 lg:max-w-[300px] lg:grid-cols-1 lg:gap-14 lg:pt-6">
-          <figure>
-            <div className={photo}>
-              <Image
-                src="/about/founder-climbing.jpg"
-                alt="Michael Whitaker smiling in a blue helmet and green jacket, roped up on a snowy mountain ridge."
-                fill
-                sizes="(min-width: 1024px) 300px, 40vw"
-                className="object-cover object-[12%_40%]"
-              />
-            </div>
-            <figcaption className={caption}>North Face Headwall, Mt. Athabasca - 2018</figcaption>
-          </figure>
-          <figure>
-            <div className={photo}>
-              <Image
-                src="/about/founder-ultra.jpg"
-                alt="Michael Whitaker at a night ultramarathon aid station, smiling and holding a decorated storage bin that reads “We love you”."
-                fill
-                sizes="(min-width: 1024px) 300px, 40vw"
-                className="object-cover object-[50%_22%]"
-              />
-            </div>
-            <figcaption className={caption}>Mohican 100 Mile Trail Run - 2026</figcaption>
-          </figure>
-        </div>
-
-        <div className="order-1 lg:order-2 lg:pt-6">
-          <h2 id="founder-heading" style={heading} className={cn(FLUID_TYPE, "font-black tracking-[-0.04em] text-balance ss08")}>
-            From mountains to molehills.
-          </h2>
-          <div style={body} className={cn(FLUID_TYPE, "mt-8 max-w-[640px] space-y-6 font-medium text-primary-foreground/90 md:mt-10")}>
+      <Container className="grid items-start gap-8 md:gap-10 lg:grid-cols-[5fr_7fr] lg:gap-16">
+        <h2
+          id="founder-heading"
+          style={heading}
+          className={cn(FLUID_TYPE, "font-black tracking-[-0.04em] text-balance ss08 lg:col-start-1 lg:row-start-1 lg:pt-6")}
+        >
+          From mountains to molehills.
+        </h2>
+        <div className="lg:col-start-2 lg:row-start-1 lg:pt-6">
+          <div style={body} className={cn(FLUID_TYPE, "max-w-[640px] space-y-6 font-medium text-primary-foreground/90")}>
             <p>
               I&apos;ve spent a good part of my life finding ways to go uphill. It started with endurance sports and
               eventually led to ice climbing, mountaineering, and several years climbing in the Cascades and Canadian
