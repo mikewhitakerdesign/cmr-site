@@ -51,7 +51,7 @@ export function ChicagoHills({ hills }: { hills: Hill[] }) {
       >
         Get high in the city.
       </h2>
-      <p style={copy} className={cn(FLUID_TYPE, BODY_TEXT_COLOR, "mt-6 font-medium ss08 lg:max-w-[474px]")}>
+      <p style={copy} className={cn(FLUID_TYPE, BODY_TEXT_COLOR, "mt-6 font-normal ss08 lg:max-w-[474px]")}>
         You don&apos;t need mountains to train for mountains. These are the hills, sledding slopes and
         questionable pieces of landfill elevation we run repeatedly around Chicago.
       </p>

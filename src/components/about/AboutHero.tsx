@@ -1,6 +1,6 @@
 import { HeroCircles } from "@/components/about/HeroCircles";
 import { Container } from "@/components/Container";
-import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
+import { FLUID_TYPE, fluidVars } from "@/lib/fluid";
 import { BODY_TEXT_COLOR, pageH1 } from "@/lib/headings";
 import { cn } from "@/lib/utils";
 
@@ -22,7 +22,6 @@ export function AboutHero() {
     "--about-copy-mt": [28, 32, 40],
   });
   const heading = pageH1();
-  const copy = fluidType([16, 18, 18], [24, 27, 27]);
 
   return (
     <section
@@ -38,10 +37,7 @@ export function AboutHero() {
         >
           A running group hunting elevation where there shouldn’t be any.
         </h1>
-        <p
-          style={copy}
-          className={cn(FLUID_TYPE, BODY_TEXT_COLOR, "mt-(--about-copy-mt-a) max-w-[587px] font-medium ss08 md:mt-(--about-copy-mt-b)")}
-        >
+        <p className={cn("mt-(--about-copy-mt-a) max-w-[560px] text-[18px] leading-[27px] font-normal md:mt-(--about-copy-mt-b)", BODY_TEXT_COLOR)}>
           Chicago Mountain Runners is an independent, open running group built around a simple idea: the city is flat,
           so we make our own mountains. We meet at local (trash) hills, sledding slopes and overlooked pieces of
           elevation and run them until they add up to something.

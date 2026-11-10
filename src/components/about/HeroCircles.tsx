@@ -3,8 +3,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * The four About-hero circles: equal diameters, the homepage club-totals
- * tie-dye fills (`@/lib/tints` + `cmr-tie-dye`, one tint each), the site's
- * map-image drop shadow.
+ * tie-dye fills (`@/lib/tints` + `cmr-tie-dye`, one tint each), no shadow.
  *
  * Layout is CSS grid. From `lg` the four sit in one evenly spaced row; below
  * it they form a 2 × 2 grid. Each circle fills its grid cell (the track is
@@ -31,8 +30,6 @@ export function HeroCircles({ circles }: { circles: string[] }) {
           <div
             className={cn(
               "about-float relative isolate flex aspect-square w-full items-center justify-center overflow-hidden rounded-full px-[12%] text-center",
-              // Same drop shadow as the site's map images (RunMap, FindTheMountain).
-              "shadow-[0_8px_14px_rgba(65,65,65,0.28)]",
               "text-[14px] leading-[1.15] font-extrabold text-balance md:text-[20px] lg:text-[17px] xl:text-[22px]",
             )}
           >

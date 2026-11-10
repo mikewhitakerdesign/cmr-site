@@ -111,3 +111,12 @@ test("/hills heading holds two lines on large screens; /calendar drops the two c
   await expect(page.getByRole("heading", { name: /Know your mountain|Stay for the people/ })).toHaveCount(0);
   expect(await noHScroll(page)).toBe(true);
 });
+
+test("About: circles have no shadow; the card keeps its own; hero paragraph is 18/27 regular", async ({ page }) => {
+  await page.goto("/about");
+  const shadows = await page.locator("section[aria-labelledby=about-heading] ul > li > div").evaluateAll((els) => els.map((e) => getComputedStyle(e).boxShadow));
+  expect(shadows).toEqual(["none", "none", "none", "none"]);
+  expect(await page.locator("[data-slot=hills-card]").evaluate((e) => getComputedStyle(e).boxShadow)).not.toBe("none");
+  const p = page.locator("#about-heading ~ p");
+  expect(await p.evaluate((e) => { const s = getComputedStyle(e); return [s.fontWeight, s.fontSize, s.lineHeight].join(" "); })).toBe("400 18px 27px");
+});

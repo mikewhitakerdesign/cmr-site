@@ -27,7 +27,7 @@ function Signature() {
  * "From mountains to molehills." — the extended full-width black founder
  * section (Figma About 02, 1:5433): the heading on the left and the story in a
  * generous right column from lg, stacked below. The top padding leaves room for
- * the hero circles that overlap this section. The founder avatar sits beside the signature.
+ * the hero circles that overlap this section. 
  */
 export function FounderStory() {
   const layout = fluidVars({
@@ -52,7 +52,7 @@ export function FounderStory() {
           From mountains to molehills.
         </h2>
         <div className="lg:col-start-2 lg:row-start-1 lg:pt-6">
-          <div style={body} className={cn(FLUID_TYPE, "max-w-[640px] space-y-6 font-medium text-primary-foreground/90")}>
+          <div style={body} className={cn(FLUID_TYPE, "max-w-[640px] space-y-6 font-normal text-primary-foreground/90")}>
             <p>
               I&apos;ve spent a good part of my life finding ways to go uphill. It started with endurance sports and
               eventually led to ice climbing, mountaineering, and several years climbing in the Cascades and Canadian
@@ -73,21 +73,11 @@ export function FounderStory() {
               better at it, or are simply curious about how far a little elevation can go.
             </p>
           </div>
-          <div className="mt-10 flex items-stretch gap-4 text-[18px] leading-[27px] md:mt-12 md:gap-6">
-            <Image
-              src="/about/founder-avatar.png"
-              alt="Michael Whitaker, wearing a Ciele cap and sunglasses."
-              width={500}
-              height={500}
-              sizes="(min-width: 768px) 176px, 128px"
-              className="aspect-square h-auto w-32 shrink-0 self-start rounded-full object-cover md:w-44"
-            />
-            <div className="min-w-0 self-center">
-              <Signature />
-              <p className="mt-3 font-bold">Michael Whitaker</p>
-              <p className="text-primary-foreground/90">Founder &amp; Director</p>
-              <p className="text-primary-foreground/90">Chicago Mountain Runners</p>
-            </div>
+          <div className="mt-10 text-[18px] leading-[27px] md:mt-12">
+            <Signature />
+            <p className="mt-3 font-bold">Michael Whitaker</p>
+            <p className="text-primary-foreground/90">Founder &amp; Director</p>
+            <p className="text-primary-foreground/90">Chicago Mountain Runners</p>
           </div>
         </div>
       </Container>

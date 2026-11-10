@@ -86,7 +86,7 @@ export function JustShowUp({ held = OFFICIAL_RUNS_ON_HOLD }: { held?: boolean })
             FLUID_TYPE,
             // Tablet measure 540, not Figma's 550: Figma's text renders ~1% wider and breaks
             // before "ritual."; at 550 the browser fits it, which moves the CTAs up a line.
-            "mt-(--jsu-copy-mt-a) font-medium text-primary-foreground/90 md:mt-(--jsu-copy-mt-b) md:max-w-[540px] lg:max-w-[630px]",
+            "mt-(--jsu-copy-mt-a) font-normal text-primary-foreground/90 md:mt-(--jsu-copy-mt-b) md:max-w-[540px] lg:max-w-[630px]",
           )}
         >
           {held

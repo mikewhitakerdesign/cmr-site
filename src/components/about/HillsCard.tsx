@@ -45,7 +45,7 @@ export function HillsCard() {
               >
                 Hills on hills on hills.
               </h2>
-              <p className={cn("mt-6 max-w-[480px] text-[16px] leading-6 font-medium md:text-[18px] md:leading-[27px]", BODY_TEXT_COLOR)}>
+              <p className={cn("mt-6 max-w-[480px] text-[18px] leading-[27px] font-normal", BODY_TEXT_COLOR)}>
                 Small hills. Repeated climbs. More elevation than you&apos;d expect. Explore the places we run around Chicago.
               </p>
               <ArrowLink href="/hills" className="mt-8 text-p">
