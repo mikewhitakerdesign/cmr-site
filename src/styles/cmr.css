@@ -12,13 +12,29 @@
 
 :root {
   /*
-   * Quiet neutrals (aliases of MWDS brand neutrals) — the Round 2 footer.
+   * Quiet neutrals (from MWDS brand neutrals) — the footer.
    *   surface   neutrals 100  #f5f5f5  = MWDS `muted`
-   *   ink       neutrals 700  #404040  9.4:1 on surface (text, logo, input text)
+   *   ink       80% neutrals 500 + 20% neutrals 600 ≈ #6c6c6c, 4.8:1 on surface
+   *             (text, wordmark, input text). PR #4 final pass (Owner direction,
+   *             2026-11-09): "a couple shades lighter … only barely accessible";
+   *             it was neutrals 700, #404040, 9.4:1. Neutrals 500 alone would be
+   *             4.4:1, under AA, hence the mix.
    *   edge      neutrals 500  #737373  4.4:1 on surface (input border; ≥ 3:1 for UI)
    */
-  --cmr-quiet-ink: var(--mwd-brand-brand-neutrals-700);
+  --cmr-quiet-ink: color-mix(in srgb, var(--mwd-brand-brand-neutrals-500) 80%, var(--mwd-brand-brand-neutrals-600));
   --cmr-quiet-edge: var(--mwd-brand-brand-neutrals-500);
+
+  /*
+   * Contour lines (Chicago Hills refinement pass, Owner direction 2026-11-08:
+   * "gray lines instead of white / black"). Aliases of MWDS brand neutrals,
+   * read by ContourField as the line color.
+   *   on-dark   neutrals 600  #525252 on black (hill heroes): faint, and white
+   *             type crossing a line still measures 7.8:1
+   *   on-light  neutrals 300  #d4d4d4 on white ("Flat is a state of mind"):
+   *             black type crossing a line still measures 15:1
+   */
+  --cmr-contour-on-dark: var(--mwd-brand-brand-neutrals-600);
+  --cmr-contour-on-light: var(--mwd-brand-brand-neutrals-300);
 
   /*
    * Pastel tints (Round 2, Owner direction 2026-11-08): very pale mint, peach,
@@ -35,6 +51,12 @@
   --cmr-tint-lavender-dye: #e8e0ff;
   --cmr-tint-blue-wash: #f2f8ff;
   --cmr-tint-blue-dye: #dbeafe;
+  /* Autumn weather art (Find a Run): a pale mauve beside the peach. Black text on it is >= 17:1. */
+  --cmr-tint-mauve-wash: #fbf3f7;
+  --cmr-tint-mauve-dye: #f1dce8;
+  /* Neutral tie-dye for the hill cards' "TBD" circles: black text on it is >= 16:1. */
+  --cmr-tint-gray-wash: #fafafa;
+  --cmr-tint-gray-dye: #e9e9e9;
 }
 
 @layer base {
@@ -65,4 +87,127 @@
     repeating-conic-gradient(from 18deg at 46% 54%, var(--tie-wash) 0deg 14deg, var(--tie-dye) 24deg 28deg, var(--tie-wash) 38deg 45deg),
     var(--tie-wash);
   filter: blur(10px);
+}
+
+/*
+ * Weather art motion (Find a Run). CSS only, transform and opacity only, and
+ * nothing moves unless the visitor allows motion. Each class is one small
+ * element in the weather glyph (src/components/weather/WeatherGlyph.tsx).
+ * Nothing flashes: lightning is a still bolt. They run only under
+ * `html[data-motion="on"]` (src/lib/motion.ts: the footer control, or the
+ * system reduced-motion setting when no choice was made).
+ */
+@keyframes wx-drift {
+  from { transform: translateX(-2.5px); }
+  to { transform: translateX(2.5px); }
+}
+
+@keyframes wx-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes wx-fall {
+  0% { transform: translateY(-3px); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(6px); opacity: 0; }
+}
+
+@keyframes wx-sway {
+  0% { transform: translate(-1.5px, -3px); opacity: 0; }
+  20% { opacity: 1; }
+  50% { transform: translate(1.5px, 1px); }
+  100% { transform: translate(-1px, 6px); opacity: 0; }
+}
+
+@keyframes wx-gust {
+  0% { transform: translateX(-3px); opacity: 0.35; }
+  50% { opacity: 1; }
+  100% { transform: translateX(4px); opacity: 0.35; }
+}
+
+html[data-motion="on"] .wx-drift { animation: wx-drift 5s ease-in-out infinite alternate; }
+html[data-motion="on"] .wx-drift-slow { animation: wx-drift 8s ease-in-out infinite alternate-reverse; }
+html[data-motion="on"] .wx-rays { transform-origin: 32px 32px; animation: wx-spin 60s linear infinite; }
+html[data-motion="on"] .wx-fall { animation: wx-fall 1.6s ease-in infinite; }
+html[data-motion="on"] .wx-sway { animation: wx-sway 3.2s ease-in-out infinite; }
+html[data-motion="on"] .wx-gust { animation: wx-gust 3s ease-in-out infinite alternate; }
+
+/*
+ * Run map hover zoom (Map & Weather Card Refinement). The map image only: the
+ * pin, the attribution and the weather card are siblings and never scale. Runs
+ * only under `html[data-motion="on"]` (the footer control / system reduced
+ * motion), on devices that really hover. 1.05 of an overflow-hidden frame, so
+ * there are no blank edges.
+ */
+@media (hover: hover) {
+  html[data-motion="on"] .run-map-img { transition: transform 450ms cubic-bezier(0.22, 1, 0.36, 1); }
+  html[data-motion="on"] [data-slot="run-map"]:hover .run-map-img { transform: scale(1.05); }
+}
+
+/*
+ * Pages with a sticky section bar under the site header: the FAQ and The
+ * Science (/the-science). Anchors, fragment URLs and keyboard focus must clear
+ * the sticky site header and the bar under it (49px: 48px row + 1px rule), so
+ * these pages' scroll padding includes both. Sized to the tallest header state
+ * after a jump at each width: on phones the header's top row can come back when
+ * jumping upward (64 + 1 + 48 + 1 = 114px); from tablet up the header is compact
+ * once scrolled (bar ≈ 71px tablet, 74px desktop). The extra is breathing room.
+ * Section links glide unless the system asks for reduced motion (navigation,
+ * not decoration).
+ */
+:root:has([data-slot="faq-nav"]),
+:root:has([data-slot="science-nav"]) {
+  scroll-padding-top: calc(114px + 49px + 20px);
+}
+@media (min-width: 768px) {
+  :root:has([data-slot="faq-nav"]),
+  :root:has([data-slot="science-nav"]) {
+    scroll-padding-top: calc(72px + 49px + 28px);
+  }
+}
+@media (min-width: 1024px) {
+  :root:has([data-slot="faq-nav"]),
+  :root:has([data-slot="science-nav"]) {
+    scroll-padding-top: calc(75px + 49px + 36px);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  :root:has([data-slot="faq-nav"]),
+  :root:has([data-slot="science-nav"]) {
+    scroll-behavior: smooth;
+  }
+}
+
+/*
+ * The Science: alternating black and white sections (Owner direction,
+ * 2026-11-09). The theme is `@theme inline`, so utilities read these
+ * variables directly; redefining them on a section inverts everything inside
+ * it (text, rules, focus ring, filled buttons) with no per-component changes.
+ * Figure frames sit on a light tie-dye, so they restore the light values.
+ *   text        white on black: 21:1
+ *   muted       neutrals 400 #a3a3a3 on black: 8.6:1
+ */
+.science-dark {
+  --background: var(--mwd-color-general-primary);
+  --foreground: var(--mwd-color-general-primary-foreground);
+  --primary: var(--mwd-color-general-primary-foreground);
+  --primary-foreground: var(--mwd-color-general-primary);
+  --primary-hover: var(--mwd-brand-brand-neutrals-200);
+  --muted: var(--mwd-brand-brand-neutrals-900);
+  --muted-foreground: var(--mwd-brand-brand-neutrals-400);
+  --border: var(--mwd-brand-brand-neutrals-700);
+  --ring: var(--mwd-color-general-primary-foreground);
+  --focus-offset: var(--mwd-color-general-primary);
+}
+.science-light {
+  --background: var(--mwd-color-general-background);
+  --foreground: var(--mwd-color-general-foreground);
+  --primary: var(--mwd-color-general-primary);
+  --primary-foreground: var(--mwd-color-general-primary-foreground);
+  --primary-hover: var(--mwd-color-unofficial-primary-hover);
+  --muted: var(--mwd-color-general-muted);
+  --muted-foreground: var(--mwd-color-general-muted-foreground);
+  --border: var(--mwd-color-general-border);
+  --ring: var(--mwd-color-focus-ring);
+  --focus-offset: var(--cmr-tint-gray-wash);
 }

@@ -1,6 +1,8 @@
 import { ArrowLink } from "@/components/ArrowLink";
 import { ClockIcon, MapPinIcon } from "@/components/icons";
+import { TopoPattern } from "@/components/home/TopoPattern";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
+import { OFFICIAL_RUNS_ON_HOLD, PERMIT_HOLD_COPY } from "@/lib/permit-hold";
 import type { RunOccurrence } from "@/lib/runs";
 import { formatSlot, toDateTimeAttr } from "@/lib/schedule";
 import { cn } from "@/lib/utils";
@@ -25,8 +27,25 @@ import { cn } from "@/lib/utils";
  *
  * Round 2 (Owner direction, 2026-11-08): no visible "sample" badge. The run's
  * content status stays in the data and on the card as `data-status`.
+ *
+ * PR #4 final refinements (Owner direction, 2026-11-09): the 8px radius at
+ * every size, and a very quiet static contour pattern inside the card (the
+ * site's vector TopoPattern, `--cmr-contour-on-dark` at 45%: ≈ #262626 on
+ * black). White text crossing a line still measures > 15:1. No canvas.
  */
-export function NextRunCard({ next, now, className }: { next: RunOccurrence | null; now: Date; className?: string }) {
+export function NextRunCard({
+  next: nextRun,
+  now,
+  className,
+  held = OFFICIAL_RUNS_ON_HOLD,
+}: {
+  next: RunOccurrence | null;
+  now: Date;
+  className?: string;
+  /** Permit-pending hold (src/lib/permit-hold.ts): shows the hold notice and never a run. */
+  held?: boolean;
+}) {
+  const next = held ? null : nextRun;
   const title = fluidType([26, 30, 30], [32, 32, 30]);
   const space = fluidVars({
     "--card-title-mt": [9, 9, 12],
@@ -41,19 +60,23 @@ export function NextRunCard({ next, now, className }: { next: RunOccurrence | nu
       data-status={next?.run.status}
       style={space}
       className={cn(
-        "bg-primary p-6 pb-[30px] text-primary-foreground lg:rounded-lg lg:p-8",
+        "relative isolate overflow-hidden rounded-lg bg-primary p-6 pb-[30px] text-primary-foreground lg:p-8",
         "shadow-[0_24px_30px_rgba(65,65,65,0.55)]", // Figma drop shadow; not in MWDS
+        // Same footprint as the run card (measured: 245 / – / 244px), so the hero layout does not
+        // shift when the permit-pending hold (src/lib/permit-hold.ts) is lifted.
+        held && "max-md:min-h-[245px] lg:min-h-[244px]",
         className,
       )}
     >
-      <p className="text-caption uppercase">Next run</p>
+      <TopoPattern className="-z-10 text-(--cmr-contour-on-dark) opacity-45" />
+      <p className="text-caption uppercase">{held ? "Group runs" : "Next run"}</p>
 
       <h2
         id="next-run-title"
         style={title}
         className={cn(FLUID_TYPE, "mt-(--card-title-mt-a) font-semibold tracking-[-1px] md:mt-(--card-title-mt-b)")}
       >
-        {next ? next.run.title : "Schedule coming soon"}
+        {next ? next.run.title : held ? "Group runs on hold" : "Schedule coming soon"}
       </h2>
 
       {next ? (
@@ -68,6 +91,13 @@ export function NextRunCard({ next, now, className }: { next: RunOccurrence | nu
           </p>
           <ArrowLink href={`/calendar/${next.run.slug}`} className="mt-(--card-link-mt-a) text-p md:mt-(--card-link-mt-b)">
             Run details
+          </ArrowLink>
+        </>
+      ) : held ? (
+        <>
+          <p className="mt-(--card-time-mt-a) text-p md:mt-(--card-time-mt-b)">{PERMIT_HOLD_COPY.short}</p>
+          <ArrowLink href="/hills" className="mt-(--card-place-mt-a) text-p md:mt-(--card-link-mt-b)">
+            Explore the hills
           </ArrowLink>
         </>
       ) : (

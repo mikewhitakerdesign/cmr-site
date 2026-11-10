@@ -7,6 +7,7 @@ import { JustShowUp } from "@/components/home/JustShowUp";
 import { UpcomingRuns } from "@/components/home/UpcomingRuns";
 import { clubTotals } from "@/lib/club-totals";
 import { listedHills } from "@/lib/hills";
+import { OFFICIAL_RUNS_ON_HOLD, withoutHeldRuns } from "@/lib/permit-hold";
 import { getNextOccurrencePerRun, getUpcomingRuns } from "@/lib/runs";
 
 /**
@@ -21,12 +22,13 @@ export const revalidate = 3600;
 
 export default function Home() {
   const now = new Date();
-  const next = getUpcomingRuns(now, 1)[0] ?? null;
-  const upcoming = getNextOccurrencePerRun(now);
+  // Permit-pending hold (src/lib/permit-hold.ts): no run, date or run link reaches the homepage.
+  const next = withoutHeldRuns(getUpcomingRuns(now, 1))[0] ?? null;
+  const upcoming = withoutHeldRuns(getNextOccurrencePerRun(now)) as ReturnType<typeof getNextOccurrencePerRun>;
 
   return (
     <>
-      <HomeHero next={next} now={now} />
+      <HomeHero next={next} now={now} held={OFFICIAL_RUNS_ON_HOLD} />
       <CommunityIntro />
       <ClubTotals totals={clubTotals} />
       <UpcomingRuns occurrences={upcoming} now={now} />

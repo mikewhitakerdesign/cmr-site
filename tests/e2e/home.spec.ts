@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { measureTextContrast } from "./contrast.mjs";
+import { OFFICIAL_RUNS_ON_HOLD } from "../../src/lib/permit-hold";
 
 /**
  * Homepage browser checks at the three Figma frame widths (projects: mobile
@@ -26,7 +27,9 @@ type Frame = {
 // Figma measurements (px). Section heights are compared ±2px.
 const FIGMA: Record<string, Frame> = {
   mobile: {
-    hero: { h: 614, h1Size: 48, h1Top: 52, ctaTop: 230, ctaH: 48, cardTop: 326, cardW: "full" },
+    // PR #4 final refinements: full-width headline ((393 − 48) / 6.12), stacked CTAs, and the
+    // card at the bottom hanging 96px below (its top is measured with that offset).
+    hero: { h: 646, h1Size: 55.29, h1Top: 52, ctaTop: 245, ctaH: 48, cardTop: 497, cardW: "full" },
     sections: { community: 390, jsu: 460, flat: 398 },
     runRowH: 166,
     hillRowH: 100,
@@ -93,7 +96,7 @@ test.describe("structure and content", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("MAKE YOUR OWN MTNS");
     const h2s = await page.locator("main h2").allTextContents();
     // The next-run card title is an h2 inside the hero; section headings follow in order.
-    expect(h2s.slice(1)).toEqual(["2026 club totals.", "See you on the hill.", "Get high in the city.", "JUST SHOW UP."]);
+    expect(h2s.slice(1)).toEqual(["2026 club totals.", OFFICIAL_RUNS_ON_HOLD ? "Group runs are on hold." : "See you on the hill.", "Get high in the city.", "JUST SHOW UP."]);
     await expect(community(page)).toContainText("questioning our sanity decisions.");
     await expect(flat(page)).toContainText("FLAT IS A STATE OF MIND.");
     await expect(page.locator("header")).toBeVisible();
@@ -103,13 +106,15 @@ test.describe("structure and content", () => {
   test("shows no sample badges (Round 2) but keeps content status in the markup", async ({ page }) => {
     await expect(page.locator("main [data-provisional]")).toHaveCount(0);
     await expect(page.locator("main").getByText(/Sample|unconfirmed|unverified/)).toHaveCount(0);
-    await expect(hero(page).getByRole("article")).toHaveAttribute("data-status", "provisional");
+    // The next-run card carries a run's status; the hold notice shows no run.
+    if (!OFFICIAL_RUNS_ON_HOLD) await expect(hero(page).getByRole("article")).toHaveAttribute("data-status", "provisional");
     await expect(page.locator("section[aria-labelledby=club-totals-heading]")).toHaveAttribute("data-status", "provisional");
     for (const li of await runs(page).locator("li").all()) await expect(li).toHaveAttribute("data-status", "provisional");
     await expect(page.getByText("Example Hill")).toHaveCount(0);
   });
 
   test("lists the two-run schedule and five hills, each linking to its detail route", async ({ page }) => {
+    test.skip(OFFICIAL_RUNS_ON_HOLD, "No run is listed while official runs are on hold.");
     const runLinks = runs(page).locator("li h3 a");
     await expect(runLinks).toHaveCount(2);
     const hrefs = await runLinks.evaluateAll((as) => as.map((a) => a.getAttribute("href")));
@@ -189,7 +194,17 @@ test.describe("layout against Figma", () => {
     const findBox = await box(find);
     expect(Math.round(findBox.y - heroBox.y)).toBe(f.ctaTop);
     expect(Math.round(findBox.height)).toBe(f.ctaH);
-    expect(Math.round((await box(become)).y)).toBe(Math.round(findBox.y));
+    const becomeBox = await box(become);
+    if (info.project.name === "mobile") {
+      // Stacked, full content width, Find a Run first.
+      expect(becomeBox.y).toBeGreaterThan(findBox.y + findBox.height);
+      for (const b of [findBox, becomeBox]) {
+        expect(Math.round(b.x)).toBe(24);
+        expect(Math.round(b.width)).toBe(345);
+      }
+    } else {
+      expect(Math.round(becomeBox.y)).toBe(Math.round(findBox.y));
+    }
 
     const card = hero(page).getByRole("article");
     const cardBox = await box(card);
@@ -199,6 +214,34 @@ test.describe("layout against Figma", () => {
     expect(Math.round(cardBox.x + cardBox.width)).toBe(Math.round(contentRight)); // right-aligned to the container
     if (f.cardW !== "full") expect(Math.round(cardBox.width)).toBe(f.cardW);
     else expect(Math.round(cardBox.x)).toBe(24);
+  });
+
+  test("mobile headline fills the content width at 320–430, without overflowing", async ({ page }, info) => {
+    test.skip(info.project.name !== "mobile", "mobile only");
+    for (const w of [320, 375, 393, 430]) {
+      await page.setViewportSize({ width: w, height: 852 });
+      const lines = await page.locator("#hero-heading > span").evaluateAll((els) =>
+        els.map((e) => {
+          const r = document.createRange();
+          r.selectNodeContents(e);
+          const b = r.getBoundingClientRect();
+          return { left: b.left, right: b.right };
+        }),
+      );
+      for (const l of lines) {
+        expect(l.left, `${w}px`).toBeGreaterThanOrEqual(23);
+        expect(l.right, `${w}px`).toBeLessThanOrEqual(w - 23);
+        expect(l.right - l.left, `${w}px fills`).toBeGreaterThan((w - 48) * 0.95);
+      }
+    }
+  });
+
+  test("next-run card: rounded at every size, a quiet static contour inside, no canvas", async ({ page }) => {
+    const card = hero(page).getByRole("article");
+    expect(await css(card, "border-radius")).toBe("8px");
+    await expect(card.locator("[data-slot=topo-pattern]")).toHaveCount(1);
+    await expect(card.locator("canvas")).toHaveCount(0);
+    expect(parseFloat(await css(card.locator("[data-slot=topo-pattern]"), "opacity"))).toBeLessThan(0.5);
   });
 
   test("desktop card overhangs the hero, stays on top and unclipped; inside the hero elsewhere", async ({ page }, info) => {
@@ -219,6 +262,16 @@ test.describe("layout against Figma", () => {
       // CTAs and card never collide.
       const become = await box(hero(page).getByRole("link", { name: "Join the club" }));
       expect(become.x + become.width).toBeLessThan(cardBox.x);
+    } else if (info.project.name === "mobile") {
+      // PR #4 final refinements: the card hangs 96px into the white page, clear of the statement.
+      expect(Math.round(overhang)).toBe(96);
+      expect(cardBox.y).toBeLessThan(heroBox.y + heroBox.height - 96); // still over the photograph
+      const statement = await box(page.locator("main > section").nth(1).locator("p").first());
+      expect(statement.y - (cardBox.y + cardBox.height)).toBeGreaterThanOrEqual(48);
+      await page.evaluate((y) => window.scrollTo(0, y - 300), heroBox.y + heroBox.height);
+      const scrolled = await page.evaluate(() => window.scrollY);
+      const hit = await page.evaluate(([x, yy]) => document.elementFromPoint(x, yy)?.closest("article")?.tagName ?? null, [cardBox.x + 40, heroBox.y + heroBox.height + 48 - scrolled]);
+      expect(hit).toBe("ARTICLE");
     } else {
       expect(overhang).toBeLessThan(0);
     }
@@ -246,6 +299,9 @@ test.describe("layout against Figma", () => {
     expect(await size(flat(page).locator("p"))).toBeCloseTo(f.flat, 0);
     expect(await size(hills(page).getByRole("heading", { level: 2 }))).toBeCloseTo(f.hills, 0);
     expect(await size(page.locator("section[aria-labelledby=club-totals-heading] dd").first())).toBeCloseTo(f.stat, 0);
+    // Owner direction (2026-11-08): "2026 club totals." and "See you on the hill." match "Get high in the city.".
+    expect(await size(page.locator("#club-totals-heading"))).toBeCloseTo(f.hills, 0);
+    expect(await size(page.locator("#upcoming-runs-heading"))).toBeCloseTo(f.hills, 0);
   });
 
   test("no horizontal overflow and no colliding hero layout at intermediate widths", async ({ page }, info) => {
@@ -270,12 +326,14 @@ test.describe("layout against Figma", () => {
 
 test.describe("navigation and interaction", () => {
   test("all four Join CTAs say \"Join the club\" and go to /join", async ({ page }) => {
+    // Held: the hold notice in "Group runs" also points to Join, between the hero and Just show up.
     const joins = page.getByRole("link", { name: "Join the club" });
-    await expect(joins).toHaveCount(4);
+    await expect(joins).toHaveCount(OFFICIAL_RUNS_ON_HOLD ? 5 : 4);
     const where = await joins.evaluateAll((as) => as.map((a) => [a.closest("header, footer, section")?.tagName + ":" + (a.closest("section")?.getAttribute("aria-labelledby") ?? ""), a.getAttribute("href")]));
     expect(where).toEqual([
       ["HEADER:", "/join"],
       ["SECTION:hero-heading", "/join"],
+      ...(OFFICIAL_RUNS_ON_HOLD ? [["SECTION:upcoming-runs-heading", "/join"]] : []),
       ["SECTION:just-show-up-heading", "/join"],
       ["FOOTER:", "/join"],
     ]);
@@ -291,22 +349,24 @@ test.describe("navigation and interaction", () => {
     await expect(page).toHaveURL(/\/join$/);
     await page.goBack();
 
-    // Rows are clickable anywhere (stretched link), not only on the name.
-    const firstRun = runs(page).locator("li").first();
-    await firstRun.scrollIntoViewIfNeeded();
-    const runHref = await firstRun.locator("a").getAttribute("href");
-    const rowBox = await box(firstRun);
-    await page.mouse.click(rowBox.x + rowBox.width - 30, rowBox.y + rowBox.height / 2);
-    await expect(page).toHaveURL(new RegExp(`${runHref}$`));
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await page.goBack();
+    if (!OFFICIAL_RUNS_ON_HOLD) {
+      // Rows are clickable anywhere (stretched link), not only on the name.
+      const firstRun = runs(page).locator("li").first();
+      await firstRun.scrollIntoViewIfNeeded();
+      const runHref = await firstRun.locator("a").getAttribute("href");
+      const rowBox = await box(firstRun);
+      await page.mouse.click(rowBox.x + rowBox.width - 30, rowBox.y + rowBox.height / 2);
+      await expect(page).toHaveURL(new RegExp(`${runHref}$`));
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await page.goBack();
+    }
 
     const trashmore = hills(page).locator("li").last();
     await trashmore.scrollIntoViewIfNeeded();
     const hb = await box(trashmore);
     await page.mouse.click(hb.x + hb.width - 60, hb.y + hb.height / 2);
     await expect(page).toHaveURL(/\/hills\/mt-trashmore$/);
-    await expect(page.getByText("Not measured yet").first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mt. Trashmore");
     await page.goBack();
 
     await hills(page).getByRole("link", { name: "Explore all hills" }).click();
@@ -331,7 +391,7 @@ test.describe("navigation and interaction", () => {
     }
     const hillNames = ["Cricket Hill", "Warren Hill", "Horner Hill", "Schiller Hill", "Mt. Trashmore"];
     const expected = [
-      "See the full schedule",
+      ...(OFFICIAL_RUNS_ON_HOLD ? ["Explore the hills", "Join the club"] : ["See the full schedule"]),
       "Explore all hills",
       // phones: the touch preview buttons sit between the profile and the list
       ...(info.project.name === "mobile" ? hillNames : []),
@@ -339,6 +399,12 @@ test.describe("navigation and interaction", () => {
       "Find a Run",
       "Join the club",
     ];
+    if (OFFICIAL_RUNS_ON_HOLD) {
+      // hero CTAs, the hold card's link, then the Group runs section's two links; no run anywhere
+      expect(order.slice(0, 3)).toEqual(["Find a Run", "Join the club", "Explore the hills"]);
+      expect(order.slice(3, 3 + expected.length)).toEqual(expected);
+      return;
+    }
     expect(order.slice(0, 3)).toEqual(["Find a Run", "Join the club", "Run details"]);
     // two run names (order depends on the build clock)
     expect(order.slice(3, 5).sort()).toEqual(["Cricket Mtn Repeats", "Horner Hell Repeats"]);
@@ -357,11 +423,13 @@ test.describe("navigation and interaction", () => {
     expect(ringColor(await css(cta, "box-shadow"))).toEqual([["rgb(0, 0, 0)", 2], ["rgb(255, 255, 255)", 5]]);
 
     // Black section: run row ring is white, drawn on the row overlay.
-    const runLink = runs(page).locator("li a").first();
-    await runLink.focus();
-    await page.keyboard.press("Shift+Tab");
-    await page.keyboard.press("Tab");
-    expect(await css(runLink, "box-shadow", "::after")).toContain("rgb(255, 255, 255)");
+    if (!OFFICIAL_RUNS_ON_HOLD) {
+      const runLink = runs(page).locator("li a").first();
+      await runLink.focus();
+      await page.keyboard.press("Shift+Tab");
+      await page.keyboard.press("Tab");
+      expect(await css(runLink, "box-shadow", "::after")).toContain("rgb(255, 255, 255)");
+    }
 
     // White section: hill row ring is black.
     const hillLink = hills(page).locator("li a").first();
@@ -462,6 +530,8 @@ test.describe("accessibility", () => {
   test("text over photography meets WCAG AA in its worst region (excluding the accepted exceptions)", async ({ page }, info) => {
     await loadAll(page);
     for (const [name, locate, need] of PHOTO_TEXT) {
+      // Keep the pointer off the CTAs: a hover (inverse colours, mid-transition) isn't the text being measured.
+      await page.mouse.move(0, 0);
       const r = await measureTextContrast(page, locate(page));
       info.annotations.push({ type: `contrast ${name}`, description: `worst ${r.worst} (p10 ${r.p10}, median ${r.median}) over ${r.cells} cells` });
       expect(r.cells, `${name}: measurable regions`).toBeGreaterThan(0);
@@ -471,10 +541,14 @@ test.describe("accessibility", () => {
 
   test("photo text outside the accepted exceptions stays legible at intermediate widths", async ({ page }, info) => {
     test.skip(info.project.name !== "desktop", "one sweep is enough; it sets its own widths");
+    // Photo text only: hold the contour background still. On GPU-less CI its software-rendered
+    // animation competes with this test's many screenshots (it once hit the 30s timeout).
+    await page.emulateMedia({ reducedMotion: "reduce" });
     for (const width of [320, 600, 900, 1024, 1180, 1280, 1366, 1600, 1920]) {
       await page.setViewportSize({ width, height: 1000 });
       await loadAll(page);
       for (const [name, locate, need] of PHOTO_TEXT) {
+        await page.mouse.move(0, 0); // never hovering a CTA while measuring
         const r = await measureTextContrast(page, locate(page));
         // Soft: report every failing width and target, not just the first.
         expect.soft(r.worst, `${name} at ${width}px`).toBeGreaterThanOrEqual(need);
@@ -487,7 +561,8 @@ test.describe("accessibility", () => {
 const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "POST, OPTIONS" };
 
 test.describe("Round 2 interactions", () => {
-  test("sticky header turns compact with a 1px black rule, without shifting the page, and the logo returns to the top", async ({ page }) => {
+  test("sticky header turns compact with a 1px black rule, without shifting the page, and the logo returns to the top", async ({ page }, info) => {
+    const mobile = info.project.name === "mobile";
     const header = page.locator("body > header");
     const bar = header.locator("[data-slot=header-bar]");
     const tall = (await box(bar)).height;
@@ -495,7 +570,12 @@ test.describe("Round 2 interactions", () => {
     const before = await docTop();
     await page.evaluate(() => window.scrollTo(0, 1200));
     await expect(header).toHaveAttribute("data-compact", "");
-    await expect.poll(async () => (await box(bar)).height).toBeLessThan(tall - 20); // the visible bar shrinks…
+    if (mobile) {
+      // Mobile (PR #4 final refinements): the top row slides away instead of shrinking.
+      await expect.poll(async () => Math.round((await box(bar)).y)).toBe(-64);
+    } else {
+      await expect.poll(async () => (await box(bar)).height).toBeLessThan(tall - 20); // the visible bar shrinks…
+    }
     expect(await docTop()).toBe(before); // …but the layout never moves (no scroll-anchoring side effects)
     expect(Math.round((await box(header)).height)).toBe(Math.round(tall)); // header box keeps its expanded height
     expect(await css(header, "pointer-events")).toBe("none"); // …and is click-through
@@ -504,7 +584,12 @@ test.describe("Round 2 interactions", () => {
     await expect.poll(() => css(bar, "border-bottom-color")).toBe("rgb(0, 0, 0)");
     expect(await css(bar, "border-bottom-width")).toBe("1px");
     expect(await css(bar, "box-shadow")).toBe("none");
-    await page.getByRole("link", { name: "Chicago Mountain Runners" }).click();
+    if (mobile) {
+      // Scrolling up a little brings the logo back.
+      await page.mouse.wheel(0, -80);
+      await expect(header).not.toHaveAttribute("data-hide-top");
+    }
+    await page.getByRole("link", { name: "Chicago Mountain Runners", exact: true }).click();
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
     await expect(page).toHaveURL(/\/$/);
     await expect(header).not.toHaveAttribute("data-compact");
@@ -538,12 +623,113 @@ test.describe("Round 2 interactions", () => {
     expect(settled).toEqual([true, true, true, true]);
   });
 
+  test("moon line: counts down from 1,261,154,400 to 1,261,022,400 only after the four totals finish and once it's seen", async ({ page }) => {
+    const totals = page.locator("section[aria-labelledby=club-totals-heading]");
+    const moon = totals.locator("[data-slot=moon]");
+    await expect(moon.getByRole("heading", { level: 3 })).toHaveText("We're going to the moon!");
+    const odo = moon.locator("[data-odometer]");
+    const metrics = totals.locator("[data-slot=total] [data-odometer]");
+    // Record every phase change, with a timestamp, from here on.
+    await page.evaluate(() => {
+      const log: [string, string, number][] = [];
+      Object.assign(window, { __odoLog: log });
+      new MutationObserver((ms) => {
+        for (const m of ms) {
+          const el = m.target as HTMLElement;
+          log.push([el.closest("[data-slot=moon]") ? "moon" : "metric", el.getAttribute("data-odometer")!, performance.now()]);
+        }
+      }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ["data-odometer"] });
+    });
+    const shown = () =>
+      odo.evaluate((el) =>
+        [...el.querySelectorAll<HTMLElement>("[aria-hidden] > span")]
+          .map((cell) => {
+            const strip = cell.querySelector<HTMLElement>("[style*=translateY]");
+            if (!strip) return cell.textContent;
+            const i = Number(/translateY\(-?(\d+)em\)/.exec(strip.style.transform)?.[1]);
+            return strip.children[i]?.textContent;
+          })
+          .join(""),
+      );
+    // Off screen at load: parked on the starting distance.
+    await expect(odo).toHaveAttribute("data-odometer", "armed");
+    expect(await shown()).toBe("1,261,154,400");
+
+    // The totals come into view and roll; the moon waits, even if it's on screen too.
+    await totals.locator("h2").evaluate((h) => h.scrollIntoView({ block: "start" }));
+    await expect(metrics.first()).toHaveAttribute("data-odometer", /rolling|done/);
+    await expect(odo).toHaveAttribute("data-odometer", "armed");
+    for (const m of await metrics.all()) await expect(m).toHaveAttribute("data-odometer", "done", { timeout: 5000 });
+
+    // Then, once the line is on screen, the second moment.
+    await moon.scrollIntoViewIfNeeded();
+    await expect(odo).toHaveAttribute("data-odometer", /rolling|done/);
+    expect(await shown()).toBe("1,261,022,400");
+    await expect(odo).toHaveAttribute("data-odometer", "done", { timeout: 6000 });
+    const log = await page.evaluate(() => (window as unknown as { __odoLog: [string, string, number][] }).__odoLog);
+    const lastMetricDone = Math.max(...log.filter(([w, p]) => w === "metric" && p === "done").map(([, , t]) => t));
+    const moonStart = log.find(([w, p]) => w === "moon" && p === "rolling")![2];
+    expect(moonStart).toBeGreaterThanOrEqual(lastMetricDone);
+    expect(log.filter(([w, p]) => w === "moon" && p === "rolling")).toHaveLength(1); // once
+
+    // Only the number is bold and a touch larger; "feet away" is ordinary text.
+    await expect(moon.locator("strong .sr-only")).toHaveText("1,261,022,400");
+    const strong = moon.locator("strong");
+    const p = moon.locator("p");
+    expect(await css(strong, "font-weight")).toBe("700");
+    expect(parseFloat(await css(strong, "font-size"))).toBeGreaterThan(parseFloat(await css(p, "font-size")));
+    expect(
+      await strong.evaluate((el) => {
+        let t = "";
+        for (let n = el.nextSibling; n; n = n.nextSibling) t += n.textContent;
+        return t;
+      }),
+    ).toBe(" feet away.");
+    expect(await css(p, "font-weight")).toBe("400");
+  });
+
+  test("mobile club totals: larger equal circles, 2 × 2, ~24px apart, labels on one line (320–430)", async ({ page }, info) => {
+    test.skip(info.project.name !== "mobile", "mobile only");
+    const sizes: Record<number, number> = {};
+    for (const w of [320, 375, 393, 430]) {
+      await page.setViewportSize({ width: w, height: 852 });
+      const circles = page.locator("[data-slot=total]");
+      const b = await circles.evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).map((r) => ({ x: r.x, y: r.y, w: r.width, h: r.height })));
+      expect(new Set(b.map((c) => Math.round(c.w))).size, `${w}: equal`).toBe(1);
+      expect(Math.round(b[0].y)).toBe(Math.round(b[1].y));
+      expect(Math.round(b[2].y)).toBe(Math.round(b[3].y));
+      const gapX = b[1].x - (b[0].x + b[0].w);
+      const gapY = b[2].y - (b[0].y + b[0].h);
+      expect(gapX, `${w}: gap x`).toBeGreaterThanOrEqual(22);
+      expect(gapX, `${w}: gap x`).toBeLessThanOrEqual(32);
+      expect(gapY, `${w}: gap y`).toBeGreaterThanOrEqual(22);
+      expect(gapY, `${w}: gap y`).toBeLessThanOrEqual(32);
+      // Labels on one line, inside the circle.
+      for (const dt of await page.locator("[data-slot=total] dt").all()) {
+        const [lines, width] = await dt.evaluate((e) => [Math.round(e.getBoundingClientRect().height / parseFloat(getComputedStyle(e).lineHeight)), e.getBoundingClientRect().width]);
+        expect(lines, `${w}: label lines`).toBe(1);
+        expect(width, `${w}: label fits the circle`).toBeLessThan(b[0].w * 0.96);
+      }
+      sizes[w] = b[0].w;
+    }
+    // Bigger than before (≤ 162 at 393; 126 at 320).
+    expect(sizes[393]).toBeGreaterThan(168);
+    expect(sizes[320]).toBeGreaterThan(130);
+  });
+
   test("reduced motion: figures and topography stay static", async ({ browser, page }) => {
     const reduced = await browser.newPage({ reducedMotion: "reduce", viewport: page.viewportSize()! });
     await reduced.goto("/");
     await reduced.locator("section[aria-labelledby=club-totals-heading]").scrollIntoViewIfNeeded();
     for (const o of await reduced.locator("[data-odometer]").all()) await expect(o).toHaveAttribute("data-odometer", "settled");
-    await expect(reduced.locator("[data-slot=topo-pattern]")).toBeVisible();
+    await expect(reduced.locator("[data-slot=moon] strong .sr-only")).toHaveText("1,261,022,400");
+    const field = flat(reduced).locator("[data-slot=contour-field]");
+    await field.scrollIntoViewIfNeeded();
+    await expect(field).toHaveAttribute("data-state", "still");
+    await expect(field).toHaveAttribute("data-still", "reduced-motion");
+    const a = await field.locator("canvas").screenshot();
+    await reduced.waitForTimeout(1000);
+    expect(Buffer.compare(a, await field.locator("canvas").screenshot())).toBe(0);
     await reduced.close();
   });
 
@@ -592,20 +778,28 @@ test.describe("Round 2 interactions", () => {
     await expect(fig).not.toContainText("≈");
   });
 
-  test("the topography is a static vector background: the pointer does nothing to it (Round 2.1)", async ({ page }) => {
-    const pattern = flat(page).locator("[data-slot=topo-pattern]");
+  test("the topography moves on its own in grey; the pointer and the statement don't move it (refinement pass)", async ({ page }) => {
+    // Tests run on software WebGL, where ContourField holds still by design: force the animation on.
+    await page.addInitScript(() => Object.assign(window, { __CMR_CONTOUR_FORCE_MOTION__: true }));
+    await page.reload();
+    const field = flat(page).locator("[data-slot=contour-field]");
     await flat(page).scrollIntoViewIfNeeded();
-    await expect(pattern.locator("use")).toHaveCount(1);
-    await expect(pattern.locator("filter, mask, feTurbulence, feDisplacementMap")).toHaveCount(0);
-    const snapshot = () => pattern.evaluate((el) => el.outerHTML);
-    const before = await snapshot();
+    await expect(field).toHaveAttribute("data-state", "animating");
+    await expect(field).toHaveAttribute("aria-hidden", "true");
+    const canvas = field.locator("canvas");
+    // Grey lines (MWDS neutrals 300) on the white surface.
+    expect(await css(canvas, "color")).toBe("rgb(212, 212, 212)");
+    expect(await css(canvas, "background-color")).toBe("rgb(255, 255, 255)");
+    const text = flat(page).locator("p");
+    const before = await box(text);
+    const a = await canvas.screenshot();
     const b = await box(flat(page));
-    await page.mouse.move(b.x + 100, b.y + b.height / 2);
     for (let i = 1; i <= 12; i++) await page.mouse.move(b.x + 100 + i * 40, b.y + b.height / 2 + (i % 2) * 20);
-    await page.waitForTimeout(300);
-    expect(await snapshot()).toBe(before);
-    // Crisp: constant 1.5px strokes at any size, drawn by the browser from vector paths.
-    expect(await pattern.locator("g").first().evaluate((g) => getComputedStyle(g).strokeWidth)).toBe("1.5px");
+    await page.waitForTimeout(1500);
+    expect(Buffer.compare(a, await canvas.screenshot()), "the lines move").not.toBe(0);
+    expect(await box(text)).toEqual(before);
+    // No pointer-driven effect is wired up (the Round 2 liquid cursor stays removed).
+    await expect(flat(page).locator("filter, feTurbulence, feDisplacementMap")).toHaveCount(0);
   });
 
   test("the Questions panel validates, sends through Formspree (mocked) and confirms", async ({ page }) => {
@@ -666,8 +860,11 @@ test.describe("Round 2 interactions", () => {
 });
 
 test.describe("visual @visual", () => {
+  // Reduced motion: the contour background renders one deterministic still frame.
+  test.use({ reducedMotion: "reduce" });
   test("full homepage", async ({ page }, info) => {
     await loadAll(page);
+    await expect(flat(page).locator("[data-slot=contour-field]")).toHaveAttribute("data-state", "still");
     // Run order, slot labels and the next-run card depend on the build clock.
     const mask = [hero(page).getByRole("article"), runs(page).locator("ol")];
     await expect(page).toHaveScreenshot(`home-${info.project.name}.png`, { fullPage: true, mask, animations: "disabled" });

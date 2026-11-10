@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import Header from "@/components/Header";
-import { COMPACT_ENTER_Y, COMPACT_EXIT_Y, nextCompactState } from "@/components/HeaderShell";
+import { COMPACT_ENTER_Y, COMPACT_EXIT_Y, DIRECTION_SLOP, TOP_ROW_H, nextCompactState, nextHideTopState } from "@/components/HeaderShell";
 import { isActivePath } from "@/components/NavLink";
 import { axeViolations } from "../axe";
 import { pathname } from "../pathname";
@@ -20,6 +20,7 @@ describe("Header", () => {
     expect(links.map((l) => [l.textContent, l.getAttribute("href")])).toEqual([
       ["Find a Run", "/calendar"],
       ["Chicago Hills Mtns", "/hills"],
+      ["The Science", "/the-science"],
       ["About", "/about"],
     ]);
     // The joke is visual: "Hills" is struck through, but stays in the accessible name.
@@ -39,7 +40,7 @@ describe("Header", () => {
   it("draws the CTA with a 1px border (like the bar's rule) that flips to black on hover (Round 2.1)", () => {
     render(<Header />);
     const cta = screen.getByRole("link", { name: "Join the club" });
-    expect(cta).toHaveClass("border", "border-primary", "bg-transparent");
+    expect(cta).toHaveClass("border", "border-primary", "bg-background");
     expect(cta.className).not.toMatch(/\bborder-2\b/);
     expect(cta).toHaveClass("hover:bg-primary", "hover:text-primary-foreground");
   });
@@ -116,6 +117,42 @@ describe("nextCompactState", () => {
     expect(nextCompactState(false, COMPACT_ENTER_Y + 1)).toBe(true);
     expect(nextCompactState(true, COMPACT_EXIT_Y + 1)).toBe(true);
     expect(nextCompactState(true, COMPACT_EXIT_Y)).toBe(false);
+  });
+});
+
+describe("nextHideTopState (mobile top row)", () => {
+  it("hides on a downward scroll past the top row and returns on an upward one", () => {
+    expect(nextHideTopState(false, 200, 200 + DIRECTION_SLOP + 1)).toBe(true);
+    expect(nextHideTopState(true, 400, 400 - DIRECTION_SLOP - 1)).toBe(false);
+  });
+
+  it("ignores jitter smaller than the slop, either way", () => {
+    expect(nextHideTopState(false, 300, 300 + DIRECTION_SLOP)).toBe(false);
+    expect(nextHideTopState(true, 300, 300 - DIRECTION_SLOP)).toBe(true);
+  });
+
+  it("always shows near the top of the page", () => {
+    expect(nextHideTopState(true, 300, TOP_ROW_H)).toBe(false);
+    expect(nextHideTopState(false, 0, TOP_ROW_H)).toBe(false);
+  });
+});
+
+describe("mobile link row", () => {
+  it("makes each link a full-height cell sharing the row, so a fourth item needs no layout change", () => {
+    const items = [
+      { label: "Find a Run", href: "/calendar" },
+      { label: "Chicago Mtns", href: "/hills" },
+      { label: "About", href: "/about" },
+      { label: "The Science", href: "/the-science" },
+    ];
+    render(<Header items={items} />);
+    const nav = screen.getByRole("navigation", { name: "Primary" });
+    const cells = within(nav).getAllByRole("listitem");
+    expect(cells).toHaveLength(4);
+    for (const li of cells) {
+      expect(li.className).toMatch(/\bflex-auto\b/);
+      expect(within(li).getByRole("link").className).toMatch(/\bh-12\b/); // 48px tap target
+    }
   });
 });
 

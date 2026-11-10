@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { participationGuidelines, privacyPolicy, websiteTerms } from "@/content/legal";
 import { socialLinks, type SocialLinks } from "@/lib/social";
 
 export type NavItem = {
@@ -33,8 +34,13 @@ export const primaryNav: NavItem[] = [
     ),
     href: "/hills",
   },
+  // The Science (Owner brief, 2026-11-09): the editorial resource on hill repeats.
+  { label: "The Science", href: "/the-science" },
   { label: "About", href: "/about" },
 ];
+
+/** The supplementary tooltip on every "Join the club" CTA. One string, so it is identical everywhere. */
+export const JOIN_TOOLTIP = "No fees. No commitments. Lots of elevation.";
 
 /** Header CTA. "Join the club" is the label of every Join CTA (header, hero, Just show up, footer). */
 export const joinCta: NavItem = { label: "Join the club", href: "/join" };
@@ -47,7 +53,11 @@ export const joinCta: NavItem = { label: "Join the club", href: "/join" };
 export function buildFooterNav(social: SocialLinks): NavItem[] {
   return [
     { label: "Find a Run", href: "/calendar" },
+    primaryNav[1],
+    // The Science: in the primary navigation's order, between Chicago Mtns and About.
+    primaryNav.find((i) => i.href === "/the-science")!,
     { label: "About", href: "/about" },
+    { label: "FAQ", href: "/faq" },
     { label: "Join the club", href: "/join" },
     ...(social.instagram ? [{ label: "Instagram", href: social.instagram, external: true }] : []),
     ...(social.strava ? [{ label: "Strava", href: social.strava, external: true }] : []),
@@ -57,13 +67,15 @@ export function buildFooterNav(social: SocialLinks): NavItem[] {
 export const footerNav: NavItem[] = buildFooterNav(socialLinks);
 
 /**
- * Owner decision 2026-11-07: legal pages are not authored yet, so these carry
- * no href and the footer hides them. Add the href when each page exists.
+ * Footer legal links. A link appears only once its document is published
+ * (src/content/legal.ts); until then the footer hides it. "Participation
+ * Guidelines" replaces the earlier "Participation waiver" label: the Guidelines
+ * are not a waiver (Owner decision, CMR-JOIN-001).
  */
 export const legalLinks: LegalLink[] = [
-  { label: "Privacy" },
-  { label: "Terms" },
-  { label: "Participation waiver" },
+  { label: "Privacy", href: privacyPolicy ? "/privacy" : undefined },
+  { label: "Terms", href: websiteTerms ? "/terms" : undefined },
+  { label: "Participation Guidelines", href: participationGuidelines ? "/participation-guidelines" : undefined },
 ];
 
 export const riskNotice =

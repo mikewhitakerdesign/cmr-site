@@ -6,7 +6,7 @@ import { axeViolations } from "../../axe";
 
 describe("JustShowUp", () => {
   it("renders the heading, the copy and both CTAs to v1 routes", () => {
-    render(<JustShowUp />);
+    render(<JustShowUp held={false} />);
     expect(screen.getByRole("heading", { level: 2, name: "JUST SHOW UP." })).toBeInTheDocument();
     expect(
       screen.getByText(
@@ -18,7 +18,7 @@ describe("JustShowUp", () => {
   });
 
   it("uses the Figma photo decoratively under the 50% gradient and the legibility shade", () => {
-    const { container } = render(<JustShowUp />);
+    const { container } = render(<JustShowUp held={false} />);
     const backdrop = container.querySelector("[aria-hidden]")!;
     expect(backdrop.querySelector("img")?.getAttribute("src")).toContain("just-show-up.jpg");
     expect(backdrop.querySelector("img")).toHaveAttribute("alt", "");
@@ -27,12 +27,12 @@ describe("JustShowUp", () => {
   });
 
   it("loads its photo lazily (below the fold)", () => {
-    const { container } = render(<JustShowUp />);
+    const { container } = render(<JustShowUp held={false} />);
     expect(container.querySelector("img")).toHaveAttribute("loading", "lazy");
   });
 
   it("has no axe violations", async () => {
-    const { container } = render(<JustShowUp />);
+    const { container } = render(<JustShowUp held={false} />);
     expect(await axeViolations(container)).toEqual([]);
   });
 });

@@ -1,0 +1,27 @@
+id: implement-cmr-find-a-run-weather-approval
+seed_version: "0.1"
+related_work_item_id: implement-cmr-find-a-run
+target_context: >-
+  Governed Work Item .aiom/work/implement-cmr-find-a-run.md: the weather module
+  on the Find a Run page (/calendar) and the run detail pages.
+requested_decision: >-
+  Record the Owner's authorization (given in the implementation direction for
+  the Find a Run milestone) of the weather feature concept and one bounded,
+  read-only public weather-data integration for the CMR site. This is a new
+  authorization for this Work Item; the earlier newsletter approval
+  (define-cmr-v1-scope-approval) does not cover it.
+mode: one-time
+scope: >-
+  Covers exactly: server-side, read-only requests from the CMR site to the
+  National Weather Service API (api.weather.gov) for Chicago conditions,
+  forecast and active alerts, with no API key, no user data sent, no storage
+  beyond framework fetch caching, and weather shown as information only (never
+  as an automatic cancellation mechanism). If the National Weather Service
+  proves unsuitable, a different provider is not covered and needs a new
+  authorization. Does not cover RSVP, registration, accounts, payments,
+  attendance tracking, Strava API use, any other third-party call, merging, or
+  deployment.
+owner: Mike Whitaker
+status: approved
+decision_at: "2026-11-09T00:00:00.000Z"
+provenance: owner-confirmed

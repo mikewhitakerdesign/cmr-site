@@ -16,11 +16,13 @@ import { cn } from "@/lib/utils";
  *   secondary  white fill, black label   hover → black fill, white label  · active neutral 800
  *   outline    transparent, 1px black    hover → black fill, white label  · active neutral 800
  *              (the header's "Join the club"; for light surfaces)
+ *   outlineOnDark  transparent, 1px white  hover → white fill, black label  · active neutral 100
+ *              (black surfaces: hill pages' "Run it with us" and the /hills closing band)
  *   focus      3px ring + 2px gap in the surface color (white ring, black gap on photos)
  *   disabled   `aria-disabled` → 50% opacity, not clickable (links cannot be `disabled`)
  *   press      1px nudge down (motion-safe)
  *
- * Only `outline` has a border (1px, matching the header bar's bottom rule); the
+ * Only the outlines have a border (1px, matching the header bar's bottom rule); the
  * filled variants have none, at rest or on hover. Every state is solid-on-solid
  * (21:1), independent of the photo behind it. Geometry (height, padding, type
  * size) is set by the caller. Radius 6 = `rounded-md`.
@@ -40,6 +42,9 @@ export const ctaLinkVariants = cva(
           "bg-primary-foreground text-primary hover:bg-primary hover:text-primary-foreground active:bg-primary-hover active:text-primary-foreground",
         outline:
           "border border-primary bg-transparent text-primary hover:bg-primary hover:text-primary-foreground active:bg-primary-hover active:text-primary-foreground",
+        // Chicago Hills: the outline's mirror for black surfaces (Hill Details "Run it with us").
+        outlineOnDark:
+          "border border-primary-foreground bg-transparent text-primary-foreground hover:bg-primary-foreground hover:text-primary active:bg-border active:text-primary",
       },
     },
     defaultVariants: { variant: "primary" },

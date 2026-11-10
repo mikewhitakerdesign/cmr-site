@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { QuestionsWidget } from "@/components/QuestionsWidget";
+import { MOTION_INIT_SCRIPT } from "@/lib/motion";
 import "./globals.css";
 
 // Family names must match MWDS typography/font definitions (asserted in tests/tokens.test.ts).
@@ -27,7 +28,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      // data-motion is set by the inline script below before first paint.
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: MOTION_INIT_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col">
         <a
           href="#main"

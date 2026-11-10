@@ -1,6 +1,6 @@
 import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { finalIndex, Odometer } from "@/components/Odometer";
+import { countdownStart, finalIndex, Odometer, rollDuration, rollTotal } from "@/components/Odometer";
 
 type IOCallback = (entries: { isIntersecting: boolean }[]) => void;
 let observers: { cb: IOCallback; disconnect: ReturnType<typeof vi.fn> }[];
@@ -48,6 +48,97 @@ describe("Odometer", () => {
     expect(strips(container).map(shift)).toEqual([finalIndex(2), finalIndex(4), finalIndex(0)]);
     expect(strips(container)[0].style.transition).toMatch(/transform \d+ms/);
     expect(io.disconnect).toHaveBeenCalled();
+  });
+
+  it("rolls a little more slowly than Round 2 (1.5 s first digit)", () => {
+    expect(rollDuration(0)).toBe(1500);
+    const { container } = render(<Odometer value="24" />);
+    act(() => observers[0].cb([{ isIntersecting: false }]));
+    act(() => observers[0].cb([{ isIntersecting: true }]));
+    expect(strips(container)[0].style.transition).toMatch(/transform 1500ms/);
+  });
+
+  it("counts down from `from`: changed digits start a turn above and spin down; the rest stay put", () => {
+    const { container } = render(<Odometer value="1,022" from="1,154" />);
+    act(() => observers[0].cb([{ isIntersecting: false }]));
+    expect(strips(container).map(shift)).toEqual([finalIndex(1), countdownStart(1), countdownStart(5), countdownStart(4)]);
+    act(() => observers[0].cb([{ isIntersecting: true }]));
+    expect(strips(container).map(shift)).toEqual([finalIndex(1), finalIndex(0), finalIndex(2), finalIndex(2)]);
+    expect(strips(container)[0].style.transition).toBe("none"); // unchanged digit
+    expect(container.querySelector(".sr-only")).toHaveTextContent("1,022");
+  });
+
+  it("can start with its section instead of itself", () => {
+    const { container } = render(
+      <section>
+        <Odometer value="9" watch="section" />
+      </section>,
+    );
+    expect(observers).toHaveLength(1);
+    act(() => observers[0].cb([{ isIntersecting: false }]));
+    expect(container.querySelector("[data-odometer]")).toHaveAttribute("data-odometer", "armed");
+  });
+
+  it("marks itself done when the roll has finished", () => {
+    vi.useFakeTimers();
+    const { container } = render(<Odometer value="24" />);
+    act(() => observers[0].cb([{ isIntersecting: false }]));
+    act(() => observers[0].cb([{ isIntersecting: true }]));
+    expect(container.firstElementChild).toHaveAttribute("data-odometer", "rolling");
+    act(() => vi.advanceTimersByTime(rollTotal("24")));
+    expect(container.firstElementChild).toHaveAttribute("data-odometer", "done");
+    vi.useRealTimers();
+  });
+
+  it("`after`: waits for the others to finish AND for itself to be on screen", async () => {
+    vi.useFakeTimers();
+    const { container } = render(
+      <section>
+        <span data-slot="total">
+          <Odometer value="24" watch="section" />
+        </span>
+        <span data-slot="moon">
+          <Odometer value="1,022" from="1,154" after="[data-slot=total] [data-odometer]" />
+        </span>
+      </section>,
+    );
+    const [metricIO, moonIO] = observers;
+    const moon = () => container.querySelector("[data-slot=moon] [data-odometer]")!;
+    act(() => metricIO.cb([{ isIntersecting: false }]));
+    act(() => moonIO.cb([{ isIntersecting: false }]));
+    // The section comes into view: the metric rolls; the moon line is on screen too, but waits.
+    act(() => metricIO.cb([{ isIntersecting: true }]));
+    act(() => moonIO.cb([{ isIntersecting: true }]));
+    expect(moon()).toHaveAttribute("data-odometer", "armed");
+    // The metric finishes: now the moon rolls (the attribute change is observed as a microtask).
+    await act(async () => vi.advanceTimersByTime(rollTotal("24")));
+    expect(container.querySelector("[data-slot=total] [data-odometer]")).toHaveAttribute("data-odometer", "done");
+    expect(moon()).toHaveAttribute("data-odometer", "rolling");
+    vi.useRealTimers();
+  });
+
+  it("`after`: if the others are done first, it waits until it is seen", () => {
+    vi.useFakeTimers();
+    const { container } = render(
+      <section>
+        <span data-slot="total">
+          <Odometer value="2" watch="section" />
+        </span>
+        <span data-slot="moon">
+          <Odometer value="9" from="8" after="[data-slot=total] [data-odometer]" />
+        </span>
+      </section>,
+    );
+    const [metricIO, moonIO] = observers;
+    act(() => metricIO.cb([{ isIntersecting: false }]));
+    act(() => moonIO.cb([{ isIntersecting: false }]));
+    act(() => metricIO.cb([{ isIntersecting: true }]));
+    act(() => vi.advanceTimersByTime(rollTotal("2")));
+    const moon = container.querySelector("[data-slot=moon] [data-odometer]")!;
+    expect(moon).toHaveAttribute("data-odometer", "armed");
+    act(() => moonIO.cb([{ isIntersecting: true }]));
+    expect(moon).toHaveAttribute("data-odometer", "rolling");
+    vi.useRealTimers();
   });
 
   it("stays still when already visible at load (no flash of zeros)", () => {

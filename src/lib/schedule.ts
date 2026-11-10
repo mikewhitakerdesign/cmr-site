@@ -187,26 +187,71 @@ function occurrence<R extends Schedulable>(
   };
 }
 
-/** Occurrences of one run whose local date falls within [fromDate, toDate], cancellations removed. */
-export function occurrencesOf<R extends Schedulable>(run: R, fromDate: IsoDate, toDate: IsoDate): Occurrence<R>[] {
+/** Presentation status of one occurrence (Find a Run calendar). */
+export type OccurrenceStatus = "scheduled" | "changed-time" | "changed-location" | "cancelled";
+
+/** An occurrence plus how it differs from the run's usual schedule. Cancelled ones are kept. */
+export type StatusOccurrence<R extends Schedulable = Schedulable> = Occurrence<R> & {
+  status: OccurrenceStatus;
+  /** True when both the time and the meeting point differ (status reports the time first). */
+  changedBoth: boolean;
+};
+
+function* expand<R extends Schedulable>(
+  run: R,
+  fromDate: IsoDate,
+  toDate: IsoDate,
+): Generator<{ occ: Occurrence<R>; status: OccurrenceStatus; changedBoth: boolean }> {
   const s = run.schedule;
   if (s.kind === "once") {
-    if (s.cancelled || s.date < fromDate || s.date > toDate) return [];
-    return [occurrence(run, s.date, s.time, { special: s.special })];
+    if (s.date < fromDate || s.date > toDate) return;
+    yield {
+      occ: occurrence(run, s.date, s.time, { special: s.special }),
+      status: s.cancelled ? "cancelled" : "scheduled",
+      changedBoth: false,
+    };
+    return;
   }
-  const cancelled = new Set((s.cancellations ?? []).map((c) => c.date));
+  const cancelled = new Map((s.cancellations ?? []).map((c) => [c.date, c]));
   const overrides = new Map((s.overrides ?? []).map((o) => [o.date, o]));
-  const out: Occurrence<R>[] = [];
   const start = s.startsOn && s.startsOn > fromDate ? s.startsOn : fromDate;
   const end = s.endsOn && s.endsOn < toDate ? s.endsOn : toDate;
   // First matching weekday on or after `start`.
   let date = addDays(start, (WEEKDAYS.indexOf(s.weekday) - WEEKDAYS.indexOf(weekdayOf(start)) + 7) % 7);
   for (; date <= end; date = addDays(date, 7)) {
-    if (cancelled.has(date)) continue;
+    const c = cancelled.get(date);
+    if (c) {
+      yield { occ: occurrence(run, date, s.time, { note: c.note }), status: "cancelled", changedBoth: false };
+      continue;
+    }
     const o = overrides.get(date);
-    out.push(occurrence(run, date, o?.time ?? s.time, { meetupLocation: o?.meetupLocation, note: o?.note }));
+    const timeChanged = !!o?.time && o.time !== s.time;
+    const placeChanged = !!o?.meetupLocation && o.meetupLocation !== run.meetupLocation;
+    yield {
+      occ: occurrence(run, date, o?.time ?? s.time, { meetupLocation: o?.meetupLocation, note: o?.note }),
+      status: timeChanged ? "changed-time" : placeChanged ? "changed-location" : "scheduled",
+      changedBoth: timeChanged && placeChanged,
+    };
   }
-  return out;
+}
+
+/** Occurrences of one run whose local date falls within [fromDate, toDate], cancellations removed. */
+export function occurrencesOf<R extends Schedulable>(run: R, fromDate: IsoDate, toDate: IsoDate): Occurrence<R>[] {
+  return [...expand(run, fromDate, toDate)].filter((e) => e.status !== "cancelled").map((e) => e.occ);
+}
+
+/**
+ * Like `occurrencesOf`, but cancelled occurrences stay in the list with
+ * `status: "cancelled"` (and their note), and changed ones say what changed.
+ * For presentation (the calendar); `occurrencesOf` and the upcoming lists keep
+ * their behavior and never return a cancelled occurrence.
+ */
+export function occurrencesWithStatus<R extends Schedulable>(
+  run: R,
+  fromDate: IsoDate,
+  toDate: IsoDate,
+): StatusOccurrence<R>[] {
+  return [...expand(run, fromDate, toDate)].map((e) => ({ ...e.occ, status: e.status, changedBoth: e.changedBoth }));
 }
 
 const byStart = (a: Occurrence, b: Occurrence) =>
@@ -267,4 +312,28 @@ export function describeSchedule(s: RunSchedule): string {
   const [y, m, d] = parseDate(s.date);
   const when = `${WEEKDAY_NAMES[weekdayOf(s.date)]}, ${MONTH_NAMES[m - 1]} ${d}, ${y} · ${formatTime(s.time)}`;
   return s.cancelled ? `${when} (cancelled)` : when;
+}
+
+/** Short cadence for listings ("Saturdays · 5:30 AM"); a dated run falls back to `describeSchedule`. */
+export function describeCadence(s: RunSchedule): string {
+  if (s.kind === "weekly") return `${WEEKDAY_NAMES[s.weekday]}s · ${formatTime(s.time)}`;
+  return describeSchedule(s);
+}
+
+/** "Saturday". */
+export const weekdayName = (date: IsoDate): string => WEEKDAY_NAMES[weekdayOf(date)];
+
+/** "November" for a date's month. */
+export function monthName(date: IsoDate): string {
+  return MONTH_NAMES[parseDate(date)[1] - 1];
+}
+
+/** "Saturday, November 14". */
+export function formatLongDate(date: IsoDate): string {
+  return `${weekdayName(date)}, ${monthName(date)} ${parseDate(date)[2]}`;
+}
+
+/** "Sat, Nov 14" for tight spaces. */
+export function formatShortDate(date: IsoDate): string {
+  return `${weekdayName(date).slice(0, 3)}, ${monthName(date).slice(0, 3)} ${parseDate(date)[2]}`;
 }

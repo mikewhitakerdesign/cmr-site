@@ -8,8 +8,18 @@ export type ClubTotal = {
   label: string;
 };
 
+/** The playful moon line under the totals (static; no Strava logic). */
+export type MoonDistance = {
+  /** Where the countdown starts: the average Earth–Moon distance, 238,855 mi. */
+  startFt: number;
+  /** What's left after the club's vertical so far. */
+  remainingFt: number;
+};
+
 export type ClubTotals = {
   year: number;
+  /** "We're going to the moon!" line; omit to hide it. */
+  moon?: MoonDistance;
   /** Date the figures were last counted (YYYY-MM-DD), once real. */
   asOf?: string;
   items: ClubTotal[];
@@ -32,5 +42,9 @@ export const clubTotals: ClubTotals | null = {
     { value: "2", label: "Runners on the hills" },
     { value: "240", label: "Number of runs" },
   ],
+  // PR #4 final pass (Owner, 2026-11-09), static: 1,261,154,400 ft (238,855 mi)
+  // less the 132K ft "Vertical climbed" above = 1,261,022,400 ft. Update both
+  // together if the vertical total changes.
+  moon: { startFt: 1_261_154_400, remainingFt: 1_261_022_400 },
   status: "provisional",
 };
