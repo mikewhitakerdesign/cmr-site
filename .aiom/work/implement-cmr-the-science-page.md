@@ -127,6 +127,8 @@ Pre-merge validation (macOS, final tree): lint, tsc, tokens:check, build pass; V
 - Incline: rises to 10% on first view (10%, 5.7°, 10.0 ft); the slider then sets 25% (14.0°, 25.0 ft). Accumulator: 40 ft × 30 = 1,200 ft. Breathing guide: Start, then Inhale → Hold after 4.6s; Pause works.
 - `/`, `/hills`, `/hills/cricket-hill`, `/calendar`, `/join`, `/faq`, `/about` all 200.
 
+**Closeout PR test fix.** On the closeout PR's CI, `science.spec.ts` "is one row, sticks directly under the header's visible bar" failed once on mobile: the instant scroll ran before the header hydrated, so the header never saw a scroll down and kept its top row (the bar still sat exactly under it). The test now waits for hydration before scrolling (test-only change, in this closeout PR).
+
 **Pre-existing, recorded, not changed:** 34 macOS `@visual` full-page and footer baselines fail identically on unmodified `main` at `23687ef` (changed by PRs #11 and #14–#16 without re-baselining; visual specs do not run in CI). The footer baseline would also need updating for the new "The Science" link; re-baselining all of them is a separate step. One run-details test (`final-pass.spec.ts`, "cricket-mtn-repeats", mobile) failed once locally under full parallel load and passed 3/3 alone and in CI; it is not part of this work.
 
 **Cleanup.** After the merge: the implementation worktree `../cmr-site-science`, the local branches `feat/cmr-the-science` and `science-final` (the merged branch's local name), and the remote `feat/cmr-the-science` are removed (project convention). This closeout branch `docs/aiom-close-the-science` is removed after its PR merges. Not touched: the primary worktree (`plan/cmr-join-page` with its uncommitted records), PR #5 and other branches.

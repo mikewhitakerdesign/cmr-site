@@ -113,6 +113,8 @@ test.describe("sticky section bar", () => {
     expect(new Set(ys).size).toBe(1); // a single row, at every width
     expect(await nav.getByRole("link").allTextContents()).toEqual(LABELS);
 
+    // Hydrated first (the bar sets its measured top only then), so the header sees the scroll as a scroll down.
+    await expect(nav).toHaveAttribute("style", /top:/);
     // Scroll down into the body: the header changes state (compact; or on phones the top row slides away).
     await page.evaluate(() => window.scrollTo({ top: document.getElementById("training")!.offsetTop, behavior: "instant" }));
     await settle(page);
