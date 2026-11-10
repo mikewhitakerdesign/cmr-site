@@ -19,7 +19,7 @@ validation_state: passed
 blocker_state: none
 current_responsibility: orchestrator
 created_at: '2026-11-09T20:00:00.000Z'
-updated_at: '2026-11-10T02:00:00.000Z'
+updated_at: '2026-11-10T03:00:00.000Z'
 ---
 ## Status
 
@@ -62,3 +62,12 @@ lint, vitest (222), production build and Playwright e2e (incl. axe on /about) pa
 
 - Higher-resolution founder photos (sources are 480×640 and 912×686).
 - Replace the text signature with an approved asset.
+
+## Members correction (2026-11-10)
+
+The final-refinement merge (PR #20) did not carry the Owner's Members-section instructions. A focused correction followed: **PR #23**, merge commit **`a90a5cb`** (head `fa62687`, head-commit guard; `validate`, `browser` and the Vercel Preview passed).
+
+- Both photographs removed from the black founder section (copy, signature, attribution, email kept; heading left and story right from lg, stacked below). The Mt. Athabasca photo and its caption are deleted from the repository.
+- New white "Members" section directly below it (`src/components/about/Members.tsx`): the founder with the Mohican photo (`public/about/founder-ultra.jpg`), "Michael Whitaker" / "Founder & Director", and a matching light-gray circle with a darker-gray person icon (`UserIcon`), "Are you the next member?" and a "Join the club" ArrowLink to `/join`. Two columns at every width, no overlap, map-image shadow, display heading, no backend.
+- Production (built from `a90a5cb`, Ready): `/about` 200 at 1440, 768 and 393; no horizontal overflow or console errors; no images in the founder section; Members follows it; footer count 1; `mailto:` and `/join` links present. Local: lint, build, Vitest 467 pass.
+- Cleanup: worktree `../cmr-site-about2` and branch `feat/cmr-about-members` (local and remote) removed; this closeout branch is removed after its PR merges. The primary worktree and its uncommitted records are untouched.
