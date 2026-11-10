@@ -1,7 +1,7 @@
 import { Container } from "@/components/Container";
 import { WeatherPanel } from "@/components/weather/WeatherPanel";
-import { FLUID_TYPE, fluidType } from "@/lib/fluid";
-import { BODY_TEXT_COLOR } from "@/lib/headings";
+import { FLUID_TYPE } from "@/lib/fluid";
+import { BODY_TEXT_COLOR, displayLarge } from "@/lib/headings";
 import { cn } from "@/lib/utils";
 
 /**
@@ -16,18 +16,13 @@ import { cn } from "@/lib/utils";
  * request), nothing that reads as a run being on. The caller makes it inert.
  */
 export function FindHero({ now, held = false }: { now?: Date; held?: boolean }) {
-  const heading = fluidType([60, 96, 124], [54, 86, 112]);
+  const heading = displayLarge();
   return (
     <section aria-labelledby={held ? undefined : "find-heading"} className="pt-12 pb-14 md:pt-16 md:pb-20 lg:pb-24">
       <Container className={cn("grid gap-12 lg:items-end lg:gap-14", !held && "lg:grid-cols-[minmax(0,1fr)_minmax(0,460px)]")}>
         <div>
           <h1 id={held ? undefined : "find-heading"} style={heading} className={cn(FLUID_TYPE, "font-black tracking-[-0.045em]")}>
-            <span className="block">
-              Pick a hill<span className="ss08">.</span>
-            </span>{" "}
-            <span className="block">
-              Show up<span className="ss08">.</span>
-            </span>
+            Hills on repeat<span className="ss08">.</span>
           </h1>
           {!held && (
           <p className={cn("mt-6 max-w-[560px] text-[18px] leading-[27px] md:mt-8", BODY_TEXT_COLOR)}>

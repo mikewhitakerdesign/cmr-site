@@ -31,7 +31,7 @@ test.describe("final refinements", () => {
     desktopOnly(info.project.name);
     await page.goto("/calendar");
     const cta = page.locator("header").getByRole("link", { name: "Join the club" });
-    const tip = page.locator("header [role=tooltip]");
+    const tip = page.locator("header [role=tooltip]").last();
     await expect(tip).toBeHidden();
     await cta.hover();
     await expect(tip).toBeVisible();

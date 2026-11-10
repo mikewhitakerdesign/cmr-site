@@ -213,9 +213,13 @@ describe("The Science page", () => {
     for (const s of SCIENCE_SOURCES) expect(container.querySelector(`#${sourceAnchor(s.id)}`)).not.toBeNull();
   });
 
-  it("uses no photographs or images, and no em dashes in its text", () => {
+  it("uses no photographs, only the Owner's Figure 3 illustration, and no em dashes in its text", () => {
     const { container } = render(<SciencePage />);
-    expect(container.querySelectorAll("img, picture, video")).toHaveLength(0);
+    expect(container.querySelectorAll("picture, video")).toHaveLength(0);
+    const imgs = container.querySelectorAll("img");
+    expect(imgs).toHaveLength(1);
+    expect(imgs[0].getAttribute("alt")).toMatch(/gluteus maximus.*quadriceps.*calf/i);
+    expect(container.querySelector("figure figcaption")?.textContent).not.toMatch(/silhouette/i);
     expect(container.textContent).not.toMatch(/—/);
   });
 

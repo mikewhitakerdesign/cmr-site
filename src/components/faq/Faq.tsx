@@ -3,7 +3,7 @@ import { Container } from "@/components/Container";
 import { SectionNav } from "@/components/SectionNav";
 import { FAQ_INTRO, FAQ_TITLE, faq } from "@/content/faq";
 import { FLUID_TYPE, fluidType } from "@/lib/fluid";
-import { BODY_TEXT_COLOR, DISPLAY_HEADING, displayHeading } from "@/lib/headings";
+import { BODY_TEXT_COLOR, DISPLAY_HEADING, impactH2 } from "@/lib/headings";
 import { cn } from "@/lib/utils";
 
 const LABEL = "font-mono text-[13px] leading-5 tracking-[0.1em] uppercase";
@@ -32,7 +32,7 @@ export function Faq() {
         {faq.map((c) => (
         <section key={c.id} id={c.id} aria-labelledby={`${c.id}-heading`} className="border-b border-foreground/30 py-12 md:py-16">
           <Container className="grid gap-8 md:gap-10">
-            <h2 id={`${c.id}-heading`} style={displayHeading()} className={cn(FLUID_TYPE, DISPLAY_HEADING, "text-balance")}>
+            <h2 id={`${c.id}-heading`} style={impactH2()} className={cn(FLUID_TYPE, DISPLAY_HEADING, "text-balance")}>
               <span aria-hidden className={cn(LABEL, "mb-3 block text-foreground/75")}>
                 {c.number}
               </span>

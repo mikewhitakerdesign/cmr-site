@@ -2,8 +2,8 @@ import { Children, isValidElement, type ReactNode } from "react";
 import { Container } from "@/components/Container";
 import { EYEBROW } from "@/components/hills/styles";
 import { sourceAnchor, sourceById, sourceNumber, shortCitation } from "@/content/science-sources";
-import { FLUID_TYPE, fluidType } from "@/lib/fluid";
-import { DISPLAY_HEADING } from "@/lib/headings";
+import { FLUID_TYPE } from "@/lib/fluid";
+import { DISPLAY_HEADING, standardH2 } from "@/lib/headings";
 import { SCIENCE_SECTIONS, sectionTone, type ScienceSectionId } from "@/lib/science";
 import { grayTintVars } from "@/lib/tints";
 import { cn } from "@/lib/utils";
@@ -25,8 +25,7 @@ import { cn } from "@/lib/utils";
  *     tie-dye (the "TBD" circles: `cmr-tie-dye` with `grayTintVars`), which
  *     restores the light palette inside black sections.
  *
- * Body copy keeps a reading measure (≤ 680px). The section heading is the CMR
- * display style at 40 / 52 / 80.
+ * Body copy keeps a reading measure (≤ 680px). The section heading is the Standard H2 role (src/lib/headings.ts).
  */
 
 export const BODY_COPY = "text-[18px] leading-[30px] text-foreground/85";
@@ -57,7 +56,7 @@ export function ScienceSection({ id, heading, children }: { id: ScienceSectionId
         </p>
         <h2
           id={`${id}-heading`}
-          style={fluidType([40, 52, 80], [42, 54, 80])}
+          style={standardH2()}
           className={cn(FLUID_TYPE, DISPLAY_HEADING, "mt-4 max-w-[16ch] text-balance md:mt-5")}
         >
           {heading}

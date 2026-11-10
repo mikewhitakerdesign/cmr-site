@@ -8,6 +8,8 @@ export type NavItem = {
   href: string;
   /** Opens off-site; rendered as a plain <a>. */
   external?: boolean;
+  /** Supplementary tooltip in the header navigation (hover and keyboard focus). */
+  tooltip?: string;
 };
 
 export type LegalLink = {
@@ -18,22 +20,16 @@ export type LegalLink = {
 
 /**
  * Primary navigation, per the approved CMR Figma (Home / Navigation).
- * Labels are Figma's; routes are the existing v1 routes (not renamed — see
+ * Labels: "Hills on Repeat" (/calendar) and "Hills on Hills" (/hills) per Owner direction
+ * 2026-11-10; routes are the existing v1 routes (not renamed — see
  * .aiom/work/define-cmr-v1-ia-and-content-model.md, decision 3).
  *
  * Owner decision 2026-11-07: Figma's "Apparel" / "Shirts n' Stuff" item is
  * omitted — merch is out of v1 scope and has no route. Add it here once scoped.
  */
 export const primaryNav: NavItem[] = [
-  { label: "Find a Run", href: "/calendar" },
-  {
-    label: (
-      <>
-        Chicago <s>Hills</s> Mtns
-      </>
-    ),
-    href: "/hills",
-  },
+  { label: "Hills on Repeat", href: "/calendar", tooltip: "Find your next group run with Chicago Mountain Runners." },
+  { label: "Hills on Hills", href: "/hills", tooltip: "Explore Chicago area hills and places to train." },
   // The Science (Owner brief, 2026-11-09): the editorial resource on hill repeats.
   { label: "The Science", href: "/the-science" },
   { label: "About", href: "/about" },
@@ -52,9 +48,9 @@ export const joinCta: NavItem = { label: "Join the club", href: "/join" };
  */
 export function buildFooterNav(social: SocialLinks): NavItem[] {
   return [
-    { label: "Find a Run", href: "/calendar" },
-    primaryNav[1],
-    // The Science: in the primary navigation's order, between Chicago Mtns and About.
+    // The primary navigation's labels, without the header-only tooltips.
+    ...primaryNav.slice(0, 2).map(({ label, href }) => ({ label, href })),
+    // The Science: in the primary navigation's order, between Hills on Hills and About.
     primaryNav.find((i) => i.href === "/the-science")!,
     { label: "About", href: "/about" },
     { label: "FAQ", href: "/faq" },

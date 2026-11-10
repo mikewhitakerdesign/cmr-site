@@ -1,5 +1,6 @@
 import { Container } from "@/components/Container";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
+import { standardH2 } from "@/lib/headings";
 import { onDarkSurface } from "@/lib/surfaces";
 import { cn } from "@/lib/utils";
 
@@ -30,7 +31,7 @@ export function FounderStory() {
     "--founder-py": [64, 96, 144],
     "--founder-pt": [104, 152, 200],
   });
-  const heading = fluidType([44, 60, 84], [46, 62, 82]);
+  const heading = standardH2();
   const body = fluidType([16, 18, 20], [26, 28, 31]);
 
   return (

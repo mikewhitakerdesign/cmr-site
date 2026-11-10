@@ -14,7 +14,7 @@ import { cmrTieDyeCircle } from "@/components/calendar/circles";
 import { WeatherCompact } from "@/components/weather/WeatherCompact";
 import { WeatherGuidance } from "@/components/weather/WeatherGuidance";
 import { FLUID_TYPE, fluidType } from "@/lib/fluid";
-import { BODY_TEXT_COLOR, DISPLAY_HEADING, displayHeading } from "@/lib/headings";
+import { BODY_TEXT_COLOR, DISPLAY_HEADING, impactH2, standardH2 } from "@/lib/headings";
 import { hillsWithPages } from "@/lib/hills";
 import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
 import { getRun, listedRuns, nextWithStatus, type Run } from "@/lib/runs";
@@ -108,7 +108,7 @@ export default async function RunPage({ params }: { params: Promise<{ slug: stri
       <section aria-labelledby="meet-heading" className="border-t border-foreground/15 py-16 md:py-24">
         <Container className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
           <div className="flex flex-col">
-            <h2 id="meet-heading" style={displayHeading()} className={cn(FLUID_TYPE, DISPLAY_HEADING)}>
+            <h2 id="meet-heading" style={impactH2()} className={cn(FLUID_TYPE, DISPLAY_HEADING)}>
               Where to meet<span className="ss08">.</span>
             </h2>
             <p className="mt-6 flex items-start gap-2 text-[20px] leading-[30px] font-semibold">
@@ -137,7 +137,7 @@ export default async function RunPage({ params }: { params: Promise<{ slug: stri
 
       <section aria-labelledby="first-heading" className={cn("bg-primary py-16 text-primary-foreground md:py-20", onDarkSurface)}>
         <Container className="grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
-          <h2 id="first-heading" style={fluidType([44, 56, 72], [44, 56, 68])} className={cn(FLUID_TYPE, DISPLAY_HEADING)}>
+          <h2 id="first-heading" style={standardH2()} className={cn(FLUID_TYPE, DISPLAY_HEADING)}>
             First time<span className="ss08">?</span>
           </h2>
           <div>
@@ -256,7 +256,7 @@ function WhatToExpect({ run }: { run: Run }) {
   return (
     <section aria-labelledby="expect-heading" className="py-16 md:py-24">
       <Container>
-        <h2 id="expect-heading" style={displayHeading()} className={cn(FLUID_TYPE, DISPLAY_HEADING)}>
+        <h2 id="expect-heading" style={impactH2()} className={cn(FLUID_TYPE, DISPLAY_HEADING)}>
           What to expect<span className="ss08">.</span>
         </h2>
         <dl className="mt-10 border-b border-foreground md:mt-14">

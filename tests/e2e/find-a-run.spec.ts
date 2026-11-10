@@ -32,7 +32,7 @@ const isoInDays = (n: number) => {
 test.describe("/calendar", () => {
   test("hero, order of sections and weather", async ({ page }) => {
     await page.goto("/calendar");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pick a hill. Show up.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hills on repeat.");
     await expect(page.getByText("FIND A RUN", { exact: true })).toHaveCount(0); // eyebrow removed
     const headings = await page.locator("main h2").allTextContents();
     expect(headings.map((h) => h.trim())).toEqual([

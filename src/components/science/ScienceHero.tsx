@@ -1,6 +1,7 @@
 import { Container } from "@/components/Container";
 import { HillHeroBackground, seedFor } from "@/components/hills/HillHero";
-import { FLUID_TYPE, fluidType } from "@/lib/fluid";
+import { FLUID_TYPE } from "@/lib/fluid";
+import { pageH1 } from "@/lib/headings";
 import { onDarkSurface } from "@/lib/surfaces";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +16,7 @@ import { cn } from "@/lib/utils";
  * paragraph (Owner's text, verbatim); no subtitle, no eyebrow.
  */
 export function ScienceHero() {
-  const heading = fluidType([46, 84, 120], [44, 76, 108]);
+  const heading = pageH1();
 
   return (
     <section

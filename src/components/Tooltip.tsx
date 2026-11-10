@@ -22,6 +22,7 @@ export function Tooltip({
   side = "top",
   align = "start",
   className,
+  tipClassName,
 }: {
   text: string;
   children: ReactElement<{ "aria-describedby"?: string }>;
@@ -29,6 +30,8 @@ export function Tooltip({
   align?: "start" | "center" | "end";
   /** Classes for the wrapper: carry the layout the control had (grid placement, width, height). */
   className?: string;
+  /** Extra classes for the tooltip itself (e.g. `max-md:hidden` where the control sits in a scrolling row). */
+  tipClassName?: string;
 }) {
   const id = useId();
   return (
@@ -45,6 +48,7 @@ export function Tooltip({
           align === "end" && "right-0",
           align === "center" && "left-1/2 -translate-x-1/2",
           "motion-safe:transition-opacity motion-safe:duration-150",
+          tipClassName,
           // Hover: after a short, natural delay. Keyboard focus: immediately.
           "group-hover/tip:visible group-hover/tip:opacity-100 group-hover/tip:delay-300",
           "group-has-focus-visible/tip:visible group-has-focus-visible/tip:opacity-100",

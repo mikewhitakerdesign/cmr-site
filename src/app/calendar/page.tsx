@@ -13,10 +13,10 @@ import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
 import { toClubTime } from "@/lib/schedule";
 
 export const metadata: Metadata = {
-  title: "Find a Run | Chicago Mountain Runners",
+  title: "Hills on Repeat | Chicago Mountain Runners",
   description: OFFICIAL_RUNS_ON_HOLD
     ? "Official group runs are on hold while we review park-use requirements. Explore Chicago's hills and join the club for updates."
-    : "Pick a hill. Show up. Weekly hill repeats in Chicago, all paces welcome, no registration.",
+    : "Find your next Chicago group run. Weekly hill repeats with Chicago Mountain Runners, all paces welcome, no registration.",
 };
 
 /**

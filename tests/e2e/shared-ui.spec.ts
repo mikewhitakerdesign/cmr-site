@@ -149,7 +149,7 @@ test.describe("header", () => {
   test("desktop links are 80% opacity except the current page", async ({ page }, info) => {
     test.skip(info.project.name !== "desktop", "opacity treatment is desktop-only in Figma");
     const nav = page.getByRole("navigation", { name: "Primary" });
-    expect(await css(nav.getByRole("link", { name: "Find a Run" }), "opacity")).toBe("0.8");
+    expect(await css(nav.getByRole("link", { name: "Hills on Repeat" }), "opacity")).toBe("0.8");
     expect(await css(nav.getByRole("link", { name: "About" }), "opacity")).toBe("1");
     await expect(nav.getByRole("link", { name: "About" })).toHaveAttribute("aria-current", "page");
   });
@@ -418,8 +418,7 @@ test.describe("social links (none configured in this build)", () => {
     const nav = page.getByRole("navigation", { name: "Footer" });
     await expect(nav.getByText("Navigate", { exact: true })).toBeVisible();
     const links = nav.getByRole("link"); // the visible copy only
-    await expect(links).toHaveText(["Find a Run", "Chicago Hills Mtns", "The Science", "About", "FAQ", "Join the club"]);
-    await expect(nav.locator("s")).toHaveText("Hills");
+    await expect(links).toHaveText(["Hills on Repeat", "Hills on Hills", "The Science", "About", "FAQ", "Join the club"]);
     const boxes = [];
     for (let i = 0; i < 5; i++) boxes.push(await box(links.nth(i)));
     for (let i = 1; i < 5; i++) {

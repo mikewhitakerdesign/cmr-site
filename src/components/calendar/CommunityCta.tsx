@@ -1,7 +1,7 @@
 import { Container } from "@/components/Container";
 import { CtaLink } from "@/components/CtaLink";
-import { FLUID_TYPE, fluidType } from "@/lib/fluid";
-import { DISPLAY_HEADING } from "@/lib/headings";
+import { FLUID_TYPE } from "@/lib/fluid";
+import { DISPLAY_HEADING, standardH2 } from "@/lib/headings";
 import { Tooltip } from "@/components/Tooltip";
 import { JOIN_TOOLTIP, joinCta } from "@/lib/navigation";
 import { tintVars } from "@/lib/tints";
@@ -22,7 +22,7 @@ export function CommunityCta() {
     >
       <div aria-hidden className="cmr-tie-dye absolute -z-10" />
       <Container className="flex flex-col items-start gap-8 lg:flex-row lg:items-end lg:justify-between">
-        <h2 id="community-heading" style={fluidType([44, 56, 72], [44, 56, 68])} className={cn(FLUID_TYPE, DISPLAY_HEADING, "max-w-[18ch] text-balance")}>
+        <h2 id="community-heading" style={standardH2()} className={cn(FLUID_TYPE, DISPLAY_HEADING, "max-w-[18ch] text-balance")}>
           Come for the hills. Stay for the people<span className="ss08">.</span>
         </h2>
         <Tooltip text={JOIN_TOOLTIP} align="end">

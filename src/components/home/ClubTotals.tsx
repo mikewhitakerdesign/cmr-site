@@ -3,7 +3,7 @@ import { RocketIcon } from "@/components/icons";
 import { Odometer } from "@/components/Odometer";
 import type { ClubTotals as ClubTotalsData } from "@/lib/club-totals";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
-import { DISPLAY_HEADING, displayHeading } from "@/lib/headings";
+import { DISPLAY_HEADING, impactH2 } from "@/lib/headings";
 import { tintVars } from "@/lib/tints";
 import { cn } from "@/lib/utils";
 
@@ -47,7 +47,7 @@ export function ClubTotals({ totals }: { totals: ClubTotalsData | null }) {
     "--totals-label-mt": [6, 6, 12],
   });
   // Owner direction (2026-11-08): the "Get high in the city." size (was 32 / 44 / 64).
-  const heading = displayHeading();
+  const heading = impactH2();
   const value = fluidType([40, 40, 80], [40, 40, 80]);
   const label = fluidType([13, 13, 16], [18, 18, 24]);
 

@@ -6,6 +6,7 @@ import { Tooltip } from "@/components/Tooltip";
 import { JOIN_TOOLTIP } from "@/lib/navigation";
 import { NextRunCard } from "@/components/home/NextRunCard";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
+import { displayXL } from "@/lib/headings";
 import type { RunOccurrence } from "@/lib/runs";
 import { onDarkSurface } from "@/lib/surfaces";
 import { cn } from "@/lib/utils";
@@ -60,7 +61,7 @@ export function HomeHero({ next, now, held }: { next: RunOccurrence | null; now:
     "--hero-card-w": [345, 380, 542],
     "--hero-cta-h": [48, 56, 56],
   });
-  const heading = fluidType([48, 98, 209], [52, 102, 204]);
+  const heading = displayXL();
   const cta = fluidType([15, 18, 18], [23, 27, 27]);
 
   return (

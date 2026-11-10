@@ -2,7 +2,7 @@ import { ArrowLink } from "@/components/ArrowLink";
 import { Container } from "@/components/Container";
 import { HillsExplorer } from "@/components/home/HillsExplorer";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
-import { BODY_TEXT_COLOR, DISPLAY_HEADING, displayHeading } from "@/lib/headings";
+import { BODY_TEXT_COLOR, DISPLAY_HEADING, impactH2 } from "@/lib/headings";
 import { DEFAULT_PROFILE_SLUG, type Hill } from "@/lib/hills";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +39,7 @@ export function ChicagoHills({ hills }: { hills: Hill[] }) {
     "--hills-fig-mt": [28, 14, 0],
     "--hills-list-mt": [34, 34, 48],
   });
-  const heading = displayHeading();
+  const heading = impactH2();
   const copy = fluidType([16, 16, 18], [24, 24, 27]);
 
   const intro = (

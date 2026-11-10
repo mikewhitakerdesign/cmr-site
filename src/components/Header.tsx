@@ -105,13 +105,13 @@ export default function Header({ items = primaryNav, cta = joinCta, className }:
 
           <nav aria-label="Primary" data-slot="primary-nav" className="col-span-2 row-start-2 border-t border-foreground md:border-0">
             <ul className="flex max-md:overflow-x-auto max-md:[scrollbar-width:none] md:flex-wrap md:justify-end md:gap-x-4 lg:gap-x-9 text-[15px] max-[393px]:text-[clamp(11.5px,3.65vw,15px)] leading-5 md:text-p-sm">
-              {items.map((item) => (
-                <li key={item.href} className="flex-auto md:flex-none">
+              {items.map((item) => {
+                const link = (
                   <NavLink
                     href={item.href}
                     className={cn(
                       // Mobile: the whole 48px cell is the link.
-                      "flex h-12 items-center justify-center px-1.5 font-medium whitespace-nowrap outline-none",
+                      "flex h-12 items-center justify-center px-1.5 font-medium whitespace-nowrap outline-none max-md:flex-1",
                       "focus-visible:ring-3 focus-visible:ring-ring max-md:focus-visible:ring-inset",
                       "md:inline-block md:h-auto md:rounded-xs md:px-0 lg:opacity-80",
                       "underline-offset-4 hover:underline hover:opacity-100",
@@ -119,11 +119,23 @@ export default function Header({ items = primaryNav, cta = joinCta, className }:
                       "focus-visible:opacity-100",
                     )}
                   >
-                    {/* One child: a flex container would drop the spaces around the struck "Hills". */}
+                    {/* One child: a flex container would drop the spaces around any markup in the label. */}
                     <span>{item.label}</span>
                   </NavLink>
-                </li>
-              ))}
+                );
+                return (
+                  <li key={item.href} className="flex-auto md:flex-none">
+                    {item.tooltip ? (
+                      // The row scrolls sideways below md, which would clip a tooltip, so it shows from md up.
+                      <Tooltip text={item.tooltip} side="bottom" align="start" tipClassName="max-md:hidden" className="flex w-full md:inline-flex md:w-auto">
+                        {link}
+                      </Tooltip>
+                    ) : (
+                      link
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </nav>
 

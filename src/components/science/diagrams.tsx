@@ -1,4 +1,4 @@
-import { RUNNER } from "@/components/science/runner";
+import Image from "next/image";
 import { grayTintVars } from "@/lib/tints";
 import { cn } from "@/lib/utils";
 
@@ -35,54 +35,23 @@ export const JOINT_ACTIONS: { joint: string; muscles: string; action: string }[]
   { joint: "Ankle plantar flexors", muscles: "Gastrocnemius and soleus (the calf)", action: "Push the foot against the slope toward the end of stance." },
 ];
 
-const MUSCLE_KEY = [
-  { key: "gluteus", n: 1, name: "Gluteus maximus" },
-  { key: "quadriceps", n: 2, name: "Quadriceps" },
-  { key: "calf", n: 3, name: "Calf (gastrocnemius, soleus)" },
-] as const;
-
 /**
- * Figure 3: one solid silhouette of a runner driving up a slope (geometry and
- * provenance: ./runner.ts), with three numbered markers over the push-off leg
- * (the gluteus maximus behind the hip, the quadriceps on the front of the
- * thigh, the calf muscles behind the shank) and a key beneath. No overlays and
- * no leader lines. Each group's joint action is in the text beside it
- * (JOINT_ACTIONS, rendered by the Physiology section).
+ * Figure 3: the Owner's artwork (a transparent PNG, used as supplied: runner,
+ * slope, numbered markers and the legend are part of the image), so the frame's
+ * grayscale tie-dye shows through. Each group's joint action is in the text
+ * beside it (JOINT_ACTIONS, rendered by the Physiology section).
  */
 export function RunnerIllustration() {
-  const { ground, markers, silhouette } = RUNNER;
   return (
     <div data-slot="runner-illustration">
-      <svg
-        viewBox="20 30 260 300"
-        role="img"
-        aria-label="Silhouette of a runner driving up a slope, leaning into the hill, the trailing leg extended behind and the other knee driven forward. Numbered markers on the pushing leg show 1, the gluteus maximus behind the hip; 2, the quadriceps on the front of the thigh; and 3, the calf muscles behind the lower leg."
-        className="mx-auto w-full max-w-[380px] text-foreground"
-      >
-        <line {...ground} stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" />
-        <path data-slot="runner-silhouette" d={silhouette} className="fill-current" />
-        {MUSCLE_KEY.map(({ key, n }) => (
-          <g key={key} data-slot={`marker-${key}`}>
-            <circle cx={markers[key].x} cy={markers[key].y} r={10} className="fill-background stroke-current" strokeWidth={1.5} />
-            <text x={markers[key].x} y={markers[key].y + 4.5} textAnchor="middle" className="fill-current text-[13px] font-bold">
-              {n}
-            </text>
-          </g>
-        ))}
-      </svg>
-      <ol data-slot="muscle-key" className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-p-sm">
-        {MUSCLE_KEY.map(({ n, name }) => (
-          <li key={n} className="flex items-start gap-2">
-            <span aria-hidden className="flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground text-[12px] font-bold text-background">
-              {n}
-            </span>
-            <span className="pt-0.5 font-medium">
-              <span className="sr-only">{n}. </span>
-              {name}
-            </span>
-          </li>
-        ))}
-      </ol>
+      <Image
+        src="/science/uphill-push-off.png"
+        alt="A runner driving up a slope, leaning into the hill, the trailing leg extended behind and the other knee driven forward. Numbered markers on the pushing leg are keyed in a legend: 1, gluteus maximus; 2, quadriceps; 3, calf (gastrocnemius, soleus)."
+        width={1254}
+        height={1254}
+        sizes="(min-width: 1280px) 480px, (min-width: 768px) 560px, 90vw"
+        className="mx-auto h-auto w-full max-w-[480px]"
+      />
     </div>
   );
 }

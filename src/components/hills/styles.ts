@@ -1,4 +1,4 @@
-import { DISPLAY_HEADING, displayHeading } from "@/lib/headings";
+import { DISPLAY_HEADING, impactH2 } from "@/lib/headings";
 import { cn } from "@/lib/utils";
 
 /**
@@ -15,7 +15,7 @@ export const EYEBROW = "font-mono text-[14px] leading-[21px] tracking-[0.107em] 
  * for every section heading except the hero name and the lede (Owner
  * direction, refinement pass 2026-11-08; was 36 / 36 / 64).
  */
-export const sectionHeading = displayHeading;
+export const sectionHeading = impactH2;
 export const SECTION_HEADING = cn(DISPLAY_HEADING, "text-balance");
 
 /** Body copy 18/27. */

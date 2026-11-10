@@ -52,7 +52,7 @@ test.describe("/calendar while held", () => {
     await expect(backdrop).toHaveAttribute("aria-hidden", "true");
     expect(await backdrop.locator("a, button, input, [tabindex]").count()).toBe(0);
     expect(await backdrop.evaluate((e) => getComputedStyle(e).pointerEvents)).toBe("none");
-    await expect(backdrop).toContainText("Pick a hill");
+    await expect(backdrop).toContainText("Hills on repeat");
     await expect(backdrop.getByText(/weekly|forecast|\d{1,2}:\d{2}/i)).toHaveCount(0);
     // No dismiss control: the only buttons in the section are none.
     await expect(hold.getByRole("button")).toHaveCount(0);

@@ -7,8 +7,8 @@ import { CtaLink } from "@/components/CtaLink";
 import { Field } from "@/components/form/Field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FLUID_TYPE, fluidType } from "@/lib/fluid";
-import { DISPLAY_HEADING } from "@/lib/headings";
+import { FLUID_TYPE } from "@/lib/fluid";
+import { DISPLAY_HEADING, standardH2 } from "@/lib/headings";
 import { JOIN_FORM_ID, JOIN_LIMITS, validateJoin, type JoinErrors } from "@/lib/join";
 import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
 import { cn } from "@/lib/utils";
@@ -99,7 +99,7 @@ export function JoinForm() {
         data-slot="join-success"
         className="rounded-xl bg-accent p-6 text-accent-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring md:p-10"
       >
-        <h2 style={fluidType([44, 56, 72], [44, 56, 68])} className={cn(FLUID_TYPE, DISPLAY_HEADING)}>
+        <h2 style={standardH2()} className={cn(FLUID_TYPE, DISPLAY_HEADING)}>
           YOU&apos;RE IN.
         </h2>
         <p className="mt-5 max-w-[48ch] text-[20px] leading-[30px]">

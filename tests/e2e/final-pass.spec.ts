@@ -156,7 +156,7 @@ test.describe("motion control", () => {
     // the render loop is really stopped: no new frames are drawn
     expect(await page.evaluate(() => localStorage.getItem("cmr-motion"))).toBe("off");
     // client navigation keeps it paused
-    await page.locator("footer").getByRole("link", { name: "Find a Run" }).click();
+    await page.locator("footer").getByRole("link", { name: "Hills on Repeat" }).click();
     await expect(page).toHaveURL(/\/calendar$/);
     await expect(page.getByRole("button", { name: "Resume motion" })).toBeVisible();
     if (!OFFICIAL_RUNS_ON_HOLD) {
