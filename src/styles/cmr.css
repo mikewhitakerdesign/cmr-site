@@ -211,3 +211,22 @@ html[data-motion="on"] .wx-gust { animation: wx-gust 3s ease-in-out infinite alt
   --ring: var(--mwd-color-focus-ring);
   --focus-offset: var(--cmr-tint-gray-wash);
 }
+
+/*
+ * About hero circles (/about). A slow float on the circle and, on desktop, a
+ * small drift toward the cursor on its positioned wrapper (--mx/--my in -1…1,
+ * set by HeroCircles). Both are transform-only and exist only under
+ * `html[data-motion="on"]`, so the system reduced-motion setting and the
+ * footer's Pause motion both stop them.
+ */
+@keyframes about-float {
+  from { transform: translateY(-5px); }
+  to { transform: translateY(5px); }
+}
+html[data-motion="on"] .about-float {
+  animation: about-float var(--float-dur, 8s) ease-in-out var(--float-delay, 0s) infinite alternate;
+}
+html[data-motion="on"] .about-parallax {
+  transform: translate(calc(var(--mx, 0) * var(--depth, 8) * 1px), calc(var(--my, 0) * var(--depth, 8) * 1px));
+  transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
+}

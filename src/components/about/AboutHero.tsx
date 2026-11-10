@@ -1,6 +1,6 @@
+import { HeroCircles, type HeroCircle } from "@/components/about/HeroCircles";
 import { Container } from "@/components/Container";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
-import { tintVars } from "@/lib/tie-dye";
 import { cn } from "@/lib/utils";
 
 /**
@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
  * headline and intro; below xl they reflow into a 2 × 2 grid under the copy,
  * with the second column stepped down for the same playful stagger.
  */
-const CIRCLES: { text: string; size: number; left: number; top: number }[] = [
+const CIRCLES: HeroCircle[] = [
   { text: "Show up, climb, regroup, repeat.", size: 190, left: 150, top: 0 },
   { text: "Totally Free. No Fees.", size: 250, left: 10, top: 175 },
   { text: "Any Pace welcome. I’m slow AF.", size: 215, left: 215, top: 335 },
@@ -23,7 +23,7 @@ const CIRCLES: { text: string; size: number; left: number; top: number }[] = [
 export function AboutHero() {
   const layout = fluidVars({
     "--about-pt": [56, 64, 80],
-    "--about-pb": [64, 80, 128],
+    "--about-pb": [24, 32, 40],
     "--about-copy-mt": [28, 32, 40],
   });
   const heading = fluidType([44, 76, 100], [46, 78, 98]);
@@ -33,9 +33,9 @@ export function AboutHero() {
     <section
       aria-labelledby="about-heading"
       style={layout}
-      className="bg-background text-foreground pt-(--about-pt-a) pb-(--about-pb-a) md:pt-(--about-pt-b) md:pb-(--about-pb-b)"
+      className="relative z-10 bg-background text-foreground pt-(--about-pt-a) pb-(--about-pb-a) md:pt-(--about-pt-b) md:pb-(--about-pb-b)"
     >
-      <Container className="xl:relative xl:min-h-[760px]">
+      <Container className="xl:relative xl:min-h-[640px]">
         <h1
           id="about-heading"
           style={heading}
@@ -52,29 +52,7 @@ export function AboutHero() {
           elevation and run them until they add up to something.
         </p>
 
-        <ul
-          className={cn(
-            "mt-12 grid max-w-[460px] grid-cols-2 gap-x-4 gap-y-4 sm:gap-x-6 md:max-w-[560px]",
-            "xl:absolute xl:top-4 xl:right-12 xl:mt-0 xl:block xl:h-[760px] xl:w-[440px] xl:max-w-none",
-          )}
-        >
-          {CIRCLES.map((c, i) => (
-            <li
-              key={c.text}
-              style={{ ...tintVars(i), "--size": `${c.size}px`, "--left": `${c.left}px`, "--top": `${c.top}px` } as React.CSSProperties}
-              className={cn(
-                "relative isolate flex aspect-square w-full items-center justify-center overflow-hidden rounded-full px-[14%] text-center",
-                "text-[15px] leading-[1.15] font-extrabold text-balance sm:text-[19px] md:text-[22px]",
-                i % 2 === 1 && "mt-6 md:mt-8 xl:mt-0",
-                "xl:absolute xl:text-[22px] xl:leading-[1.1] xl:left-(--left) xl:top-(--top) xl:w-(--size)",
-                i === 3 && "xl:text-[24px]",
-              )}
-            >
-              <span aria-hidden className="cmr-tie-dye absolute -z-10" />
-              {c.text}
-            </li>
-          ))}
-        </ul>
+        <HeroCircles circles={CIRCLES} />
       </Container>
     </section>
   );
