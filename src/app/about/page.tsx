@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AboutHero } from "@/components/about/AboutHero";
 import { FounderStory } from "@/components/about/FounderStory";
 import { GetHighInTheCity } from "@/components/about/GetHighInTheCity";
+import { Members } from "@/components/about/Members";
 import { JustShowUp } from "@/components/home/JustShowUp";
 
 const description =
@@ -20,6 +21,7 @@ export default function AboutPage() {
     <>
       <AboutHero />
       <FounderStory />
+      <Members />
       <GetHighInTheCity />
       <JustShowUp />
     </>
