@@ -15,7 +15,7 @@ test.describe("About", () => {
     await expect(items.locator("> div")).toHaveText([
       "Show up, run the hill, repeat.",
       "Totally Free. No Fees.",
-      "Any Pace welcome.",
+      "Any pace, everybody welcome.",
       "First-timers to ultra-marathoners.",
     ]);
     const founderTop = (await page.locator("section[aria-labelledby=founder-heading]").boundingBox())!.y;
@@ -88,4 +88,26 @@ test("nav tooltips show on hover and focus for the two renamed links only (md an
   expect(b.x).toBeGreaterThanOrEqual(0);
   expect(b.x + b.width).toBeLessThanOrEqual(page.viewportSize()!.width);
   await expect(nav.getByRole("link", { name: "The Science" })).not.toHaveAttribute("aria-describedby");
+});
+
+test("The Science opens at the top from a scrolled page, and section links still jump", async ({ page }) => {
+  await page.goto("/about");
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.locator("footer").getByRole("link", { name: "The Science" }).click();
+  await expect(page).toHaveURL(/\/the-science$/);
+  // No glide through the page: the first frames after arrival are already at the top.
+  await page.waitForTimeout(150);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  await expect(page.locator("#science-heading")).toBeInViewport();
+  await page.getByRole("navigation", { name: "On this page" }).getByRole("link").nth(1).click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
+});
+
+test("/hills heading holds two lines on large screens; /calendar drops the two closing sections", async ({ page }, info) => {
+  await page.goto("/hills");
+  const lines = await page.locator("h1 > span").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+  if (info.project.name === "desktop") expect(new Set(lines).size).toBe(2);
+  await page.goto("/calendar");
+  await expect(page.getByRole("heading", { name: /Know your mountain|Stay for the people/ })).toHaveCount(0);
+  expect(await noHScroll(page)).toBe(true);
 });

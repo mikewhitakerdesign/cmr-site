@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 const CIRCLES = [
   "Show up, run the hill, repeat.",
   "Totally Free. No Fees.",
-  "Any Pace welcome.",
+  "Any pace, everybody welcome.",
   "First-timers to ultra-marathoners.",
 ];
 

@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import { CommunityCta } from "@/components/calendar/CommunityCta";
 import { PermitHold } from "@/components/calendar/PermitHold";
 import { FindHero } from "@/components/calendar/FindHero";
 import { FirstTimer } from "@/components/calendar/FirstTimer";
-import { HillsLink } from "@/components/calendar/HillsLink";
 import { RunCalendar, type CalendarRun } from "@/components/calendar/RunCalendar";
 import { UpcomingList } from "@/components/calendar/UpcomingList";
 import { WeatherGuidance } from "@/components/weather/WeatherGuidance";
@@ -30,8 +28,6 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
     return (
       <>
         <PermitHold />
-        <HillsLink />
-        <CommunityCta />
       </>
     );
   }
@@ -57,8 +53,6 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
       <RunCalendar runs={runs} today={today} initialView={view} initialDate={date} />
       <WeatherGuidance className="border-t border-foreground/15" />
       <FirstTimer />
-      <HillsLink />
-      <CommunityCta />
     </>
   );
 }

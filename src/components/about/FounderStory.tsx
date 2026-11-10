@@ -6,16 +6,20 @@ import { onDarkSurface } from "@/lib/surfaces";
 import { cn } from "@/lib/utils";
 
 /**
- * Temporary text signature (no handwriting font, no dependency): the founder's
- * name in the page's own type, oblique and light. Replace the <span> with an
- * approved signature asset (next/image, alt="") when one exists. Hidden from
- * assistive tech because the printed name directly below says the same.
+ * The founder's handwritten signature (Owner asset: transparent, white ink for
+ * the black section, rotated to read horizontally). Decorative (alt=""): the
+ * printed name directly below says the same.
  */
 function Signature() {
   return (
-    <span aria-hidden className="block text-[32px] leading-none font-light tracking-tight text-primary-foreground italic md:text-[40px]">
-      Michael Whitaker
-    </span>
+    <Image
+      src="/about/founder-signature.png"
+      alt=""
+      width={1058}
+      height={436}
+      sizes="240px"
+      className="h-auto w-[180px] md:w-[240px]"
+    />
   );
 }
 
@@ -69,16 +73,16 @@ export function FounderStory() {
               better at it, or are simply curious about how far a little elevation can go.
             </p>
           </div>
-          <div className="mt-10 flex items-center gap-4 text-[18px] leading-[27px] md:mt-12 md:gap-6">
+          <div className="mt-10 flex items-stretch gap-4 text-[18px] leading-[27px] md:mt-12 md:gap-6">
             <Image
-              src="/about/founder-ultra.jpg"
-              alt="Michael Whitaker at a night ultramarathon aid station, smiling and holding a decorated storage bin that reads “We love you”."
-              width={176}
-              height={176}
-              sizes="88px"
-              className="size-16 shrink-0 rounded-full object-cover object-[50%_22%] md:size-[88px]"
+              src="/about/founder-avatar.png"
+              alt="Michael Whitaker, wearing a Ciele cap and sunglasses."
+              width={500}
+              height={500}
+              sizes="(min-width: 768px) 176px, 128px"
+              className="aspect-square h-auto w-32 shrink-0 self-start rounded-full object-cover md:w-44"
             />
-            <div>
+            <div className="min-w-0 self-center">
               <Signature />
               <p className="mt-3 font-bold">Michael Whitaker</p>
               <p className="text-primary-foreground/90">Founder &amp; Director</p>

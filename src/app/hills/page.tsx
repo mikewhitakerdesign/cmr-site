@@ -45,7 +45,7 @@ export default function HillsPage() {
       <section aria-labelledby="hills-heading" style={layout} className="pt-(--head-pt-a) pb-(--head-pb-a) md:pt-(--head-pt-b) md:pb-(--head-pb-b)">
         <Container>
           <h1 id="hills-heading" style={heading} className={cn(FLUID_TYPE, "font-black tracking-[-0.045em]")}>
-            Hills on hills on hills<span className="ss08">.</span>
+            <span className="lg:block">Hills on hills</span> <span className="lg:block">on hills<span className="ss08">.</span></span>
           </h1>
           <p className={cn("max-w-[600px] pt-6 text-[18px] leading-[27px] md:pt-8", BODY_TEXT_COLOR)}>
             The places in and around a very flat city where the ground goes up on purpose. Each one has a page: what we know,

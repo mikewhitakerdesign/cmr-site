@@ -56,7 +56,7 @@ test.describe("final refinements", () => {
 
   test("the hold's Join CTA and the homepage Join CTA carry the same tooltip", async ({ page }, info) => {
     desktopOnly(info.project.name);
-    for (const path of ["/calendar", "/"]) {
+    for (const path of ["/hills", "/"]) {
       await page.goto(path);
       const link = page.locator("main").getByRole("link", { name: "Join the club" }).first();
       await expect(link).toHaveAccessibleDescription(TIP);

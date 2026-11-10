@@ -40,8 +40,6 @@ test.describe("/calendar", () => {
       "Running calendar.",
       "Bad weather. Good hills.",
       "New here? Good.",
-      "Know your mountain.",
-      "Come for the hills. Stay for the people.",
     ]);
     const weather = page.getByRole("region", { name: "Current weather" });
     await expect(weather).toBeVisible();
