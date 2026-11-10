@@ -133,6 +133,15 @@ Pre-merge validation (macOS, final tree): lint, tsc, tokens:check, build pass; V
 
 **Cleanup.** After the merge: the implementation worktree `../cmr-site-science`, the local branches `feat/cmr-the-science` and `science-final` (the merged branch's local name), and the remote `feat/cmr-the-science` are removed (project convention). This closeout branch `docs/aiom-close-the-science` is removed after its PR merges. Not touched: the primary worktree (`plan/cmr-join-page` with its uncommitted records), PR #5 and other branches.
 
+## Follow-up change (Owner, 2026-11-10): hero copy and Figure 3
+
+PR #19 merged as **`c3727ed`** (head `1e5e90a`, merged with a head-commit guard). A direct push to `main` was attempted on the Owner's authorization and declined by `main`'s ruleset (pull request and required status checks required; also blocks deletion and non-fast-forward); it was not bypassed, and the Owner then authorized merging the PR. `validate`, `browser` and the Vercel Preview passed on the PR head; CI on `main` at `c3727ed` passed; production (https://cmr-site-xi.vercel.app) is Ready, built from `c3727ed`.
+
+- **Hero:** heading "The science / behind hill / repeats?" on three lines from 1024px, balanced wrapping below; subtitle and intro replaced by one paragraph (max 560px). Shared hill hero background untouched.
+- **Figure 3:** the segmented runner drawing is replaced by one solid silhouette (`runner.ts`) with three numbered markers on the pushing leg and the existing key. The silhouette is an original outline designed from the Owner's reference posture; no third-party artwork was used or traced (no suitable public-domain vector was reachable: Commons options were CC BY-SA or stylized Olympic pictograms). It was generated offline from tapered limb shapes (a local `shapely` script, not shipped or added as a dependency), smoothed into a single path.
+- **Production smoke (1440 and 393):** `/the-science` 200; three heading lines at desktop; one hero paragraph, exact text; title "The science behind hill repeats | Chicago Mountain Runners"; one silhouette and three markers; no horizontal overflow; no console errors.
+- Pre-existing `@visual` baseline failures are unchanged.
+
 ## Follow-ups (Owner; not blocking)
 
 - Re-baseline the macOS `@visual` screenshots (34 stale since PRs #11 and #14–#16, plus the footer for this PR) in a separate, Owner-approved step.
