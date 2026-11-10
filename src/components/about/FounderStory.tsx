@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Container } from "@/components/Container";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
 import { standardH2 } from "@/lib/headings";
@@ -18,13 +19,11 @@ function Signature() {
   );
 }
 
-const EMAIL = "michael@whitaker.design";
-
 /**
  * "From mountains to molehills." — the extended full-width black founder
  * section (Figma About 02, 1:5433): the heading on the left and the story in a
  * generous right column from lg, stacked below. The top padding leaves room for
- * the hero circles that overlap this section. Photographs live in Members.
+ * the hero circles that overlap this section. The founder avatar sits beside the signature.
  */
 export function FounderStory() {
   const layout = fluidVars({
@@ -70,20 +69,21 @@ export function FounderStory() {
               better at it, or are simply curious about how far a little elevation can go.
             </p>
           </div>
-          <div className="mt-10 text-[18px] leading-[27px] md:mt-12">
-            <Signature />
-            <p className="mt-3 font-bold">Michael Whitaker</p>
-            <p className="text-primary-foreground/90">Founder &amp; Director</p>
-            <p className="text-primary-foreground/90">Chicago Mountain Runners</p>
-            <p className="mt-4">
-              <span className="text-primary-foreground/90">Email: </span>
-              <a
-                href={`mailto:${EMAIL}`}
-                className="rounded-xs font-medium underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring"
-              >
-                {EMAIL}
-              </a>
-            </p>
+          <div className="mt-10 flex items-center gap-4 text-[18px] leading-[27px] md:mt-12 md:gap-6">
+            <Image
+              src="/about/founder-ultra.jpg"
+              alt="Michael Whitaker at a night ultramarathon aid station, smiling and holding a decorated storage bin that reads “We love you”."
+              width={176}
+              height={176}
+              sizes="88px"
+              className="size-16 shrink-0 rounded-full object-cover object-[50%_22%] md:size-[88px]"
+            />
+            <div>
+              <Signature />
+              <p className="mt-3 font-bold">Michael Whitaker</p>
+              <p className="text-primary-foreground/90">Founder &amp; Director</p>
+              <p className="text-primary-foreground/90">Chicago Mountain Runners</p>
+            </div>
           </div>
         </div>
       </Container>

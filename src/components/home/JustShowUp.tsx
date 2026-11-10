@@ -5,6 +5,7 @@ import { PhotoBackdrop } from "@/components/PhotoBackdrop";
 import { Tooltip } from "@/components/Tooltip";
 import { JOIN_TOOLTIP } from "@/lib/navigation";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
+import { impactH2 } from "@/lib/headings";
 import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
 import { onDarkSurface } from "@/lib/surfaces";
 import { cn } from "@/lib/utils";
@@ -42,7 +43,7 @@ export function JustShowUp({ held = OFFICIAL_RUNS_ON_HOLD }: { held?: boolean })
     "--jsu-cta-mt": [28, 28, 40],
     "--jsu-cta-h": [52, 52, 56],
   });
-  const heading = fluidType([56, 80, 144], [56, 80, 129.6]);
+  const heading = impactH2();
   const copy = fluidType([16, 16, 18], [24, 24, 27]);
 
   return (

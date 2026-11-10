@@ -33,21 +33,21 @@ const FIGMA: Record<string, Frame> = {
     sections: { community: 390, jsu: 460, flat: 398 },
     runRowH: 166,
     hillRowH: 100,
-    fluid: { jsu: 56, flat: 70, hills: 48, stat: 40 },
+    fluid: { jsu: 48, flat: 70, hills: 48, stat: 40 },
   },
   tablet: {
     hero: { h: 670, h1Size: 98, h1Top: 66, ctaTop: 304, ctaH: 56, cardTop: 400, cardW: 380 },
     sections: { community: 442, jsu: 430, flat: 514 },
     runRowH: 124,
     hillRowH: 96,
-    fluid: { jsu: 80, flat: 110, hills: 54, stat: 40 },
+    fluid: { jsu: 54, flat: 110, hills: 54, stat: 40 },
   },
   desktop: {
     hero: { h: 846, h1Size: 209, h1Top: 115, ctaTop: 677, ctaH: 56, cardTop: 677, cardW: 542 },
     sections: { community: 589, jsu: 626.6, flat: 709.8 },
     runRowH: 113.8,
     hillRowH: 109.8,
-    fluid: { jsu: 144, flat: 144, hills: 96, stat: 80 },
+    fluid: { jsu: 96, flat: 144, hills: 96, stat: 80 },
   },
 };
 const frame = (name: string) => FIGMA[name];
