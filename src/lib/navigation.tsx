@@ -34,6 +34,8 @@ export const primaryNav: NavItem[] = [
     ),
     href: "/hills",
   },
+  // The Science (Owner brief, 2026-11-09): the editorial resource on hill repeats.
+  { label: "The Science", href: "/the-science" },
   { label: "About", href: "/about" },
 ];
 
@@ -52,6 +54,8 @@ export function buildFooterNav(social: SocialLinks): NavItem[] {
   return [
     { label: "Find a Run", href: "/calendar" },
     primaryNav[1],
+    // The Science: in the primary navigation's order, between Chicago Mtns and About.
+    primaryNav.find((i) => i.href === "/the-science")!,
     { label: "About", href: "/about" },
     { label: "FAQ", href: "/faq" },
     { label: "Join the club", href: "/join" },

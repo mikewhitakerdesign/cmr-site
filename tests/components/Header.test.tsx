@@ -20,6 +20,7 @@ describe("Header", () => {
     expect(links.map((l) => [l.textContent, l.getAttribute("href")])).toEqual([
       ["Find a Run", "/calendar"],
       ["Chicago Hills Mtns", "/hills"],
+      ["The Science", "/the-science"],
       ["About", "/about"],
     ]);
     // The joke is visual: "Hills" is struck through, but stays in the accessible name.
@@ -142,7 +143,7 @@ describe("mobile link row", () => {
       { label: "Find a Run", href: "/calendar" },
       { label: "Chicago Mtns", href: "/hills" },
       { label: "About", href: "/about" },
-      { label: "The Science", href: "/science" },
+      { label: "The Science", href: "/the-science" },
     ];
     render(<Header items={items} />);
     const nav = screen.getByRole("navigation", { name: "Primary" });

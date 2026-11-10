@@ -11,7 +11,8 @@ const AXE_PATH = require.resolve("axe-core");
 const FIGMA = {
   // Mobile: PR #4 final refinements (64px top row, 1px rule, 48px link cells at 15px).
   mobile: { headerH: 114, logo: [24, 6, 100], cta: [259, 14, 110], linksY: 65, linkPx: 15, linkGap: 12, formH: 48, headingPx: 28 },
-  tablet: { headerH: 100, logo: [48, 16, 128], cta: [592, 31, 128], linksY: 39, linkPx: 14, linkGap: 24, formH: 48, headingPx: 30 },
+  // Tablet link gap 24 → 16 when The Science became the fourth link (2026-11-09), so the row fits at 768.
+  tablet: { headerH: 100, logo: [48, 16, 128], cta: [592, 31, 128], linksY: 39, linkPx: 14, linkGap: 16, formH: 48, headingPx: 30 },
   desktop: { headerH: 123, logo: [68, 12, 188], cta: [1222, 43, 150], linksY: 51, linkPx: 14, linkGap: 36, formH: 44, headingPx: 30 },
 } as const;
 
@@ -122,7 +123,9 @@ test.describe("header", () => {
       expect(Math.round(cta.x - (links.x + links.width))).toBe(s.linkGap);
       const [a, b] = await nav.getByRole("link").all();
       expect(Math.round((await box(b)).x - ((await box(a)).x + (await box(a)).width))).toBe(s.linkGap);
-      expect(links.x).toBeGreaterThan(logo.x + logo.width + 100);
+      // Links sit on the right. With four links (The Science, 2026-11-09) the tablet bar is full at 768,
+      // so there the open space after the logo only has to exceed the item gap; desktop keeps 100px+.
+      expect(links.x).toBeGreaterThan(logo.x + logo.width + (info.project.name === "tablet" ? s.linkGap : 100));
     }
   });
 
@@ -415,7 +418,7 @@ test.describe("social links (none configured in this build)", () => {
     const nav = page.getByRole("navigation", { name: "Footer" });
     await expect(nav.getByText("Navigate", { exact: true })).toBeVisible();
     const links = nav.getByRole("link"); // the visible copy only
-    await expect(links).toHaveText(["Find a Run", "Chicago Hills Mtns", "About", "FAQ", "Join the club"]);
+    await expect(links).toHaveText(["Find a Run", "Chicago Hills Mtns", "The Science", "About", "FAQ", "Join the club"]);
     await expect(nav.locator("s")).toHaveText("Hills");
     const boxes = [];
     for (let i = 0; i < 5; i++) boxes.push(await box(links.nth(i)));

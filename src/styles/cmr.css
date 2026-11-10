@@ -145,24 +145,69 @@ html[data-motion="on"] .wx-gust { animation: wx-gust 3s ease-in-out infinite alt
 }
 
 /*
- * FAQ: the same sticky section bar and anchor offsets as The Science (header bar + 49px bar +
- * breathing room), so category headings are never hidden. Smooth gliding unless reduced motion.
+ * Pages with a sticky section bar under the site header: the FAQ and The
+ * Science (/the-science). Anchors, fragment URLs and keyboard focus must clear
+ * the sticky site header and the bar under it (49px: 48px row + 1px rule), so
+ * these pages' scroll padding includes both. Sized to the tallest header state
+ * after a jump at each width: on phones the header's top row can come back when
+ * jumping upward (64 + 1 + 48 + 1 = 114px); from tablet up the header is compact
+ * once scrolled (bar ≈ 71px tablet, 74px desktop). The extra is breathing room.
+ * Section links glide unless the system asks for reduced motion (navigation,
+ * not decoration).
  */
-:root:has([data-slot="faq-nav"]) {
+:root:has([data-slot="faq-nav"]),
+:root:has([data-slot="science-nav"]) {
   scroll-padding-top: calc(114px + 49px + 20px);
 }
 @media (min-width: 768px) {
-  :root:has([data-slot="faq-nav"]) {
+  :root:has([data-slot="faq-nav"]),
+  :root:has([data-slot="science-nav"]) {
     scroll-padding-top: calc(72px + 49px + 28px);
   }
 }
 @media (min-width: 1024px) {
-  :root:has([data-slot="faq-nav"]) {
+  :root:has([data-slot="faq-nav"]),
+  :root:has([data-slot="science-nav"]) {
     scroll-padding-top: calc(75px + 49px + 36px);
   }
 }
 @media (prefers-reduced-motion: no-preference) {
-  :root:has([data-slot="faq-nav"]) {
+  :root:has([data-slot="faq-nav"]),
+  :root:has([data-slot="science-nav"]) {
     scroll-behavior: smooth;
   }
+}
+
+/*
+ * The Science: alternating black and white sections (Owner direction,
+ * 2026-11-09). The theme is `@theme inline`, so utilities read these
+ * variables directly; redefining them on a section inverts everything inside
+ * it (text, rules, focus ring, filled buttons) with no per-component changes.
+ * Figure frames sit on a light tie-dye, so they restore the light values.
+ *   text        white on black: 21:1
+ *   muted       neutrals 400 #a3a3a3 on black: 8.6:1
+ */
+.science-dark {
+  --background: var(--mwd-color-general-primary);
+  --foreground: var(--mwd-color-general-primary-foreground);
+  --primary: var(--mwd-color-general-primary-foreground);
+  --primary-foreground: var(--mwd-color-general-primary);
+  --primary-hover: var(--mwd-brand-brand-neutrals-200);
+  --muted: var(--mwd-brand-brand-neutrals-900);
+  --muted-foreground: var(--mwd-brand-brand-neutrals-400);
+  --border: var(--mwd-brand-brand-neutrals-700);
+  --ring: var(--mwd-color-general-primary-foreground);
+  --focus-offset: var(--mwd-color-general-primary);
+}
+.science-light {
+  --background: var(--mwd-color-general-background);
+  --foreground: var(--mwd-color-general-foreground);
+  --primary: var(--mwd-color-general-primary);
+  --primary-foreground: var(--mwd-color-general-primary-foreground);
+  --primary-hover: var(--mwd-color-unofficial-primary-hover);
+  --muted: var(--mwd-color-general-muted);
+  --muted-foreground: var(--mwd-color-general-muted-foreground);
+  --border: var(--mwd-color-general-border);
+  --ring: var(--mwd-color-focus-ring);
+  --focus-offset: var(--cmr-tint-gray-wash);
 }

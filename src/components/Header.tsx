@@ -32,15 +32,21 @@ const shrink =
  *     shrinks; the header's layout box keeps its expanded height and is
  *     click-through, so page content never shifts (HeaderShell).
  *   - Links sit on the right beside the CTA, one gap value between every item
- *     and the CTA (24px tablet, 36px desktop — Figma's link gaps).
+ *     and the CTA (16px tablet since The Science was added; 36px desktop, Figma's gap).
  *   - The logo returns to the top when already on the homepage (HomeLink).
  *
  * Mobile (PR #4 final refinements, Owner direction 2026-11-09), below 768:
  *   - Two rows: logo + "Join the club" (64 tall), then the links, divided by a
  *     1px rule. Links are 15px (was 13), and each fills an equal-share cell the
  *     full 48px row tall, so the whole cell is the tap target. Cells grow from
- *     their content (flex-auto), so a fourth link ("The Science") fits without
- *     changing this component: add it to `primaryNav`.
+ *     their content (flex-auto).
+ *   - The Science (fourth link, 2026-11-09): four labels need ~380px at 15px,
+ *     so cell padding is 6px (was 8) and below 393px the type scales
+ *     (3.65vw, never under 11.5px; 15px from 393 up), so the row fits down to
+ *     320px with room for platform font differences (Linux renders wider).
+ *     The row may scroll sideways as a last resort; the page never does.
+ *   - Tablet: one gap value between every item and the CTA is now 16px (was
+ *     24), so four links, the logo and the CTA share one line at 768.
  *   - Scrolling down slides the top row away and the link row stays pinned;
  *     scrolling up brings the top row back (HeaderShell sets `data-hide-top`).
  *     It is a transform on the bar, so nothing below moves. Focus on the logo
@@ -82,7 +88,7 @@ export default function Header({ items = primaryNav, cta = joinCta, className }:
         <div
           className={cn(
             "mx-auto grid max-w-[1400px] grid-cols-[1fr_auto] grid-rows-[64px_auto] items-center",
-            "md:flex md:items-center md:gap-6 md:px-12 md:py-4 lg:gap-9 lg:py-3",
+            "md:flex md:items-center md:gap-4 md:px-12 md:py-4 lg:gap-9 lg:py-3",
             "md:group-data-[compact]/header:py-2.5 lg:group-data-[compact]/header:py-2",
             shrink,
           )}
@@ -98,14 +104,14 @@ export default function Header({ items = primaryNav, cta = joinCta, className }:
           </HomeLink>
 
           <nav aria-label="Primary" data-slot="primary-nav" className="col-span-2 row-start-2 border-t border-foreground md:border-0">
-            <ul className="flex md:flex-wrap md:justify-end md:gap-x-6 lg:gap-x-9 text-[15px] leading-5 md:text-p-sm">
+            <ul className="flex max-md:overflow-x-auto max-md:[scrollbar-width:none] md:flex-wrap md:justify-end md:gap-x-4 lg:gap-x-9 text-[15px] max-[393px]:text-[clamp(11.5px,3.65vw,15px)] leading-5 md:text-p-sm">
               {items.map((item) => (
                 <li key={item.href} className="flex-auto md:flex-none">
                   <NavLink
                     href={item.href}
                     className={cn(
                       // Mobile: the whole 48px cell is the link.
-                      "flex h-12 items-center justify-center px-2 font-medium whitespace-nowrap outline-none",
+                      "flex h-12 items-center justify-center px-1.5 font-medium whitespace-nowrap outline-none",
                       "focus-visible:ring-3 focus-visible:ring-ring max-md:focus-visible:ring-inset",
                       "md:inline-block md:h-auto md:rounded-xs md:px-0 lg:opacity-80",
                       "underline-offset-4 hover:underline hover:opacity-100",
