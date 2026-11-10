@@ -1,147 +1,23 @@
 /**
- * Geometry for the Physiology figure: a runner in side view, pushing off up an
- * incline. Pure functions run once at module load; the component only prints
- * the resulting path strings (no client JS).
+ * Geometry for the Physiology figure (Figure 3): a runner driving up a slope.
  *
- * Method: a skeleton (joint positions for a late-stance push-off with the other
- * knee driven forward and the trunk leaning into the slope, in adult
- * proportions: thigh ≈ shank ≈ ¼ of standing height) and, for each segment, a
- * profile of anterior and posterior half-widths along its length (the convex
- * front of the quadriceps, the hamstrings behind, the calf bulge high on the
- * back of the shank, the flatter shin). Outlines are smoothed with
- * Catmull-Rom splines. The muscle overlays are bands inside those same
- * profiles, so they sit where the muscles are: gluteus maximus behind the hip,
- * quadriceps along the front of the thigh, gastrocnemius and soleus on the
- * back of the shank. Rendered as a solid silhouette (Owner direction,
- * 2026-11-09: a simple, credible silhouette over a detailed drawing).
+ * An original silhouette (Owner direction, 2026-11-10: replace the segmented
+ * drawing with one clean solid silhouette, in the posture of the reference
+ * runners). It is one closed outline, so it reads as a single person: trunk
+ * leaning ~20° into the hill, the push-off leg extended behind with the heel
+ * lifted, the other knee driven forward, arms bent at the elbow and swinging
+ * opposite the legs. Designed on adult proportions (thigh ≈ shank ≈ ¼ of
+ * height; head ≈ ⅛) as the union of tapered limb shapes, then smoothed into a
+ * single path offline; no third-party artwork was copied or traced, and no
+ * dependency ships with it.
+ *
+ * Coordinates: viewBox "20 30 260 300", facing right, the slope rising right.
  */
-type Pt = { x: number; y: number };
-const P = (x: number, y: number): Pt => ({ x, y });
-const sub = (a: Pt, b: Pt) => P(a.x - b.x, a.y - b.y);
-const add = (a: Pt, b: Pt) => P(a.x + b.x, a.y + b.y);
-const mul = (a: Pt, k: number) => P(a.x * k, a.y * k);
-const len = (a: Pt) => Math.hypot(a.x, a.y);
-const unit = (a: Pt) => mul(a, 1 / len(a));
-const f = (n: number) => n.toFixed(1);
-
-/** Closed Catmull-Rom spline through the points, as cubic Béziers. */
-function smooth(pts: Pt[]): string {
-  const n = pts.length;
-  const at = (i: number) => pts[(i + n) % n];
-  let d = `M${f(pts[0].x)} ${f(pts[0].y)}`;
-  for (let i = 0; i < n; i++) {
-    const [p0, p1, p2, p3] = [at(i - 1), at(i), at(i + 1), at(i + 2)];
-    const c1 = add(p1, mul(sub(p2, p0), 1 / 6));
-    const c2 = sub(p2, mul(sub(p3, p1), 1 / 6));
-    d += ` C${f(c1.x)} ${f(c1.y)} ${f(c2.x)} ${f(c2.y)} ${f(p2.x)} ${f(p2.y)}`;
-  }
-  return `${d} Z`;
-}
-
-/** [t along the segment, anterior half-width, posterior half-width] */
-type Profile = [number, number, number][];
-type Limb = { a: Pt; u: Pt; n: Pt; L: number; prof: Profile };
-
-/** `front`: +1 when the anterior side is to the left of the a→b direction on screen, −1 when to the right. */
-function limb(a: Pt, b: Pt, prof: Profile, front: 1 | -1): Limb {
-  const u = unit(sub(b, a));
-  return { a, u, n: mul(P(-u.y, u.x), front), L: len(sub(b, a)), prof };
-}
-
-function width(prof: Profile, t: number, side: 1 | 2): number {
-  for (let i = 0; i < prof.length - 1; i++) {
-    if (t >= prof[i][0] && t <= prof[i + 1][0]) {
-      const k = (t - prof[i][0]) / (prof[i + 1][0] - prof[i][0]);
-      return prof[i][side] + (prof[i + 1][side] - prof[i][side]) * k;
-    }
-  }
-  return prof[prof.length - 1][side];
-}
-
-function outline(l: Limb): string {
-  const front = l.prof.map(([t, wa]) => add(add(l.a, mul(l.u, t * l.L)), mul(l.n, wa)));
-  const back = l.prof.map(([t, , wp]) => add(add(l.a, mul(l.u, t * l.L)), mul(l.n, -wp)));
-  return smooth([...front, ...back.reverse()]);
-}
-
-/**
- * A muscle belly inside a limb on one side: from `inner` (fraction of that
- * side's width; negative crosses the midline) to `outer`, tapering at both ends.
- */
-function belly(l: Limb, side: "anterior" | "posterior", t0: number, t1: number, inner: number, outer: number): string {
-  const s = side === "anterior" ? 1 : -1;
-  const k = side === "anterior" ? 1 : 2;
-  const edge: Pt[] = [];
-  const core: Pt[] = [];
-  for (let i = 0; i <= 10; i++) {
-    const t = t0 + ((t1 - t0) * i) / 10;
-    const w = width(l.prof, t, k as 1 | 2);
-    const swell = Math.sin((Math.PI * i) / 10);
-    const c = add(l.a, mul(l.u, t * l.L));
-    edge.push(add(c, mul(l.n, s * w * (inner + (outer - inner) * (0.2 + 0.8 * swell)))));
-    core.push(add(c, mul(l.n, s * w * inner)));
-  }
-  return smooth([...edge, ...core.reverse()]);
-}
-
-// Skeleton, in the figure's coordinates (facing right; the slope rises to the right at 10°).
-// Late stance on an incline: the trailing leg nearly extended at push-off, the
-// other thigh swung forward to about 15° below horizontal with the shank hanging
-// under the knee, the trunk leaning ≈ 20° into the hill, arms bent ≈ 90° and
-// swinging opposite the legs.
-const hip = P(300, 300);
-const knee = P(262, 396);
-const ankle = P(226, 482);
-const farKnee = P(398, 328);
-const farAnkle = P(378, 420);
-const shoulder = P(342, 182);
-const elbow = P(366, 250);
-const hand = P(414, 236);
-const farElbow = P(302, 244);
-const farHand = P(326, 290);
-
-const THIGH: Profile = [[-0.12, 26, 31], [0.1, 29, 29], [0.38, 27, 22.5], [0.62, 22.5, 18.5], [0.84, 17.5, 14.5], [0.97, 15.5, 12.5], [1.06, 13.5, 11.5]];
-const SHANK: Profile = [[-0.06, 13, 12.5], [0.1, 11, 18.5], [0.28, 10, 21.5], [0.5, 8.5, 15.5], [0.75, 7, 8.5], [1.04, 6.5, 7]];
-const UPPER_ARM: Profile = [[-0.1, 13, 12], [0.35, 11.5, 11], [0.8, 9, 8.5], [1.04, 8, 7.5]];
-const FOREARM: Profile = [[-0.04, 8.5, 8], [0.3, 8.5, 8], [0.8, 6.5, 6], [1.06, 6.5, 6]];
-const TORSO: Profile = [[0.0, 24, 25], [0.12, 25, 26], [0.4, 22.5, 22], [0.62, 26, 23], [0.82, 27.5, 25], [0.97, 22, 22], [1.08, 10, 11]];
-
-const thigh = limb(hip, knee, THIGH, -1);
-const shank = limb(knee, ankle, SHANK, -1);
-const farThigh = limb(hip, farKnee, THIGH, -1);
-const farShank = limb(farKnee, farAnkle, SHANK, -1);
-const upperArm = limb(shoulder, elbow, UPPER_ARM, 1);
-const forearm = limb(elbow, hand, FOREARM, 1);
-const farUpperArm = limb(shoulder, farElbow, UPPER_ARM, 1);
-const farForearm = limb(farElbow, farHand, FOREARM, 1);
-const torso = limb(hip, shoulder, TORSO, 1);
-
-// Pelvis and buttock (gluteus maximus mass), blending trunk and thighs at the hip.
-const pelvis = smooth([P(276, 282), P(300, 270), P(326, 280), P(334, 304), P(322, 326), P(298, 332), P(278, 322), P(272, 302)]);
-const buttock = smooth([P(301, 272), P(284, 280), P(269, 297), P(268, 318), P(280, 333), P(298, 332), P(308, 312), P(308, 288)]);
-// Trailing foot at push-off: heel up, ball of the foot on the slope.
-const foot = smooth([P(212, 492), P(216, 476), P(234, 474), P(254, 490), P(276, 500), P(280, 507), P(258, 510), P(232, 502)]);
-// Swinging foot, toes up (dorsiflexed), under the knee.
-const farFoot = smooth([P(364, 430), P(368, 412), P(386, 414), P(410, 424), P(412, 432), P(392, 436), P(372, 435)]);
-// Head in profile, facing right, carried in line with the trunk; short neck.
-const head = smooth([P(352, 100), P(370, 92), P(388, 100), P(396, 114), P(399, 126), P(396, 130), P(396, 138), P(390, 146), P(378, 152), P(364, 151), P(352, 143), P(346, 128), P(346, 112)]);
-const neck = smooth([P(352, 140), P(368, 148), P(366, 172), P(352, 180), P(341, 172)]);
-const hand1 = smooth([P(404, 228), P(418, 226), P(424, 236), P(418, 246), P(404, 244)]);
-const hand2 = smooth([P(318, 284), P(332, 282), P(336, 292), P(328, 300), P(316, 296)]);
-
 export const RUNNER = {
-  /** The near side of the body: one solid silhouette. */
-  body: [outline(torso), pelvis, buttock, neck, head, outline(thigh), outline(shank), foot, outline(upperArm), outline(forearm), hand1],
-  /** The far leg and arm, in a lighter tone behind. */
-  far: [outline(farUpperArm), outline(farForearm), hand2, outline(farThigh), outline(farShank), farFoot],
-  /** Muscle groups on the pushing (near) leg, as patches inside the silhouette. */
-  muscles: {
-    gluteus: smooth([P(293, 279), P(281, 287), P(275, 302), P(278, 318), P(288, 325), P(298, 316), P(300, 296)]),
-    quadriceps: belly(thigh, "anterior", 0.1, 0.9, 0.05, 0.82),
-    calf: belly(shank, "posterior", 0.06, 0.62, 0.05, 0.85),
-  },
-  /** Where each numbered marker sits (on its patch). */
-  markers: { gluteus: P(287, 303), quadriceps: P(292, 356), calf: P(233, 420) },
-  /** The ground: the 10° slope through the push-off foot. */
-  ground: { x1: 120, y1: 509 + (262 - 120) * 0.176, x2: 500, y2: 509 - (500 - 262) * 0.176 },
+  silhouette:
+    "M60.4 290.2C60.1 291.8 60.3 291.2 60.4 291.7C60.6 292.1 59.6 291.6 61.2 292.9C62.9 294.3 65.0 298.2 70.3 300.0C75.7 301.8 89.1 303.2 93.2 303.8C97.2 304.4 94.0 303.9 94.6 303.6C95.2 303.3 96.2 302.9 96.7 302.2C97.2 301.6 97.5 300.6 97.5 299.8C97.5 299.1 97.5 298.3 96.5 297.5C95.5 296.7 93.9 296.9 91.3 295.0C88.7 293.1 82.8 287.9 80.8 285.9C78.8 283.9 79.7 283.9 79.5 282.9C79.4 282.0 79.7 280.8 79.9 280.0C80.1 279.2 78.4 281.3 81.0 278.2C83.6 275.2 90.9 268.3 95.3 261.8C99.7 255.2 100.9 248.9 107.3 239.1C113.6 229.2 128.6 209.0 133.2 202.7C137.8 196.4 134.1 201.6 134.7 201.2C135.3 200.9 136.1 200.5 136.8 200.3C137.6 200.2 135.8 199.6 139.2 200.3C142.6 201.1 152.3 203.7 157.2 204.7C162.1 205.7 166.4 205.8 168.7 206.3C171.0 206.7 170.2 206.8 170.8 207.3C171.4 207.8 172.1 208.7 172.4 209.3C172.8 209.9 172.9 210.4 173.0 211.0C173.1 211.6 173.3 211.5 173.0 213.0C172.7 214.5 172.1 215.2 171.2 219.9C170.3 224.6 168.3 237.3 167.4 241.3C166.5 245.2 166.8 243.0 166.0 243.8C165.1 244.6 163.1 245.3 162.3 246.0C161.5 246.6 161.3 247.2 161.2 247.8C161.0 248.4 160.8 248.0 161.4 249.4C161.9 250.8 161.8 253.9 164.3 256.0C166.8 258.1 170.5 260.4 176.2 262.0C181.8 263.6 194.2 265.1 198.1 265.7C202.0 266.3 199.0 265.7 199.4 265.6C199.8 265.5 199.9 265.6 200.5 265.0C201.0 264.5 202.2 262.9 202.6 262.1C203.0 261.3 203.0 260.7 202.9 260.1C202.8 259.5 203.0 259.4 201.8 258.4C200.7 257.4 198.6 255.5 195.9 254.0C193.2 252.5 187.5 250.6 185.5 249.5C183.4 248.4 184.1 248.3 183.7 247.6C183.2 246.8 182.9 246.0 182.9 245.0C182.8 244.1 182.0 244.8 183.5 241.8C184.9 238.9 190.2 230.1 191.7 227.2C193.2 224.4 191.5 229.4 192.6 224.8C193.8 220.2 197.4 204.3 198.4 199.5C199.3 194.7 198.5 197.2 198.3 196.1C198.1 195.0 197.7 193.9 197.2 193.0C196.7 192.0 196.1 191.3 195.4 190.6C194.7 189.8 200.2 192.2 192.9 188.7C185.5 185.1 158.6 172.8 151.3 169.2C144.0 165.6 149.7 167.9 149.3 167.2C148.8 166.4 148.5 165.7 148.4 164.7C148.4 163.7 148.1 163.1 149.1 161.0C150.0 158.9 152.8 153.7 154.0 151.9C155.1 150.0 155.2 150.4 155.8 149.9C156.5 149.5 156.6 149.4 157.8 149.1C158.9 148.9 156.6 151.1 162.7 148.5C168.8 145.8 188.3 135.8 194.4 133.0C200.5 130.2 198.0 132.3 199.2 131.8C200.4 131.3 200.9 130.7 201.6 130.0C202.2 129.3 202.8 128.4 203.1 127.4C203.4 126.4 203.6 125.1 203.4 124.0C203.3 122.9 202.9 121.8 202.3 120.9C201.7 120.0 200.8 119.1 199.8 118.5C198.9 118.0 197.6 117.7 196.6 117.5C195.7 117.4 194.9 117.5 194.1 117.7C193.3 117.9 192.5 118.3 191.9 118.7C191.2 119.2 190.8 119.5 190.2 120.2C189.7 120.9 189.0 122.2 188.4 122.8C187.9 123.5 189.1 123.1 186.8 124.1C184.4 125.1 176.8 128.1 174.3 128.9C171.9 129.7 172.8 129.1 172.0 128.9C171.3 128.8 170.5 128.5 169.9 128.1C169.2 127.7 168.6 127.1 168.2 126.6C167.7 126.0 167.4 125.8 167.3 124.7C167.1 123.7 166.9 121.9 167.0 120.3C167.1 118.6 167.8 116.8 168.0 114.9C168.1 113.0 167.7 110.1 167.8 108.9C167.9 107.6 167.7 108.6 168.4 107.2C169.2 105.9 171.3 102.3 172.3 101.0C173.2 99.7 173.2 99.8 173.9 99.4C174.6 98.9 174.5 98.4 176.4 98.5C178.2 98.5 183.3 99.4 185.0 99.5C186.8 99.6 186.2 99.4 186.7 99.2C187.3 99.0 187.7 99.0 188.2 98.4C188.8 97.9 189.7 97.0 190.1 96.0C190.5 95.0 190.5 93.3 190.6 92.4C190.8 91.6 191.0 91.3 191.3 90.8C191.6 90.2 192.0 89.8 192.6 89.2C193.2 88.6 194.2 88.6 195.1 87.4C195.9 86.3 197.3 83.2 197.7 82.1C198.2 81.0 197.8 81.2 197.8 80.8C197.7 80.4 198.3 80.9 197.3 79.7C196.3 78.5 193.1 75.9 191.6 73.8C190.1 71.7 189.2 68.7 188.2 67.1C187.3 65.6 186.9 65.5 186.0 64.7C185.1 63.9 184.2 63.1 182.8 62.5C181.4 61.8 179.3 61.0 177.5 60.7C175.8 60.4 174.2 60.4 172.5 60.7C170.7 61.0 168.8 61.6 167.2 62.5C165.6 63.3 163.9 64.7 162.8 65.9C161.6 67.2 160.8 68.5 160.1 69.9C159.4 71.3 158.9 73.0 158.7 74.5C158.4 76.1 158.5 77.6 158.7 79.3C158.9 81.0 159.8 83.2 160.0 84.5C160.1 85.8 160.7 85.2 159.6 87.1C158.5 89.0 154.9 94.2 153.5 96.0C152.1 97.7 152.8 97.1 151.4 97.6C150.0 98.2 147.2 98.6 145.3 99.5C143.4 100.4 141.3 102.3 140.0 103.1C138.8 103.8 143.8 104.3 137.8 103.8C131.8 103.3 110.3 100.5 104.1 100.0C98.0 99.5 101.8 100.3 100.9 100.8C100.1 101.4 100.3 97.2 98.7 103.1C97.2 109.1 92.9 130.8 91.5 136.7C90.2 142.6 91.2 137.7 90.6 138.5C90.0 139.3 88.6 140.4 88.1 141.3C87.5 142.2 87.3 143.0 87.1 143.7C86.9 144.5 87.0 145.1 87.0 145.7C87.1 146.4 87.3 147.1 87.5 147.7C87.8 148.3 88.1 148.9 88.6 149.4C89.0 149.9 89.4 150.4 90.1 150.8C90.8 151.2 91.8 151.7 92.7 151.9C93.7 152.0 94.8 152.0 95.7 151.8C96.7 151.5 97.6 151.1 98.4 150.5C99.1 149.9 99.8 149.1 100.2 148.3C100.6 147.5 100.9 146.8 101.0 145.6C101.1 144.5 99.9 145.8 100.9 141.2C101.9 136.6 105.8 122.2 107.0 118.1C108.1 114.0 107.3 117.0 107.7 116.5C108.0 115.9 108.5 115.4 109.1 114.9C109.6 114.5 110.2 114.2 110.9 114.0C111.5 113.7 110.9 113.4 112.9 113.6C114.9 113.9 121.1 115.0 123.1 115.4C125.0 115.9 124.3 116.1 124.8 116.6C125.3 117.0 125.7 117.6 126.0 118.2C126.3 118.8 126.5 119.5 126.6 120.1C126.7 120.8 127.0 120.8 126.6 122.2C126.1 123.5 125.4 123.7 123.8 128.4C122.3 133.1 119.6 144.1 117.4 150.6C115.2 157.1 111.9 164.4 110.5 167.6C109.1 170.8 109.6 169.1 108.7 169.9C107.8 170.6 106.0 171.3 105.0 171.9C104.0 172.6 103.4 173.0 102.8 173.7C102.1 174.4 101.5 175.2 100.9 176.0C100.4 176.8 99.9 177.6 99.6 178.6C99.2 179.5 98.8 180.8 98.7 181.9C98.5 183.0 98.5 184.2 98.6 185.4C98.7 186.5 98.9 187.5 99.3 188.8C99.8 190.2 101.1 192.4 101.4 193.5C101.8 194.5 101.6 194.6 101.6 195.2C101.5 195.8 103.4 191.3 101.2 196.9C99.0 202.6 92.9 220.3 88.6 229.2C84.3 238.2 79.8 241.7 75.4 250.6C71.0 259.4 64.5 275.7 62.0 282.3C59.5 288.9 60.6 288.6 60.4 290.2Z",
+  /** The ground: the slope through the push-off toes. */
+  ground: { x1: 14, y1: 318, x2: 290, y2: 226 },
+  /** Marker centres, over the push-off (rear) leg: glute behind the hip, quadriceps on the front of the thigh, calf behind the shank. */
+  markers: { gluteus: { x: 120, y: 176 }, quadriceps: { x: 108, y: 220 }, calf: { x: 85, y: 256 } },
 };

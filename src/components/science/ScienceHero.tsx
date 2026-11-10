@@ -10,9 +10,9 @@ import { cn } from "@/lib/utils";
  * and Pause motion behaviour), under a black wash from the left (vertical on
  * phones and tablets) so the copy reads on near-solid black.
  *
- * Headline (Owner direction, 2026-11-09): "The science behind hill repeats?",
- * as written, wrapping naturally (balanced, no fixed breaks). Subtitle and
- * intro are the Owner's approved text, verbatim. No eyebrow.
+ * Headline (Owner direction, 2026-11-10): "The science / behind hill / repeats?",
+ * on three lines from 1024px, balanced wrapping below. One supporting
+ * paragraph (Owner's text, verbatim); no subtitle, no eyebrow.
  */
 export function ScienceHero() {
   const heading = fluidType([46, 84, 120], [44, 76, 108]);
@@ -43,22 +43,14 @@ export function ScienceHero() {
           style={heading}
           className={cn(FLUID_TYPE, "max-w-[13ch] font-black tracking-[-0.045em] text-balance")}
         >
-          The science behind hill repeats?
+          {/* Three lines from 1024px; natural, balanced wrapping below. The spaces stay in the text for the accessible name. */}
+          <span className="lg:block">The science</span> <span className="lg:block">behind hill</span>{" "}
+          <span className="lg:block">repeats?</span>
         </h1>
-        <p className="mt-6 max-w-[30ch] text-[22px] leading-[1.25] font-semibold tracking-[-0.4px] text-balance md:mt-8 md:max-w-[34ch] md:text-[28px] lg:text-[32px]">
-          The surprisingly legitimate benefits of running uphill. Repeatedly. In Chicago.
+        <p className="mt-8 max-w-[560px] text-[18px] leading-[28px] text-primary-foreground/80 md:mt-10 md:text-[20px] md:leading-[30px]">
+          Chicago isn&apos;t known for its hills, yet we spend hours running up and down them. Turns out there&apos;s real
+          science behind the physical benefits, and some interesting psychology behind why we keep doing it.
         </p>
-        <div className="mt-8 flex max-w-[54ch] flex-col gap-4 text-[18px] leading-[28px] text-primary-foreground/80 md:mt-10">
-          <p>
-            Chicago is not known for its mountains. Or its hills, really. Yet here we are, voluntarily running up and down
-            the same modest incline, sometimes for hours.
-          </p>
-          <p>
-            As it turns out, there&apos;s quite a bit of science behind this behavior. The physiological benefits are real.
-            The psychological motivations are a little more complicated.
-          </p>
-          <p>Let&apos;s examine the evidence.</p>
-        </div>
       </Container>
     </section>
   );

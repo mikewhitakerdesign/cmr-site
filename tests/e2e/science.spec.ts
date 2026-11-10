@@ -56,7 +56,8 @@ test.describe("content and layout", () => {
     await expect(page).toHaveTitle("The science behind hill repeats | Chicago Mountain Runners");
     await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /hill repeats/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("The science behind hill repeats?");
-    await expect(page.getByText("The surprisingly legitimate benefits of running uphill. Repeatedly. In Chicago.")).toBeVisible();
+    await expect(page.getByText("Chicago isn't known for its hills, yet we spend hours running up and down them. Turns out there's real science behind the physical benefits, and some interesting psychology behind why we keep doing it.")).toBeVisible();
+    await expect(page.locator("[data-slot=science-hero] p")).toHaveCount(1);
     const ids = await page.locator("main section[data-slot=science-section]").evaluateAll((els) => els.map((e) => e.id));
     expect(ids).toEqual(SECTIONS);
     await expect(page.locator("#sources h2")).toHaveText("Sources");
@@ -247,6 +248,12 @@ test.describe("hero background (the hill pages' own)", () => {
     await context.close();
   });
 
+  test("the headline is three lines from 1024px, and wraps naturally below", async ({ page }, info) => {
+    const lines = await page.getByRole("heading", { level: 1 }).evaluate((h) => Math.round(h.getBoundingClientRect().height / parseFloat(getComputedStyle(h).lineHeight)));
+    if (info.project.name === "desktop") expect(lines).toBe(3);
+    else expect(lines).toBeGreaterThanOrEqual(2);
+  });
+
   test("the headline wraps naturally and stays inside the column", async ({ page }) => {
     const h1 = page.getByRole("heading", { level: 1 });
     await expect(h1.locator("br")).toHaveCount(0);
@@ -429,9 +436,9 @@ test.describe("refinement pass: fills, layout, figures", () => {
     const fig = page.locator("[data-slot=runner-illustration]");
     await expect(fig.locator("svg")).toHaveAccessibleName(/gluteus maximus.*quadriceps.*calf/i);
     for (const k of ["gluteus", "quadriceps", "calf"]) {
-      await expect(fig.locator(`[data-slot=muscle-${k}]`)).toHaveCount(1);
       await expect(fig.locator(`[data-slot=marker-${k}]`)).toHaveCount(1);
     }
+    await expect(fig.locator("[data-slot=runner-silhouette]")).toHaveCount(1); // one solid silhouette
     await expect(fig.locator("svg polyline")).toHaveCount(0);
     await expect(fig.locator("[data-slot=muscle-key] li")).toHaveText([/Gluteus maximus/, /Quadriceps/, /Calf \(gastrocnemius, soleus\)/]);
   });
