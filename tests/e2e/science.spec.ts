@@ -365,33 +365,49 @@ test.describe("refinement pass: fills, layout, figures", () => {
     for (const t of texts) expect(t).not.toMatch(/figure below figure|to the (left|right) figure/);
   });
 
-  test("the incline starts flat, rises to 10% once on first view, and stays interactive", async ({ page }) => {
-    const readout = page.locator("[data-slot=incline-readout]");
-    await expect(readout).toContainText(/Grade\s*0%/);
-    await page.locator("[data-slot=incline-diagram]").evaluate((e) => {
+  /**
+   * Records whether the introduction ever ran, via a MutationObserver on `data-animating`, which
+   * cannot miss a brief state the way polling can (on CI's software WebGL the hero's first frame
+   * can block the main thread long enough to compress the 1.8s introduction into a few frames).
+   * The introduction's timing itself is covered with fake timers in the unit tests.
+   */
+  const watchIntro = (page: Page) =>
+    page.locator("[data-slot=incline-diagram]").evaluate((el) => {
+      const w = window as { __introRan?: boolean };
+      w.__introRan = el.hasAttribute("data-animating");
+      new MutationObserver(() => {
+        if (el.hasAttribute("data-animating")) w.__introRan = true;
+      }).observe(el, { attributes: true, attributeFilter: ["data-animating"] });
+    });
+  const introRan = (page: Page) => page.evaluate(() => (window as { __introRan?: boolean }).__introRan === true);
+  const scrollToIncline = (page: Page) =>
+    page.locator("[data-slot=incline-diagram]").evaluate((e) => {
       document.documentElement.style.scrollBehavior = "auto";
       e.scrollIntoView({ block: "center" });
     });
-    await expect(page.locator("[data-slot=incline-diagram]")).toHaveAttribute("data-animating", "");
-    await expect(readout).toContainText(/Grade\s*10%/, { timeout: 4000 });
+
+  test("the incline starts flat, rises to 10% once on first view, and stays interactive", async ({ page }) => {
+    const readout = page.locator("[data-slot=incline-readout]");
+    await expect(readout).toContainText(/Grade\s*0%/);
+    await watchIntro(page);
+    await scrollToIncline(page);
+    await expect(readout).toContainText(/Grade\s*10%/, { timeout: 15_000 });
+    expect(await introRan(page), "the introduction animated").toBe(true);
     await expect(page.locator("[data-slot=incline-diagram]")).not.toHaveAttribute("data-animating");
     // Once only: away and back, the visitor's value stays.
     await page.getByRole("slider", { name: "Grade" }).fill("20");
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(300);
-    await page.locator("[data-slot=incline-diagram]").evaluate((e) => e.scrollIntoView({ block: "center" }));
+    await scrollToIncline(page);
     await page.waitForTimeout(2200);
     await expect(readout).toContainText(/Grade\s*20%/);
   });
 
   test("touching the slider during the introduction cancels it", async ({ page }) => {
-    const slider = page.getByRole("slider", { name: "Grade" });
-    await page.locator("[data-slot=incline-diagram]").evaluate((e) => {
-      document.documentElement.style.scrollBehavior = "auto";
-      e.scrollIntoView({ block: "center" });
-    });
-    await expect(page.locator("[data-slot=incline-diagram]")).toHaveAttribute("data-animating", "");
-    await slider.fill("33");
+    await watchIntro(page);
+    await scrollToIncline(page);
+    await expect.poll(() => introRan(page), { timeout: 15_000 }).toBe(true);
+    await page.getByRole("slider", { name: "Grade" }).fill("33");
     await page.waitForTimeout(2200);
     await expect(page.locator("[data-slot=incline-readout]")).toContainText(/Grade\s*33%/);
   });
@@ -400,10 +416,10 @@ test.describe("refinement pass: fills, layout, figures", () => {
     const context = await browser.newContext({ reducedMotion: "reduce", viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
     await page.goto("/the-science");
-    const fig = page.locator("[data-slot=incline-diagram]");
-    await fig.evaluate((e) => e.scrollIntoView({ block: "center" }));
-    await expect(page.locator("[data-slot=incline-readout]")).toContainText(/Grade\s*10%/, { timeout: 1000 });
-    await expect(fig).not.toHaveAttribute("data-animating");
+    await watchIntro(page);
+    await scrollToIncline(page);
+    await expect(page.locator("[data-slot=incline-readout]")).toContainText(/Grade\s*10%/, { timeout: 15_000 });
+    expect(await introRan(page), "no animated introduction").toBe(false);
     await context.close();
   });
 
