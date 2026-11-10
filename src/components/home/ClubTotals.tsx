@@ -2,24 +2,8 @@ import { Container } from "@/components/Container";
 import { Odometer } from "@/components/Odometer";
 import type { ClubTotals as ClubTotalsData } from "@/lib/club-totals";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
+import { tintVars } from "@/lib/tie-dye";
 import { cn } from "@/lib/utils";
-
-/**
- * Tie-dye tints, in display order: mint, peach, lavender, blue (Owner
- * direction, Round 2). Each circle reads its wash, dye and a neighbor's dye as
- * an accent, so the four echo the Just show up mesh gradient without any one
- * of them turning saturated. Colors are the CMR pastel set in src/styles/cmr.css.
- */
-const TINTS = ["mint", "peach", "lavender", "blue"] as const;
-const tintVars = (i: number) => {
-  const t = TINTS[i % 4];
-  const accent = TINTS[(i + 1) % 4];
-  return {
-    "--tie-wash": `var(--cmr-tint-${t}-wash)`,
-    "--tie-dye": `var(--cmr-tint-${t}-dye)`,
-    "--tie-accent": `var(--cmr-tint-${accent}-dye)`,
-  } as React.CSSProperties;
-};
 
 /**
  * "2026 club totals." — Figma 1:243 (desktop), 78:294 (tablet), 78:412

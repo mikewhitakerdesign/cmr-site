@@ -31,7 +31,15 @@ import { cn } from "@/lib/utils";
  * −0.045em at 144px but makes letters collide at 56px — "JUSTSHOW" in the
  * mobile frame). Owner decision D4: correct colliding type.
  */
-export function JustShowUp() {
+export function JustShowUp({
+  copy: copyText = "No membership fee. No pace requirement. No complicated initiation ritual. Find a run, show up and climb the same hill until it means something.",
+  joinLabel = "Join the club",
+}: {
+  /** Supporting copy; defaults to the homepage text (the About page passes its own). */
+  copy?: string;
+  /** Label of the secondary (join) button. */
+  joinLabel?: string;
+} = {}) {
   const layout = fluidVars({
     "--jsu-minh": [460, 430, 626.6],
     "--jsu-pt": [64, 64, 144],
@@ -85,15 +93,14 @@ export function JustShowUp() {
             "mt-(--jsu-copy-mt-a) font-medium text-primary-foreground/90 md:mt-(--jsu-copy-mt-b) md:max-w-[540px] lg:max-w-[630px]",
           )}
         >
-          No membership fee. No pace requirement. No complicated initiation ritual. Find a run, show up and climb the
-          same hill until it means something.
+          {copyText}
         </p>
         <div className="mt-(--jsu-cta-mt-a) flex flex-wrap gap-3 text-[18px] leading-[27px] md:mt-(--jsu-cta-mt-b) *:h-(--jsu-cta-h-a) md:*:h-(--jsu-cta-h-b)">
           <CtaLink href="/calendar" variant="primary" className="px-7">
             Find a Run
           </CtaLink>
           <CtaLink href="/join" variant="secondary" className="px-7">
-            Join the club
+            {joinLabel}
           </CtaLink>
         </div>
       </Container>
