@@ -170,8 +170,8 @@ describe("The Science page", () => {
   it("renders the approved hero copy", () => {
     render(<SciencePage />);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("The science behind hill repeats?");
-    expect(screen.getByText("The surprisingly legitimate benefits of running uphill. Repeatedly. In Chicago.")).toBeInTheDocument();
-    expect(screen.getByText("Let's examine the evidence.")).toBeInTheDocument();
+    expect(screen.getByText(/^Chicago isn't known for its hills, yet we spend hours running up and down them\. Turns out there's real science behind the physical benefits, and some interesting psychology behind why we keep doing it\.$/)).toBeInTheDocument();
+    expect(screen.queryByText(/surprisingly legitimate|examine the evidence/)).not.toBeInTheDocument();
   });
 
   it("has all eight sections in the brief's order, ending with Sources", () => {

@@ -42,45 +42,29 @@ const MUSCLE_KEY = [
 ] as const;
 
 /**
- * Figure 3 (final pass, Owner direction 2026-11-09): a clean silhouette of a
- * runner pushing off up a 10° slope, near limbs black and far limbs gray, with
- * the three muscle groups the text names marked as light patches on the pushing
- * leg and numbered; the key below names them, so there are no leader lines.
- * Geometry: ./runner.ts. Each group's joint action is in the text beside it
+ * Figure 3: one solid silhouette of a runner driving up a slope (geometry and
+ * provenance: ./runner.ts), with three numbered markers over the push-off leg
+ * (the gluteus maximus behind the hip, the quadriceps on the front of the
+ * thigh, the calf muscles behind the shank) and a key beneath. No overlays and
+ * no leader lines. Each group's joint action is in the text beside it
  * (JOINT_ACTIONS, rendered by the Physiology section).
  */
 export function RunnerIllustration() {
-  const { ground, markers, muscles } = RUNNER;
+  const { ground, markers, silhouette } = RUNNER;
   return (
     <div data-slot="runner-illustration">
       <svg
-        viewBox="140 78 320 448"
+        viewBox="20 30 260 300"
         role="img"
-        aria-label="Silhouette of a runner pushing off up a slope, leaning into the hill, the trailing leg extended and the other knee driven forward. Numbered patches on the pushing leg mark 1, the gluteus maximus behind the hip; 2, the quadriceps along the front of the thigh; and 3, the calf muscles on the back of the lower leg."
-        className="mx-auto w-full max-w-[360px] text-foreground"
+        aria-label="Silhouette of a runner driving up a slope, leaning into the hill, the trailing leg extended behind and the other knee driven forward. Numbered markers on the pushing leg show 1, the gluteus maximus behind the hip; 2, the quadriceps on the front of the thigh; and 3, the calf muscles behind the lower leg."
+        className="mx-auto w-full max-w-[380px] text-foreground"
       >
-        <line {...ground} stroke="currentColor" strokeWidth={2} />
-        {/* Group opacity, so where the far limbs overlap they stay one even gray. */}
-        <g className="fill-current" opacity={0.38}>
-          {RUNNER.far.map((d, i) => (
-            <path key={i} d={d} />
-          ))}
-        </g>
-        <g className="fill-current">
-          {RUNNER.body.map((d, i) => (
-            <path key={i} d={d} />
-          ))}
-        </g>
-        {/* Light patches on the black silhouette: the page background at 82%, so about neutral 200. */}
-        <g className="fill-background" fillOpacity={0.82}>
-          <path data-slot="muscle-gluteus" d={muscles.gluteus} />
-          <path data-slot="muscle-quadriceps" d={muscles.quadriceps} />
-          <path data-slot="muscle-calf" d={muscles.calf} />
-        </g>
+        <line {...ground} stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" />
+        <path data-slot="runner-silhouette" d={silhouette} className="fill-current" />
         {MUSCLE_KEY.map(({ key, n }) => (
           <g key={key} data-slot={`marker-${key}`}>
-            <circle cx={markers[key].x} cy={markers[key].y} r={11} className="fill-current stroke-background" strokeWidth={2} />
-            <text x={markers[key].x} y={markers[key].y + 5} textAnchor="middle" className="fill-background text-[14px] font-bold">
+            <circle cx={markers[key].x} cy={markers[key].y} r={10} className="fill-background stroke-current" strokeWidth={1.5} />
+            <text x={markers[key].x} y={markers[key].y + 4.5} textAnchor="middle" className="fill-current text-[13px] font-bold">
               {n}
             </text>
           </g>
