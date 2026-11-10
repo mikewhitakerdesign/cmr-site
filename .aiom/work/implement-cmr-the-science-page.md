@@ -7,9 +7,9 @@ objective: >-
   long-form, sourced editorial resource on the physics, physiology, breathing,
   psychology and practice of running hill repeats in a flat city, built on the
   established CMR design system, with a sticky subsection navigation, an
-  animated terrain-line hero, monochrome diagrams and three small interactive
-  figures. Delivered as a reviewable PR with a Ready Vercel Preview; not merged.
-status: in-review
+  animated contour hero, monochrome diagrams and three small interactive
+  figures. Merged (PR #13) and verified in production.
+status: complete
 stage: implementation
 active_capability: ui-implementation
 bundle_references:
@@ -18,15 +18,15 @@ bundle_references:
 authority_requirement: owner-authorization-satisfied
 validation_state: passed
 blocker_state: none
-current_responsibility: owner
+current_responsibility: orchestrator
 created_at: '2026-11-09T21:00:00.000Z'
-updated_at: '2026-11-09T21:55:00.000Z'
+updated_at: '2026-11-10T00:40:00.000Z'
 ---
 ## Status
 
-**In review: PR open, not merged.** Branch `feat/cmr-the-science` (worktree `../cmr-site-science`), rebased onto `main` at `6f5fff5` (after PR #11 and #12 merged during this work; no conflicts). The Owner reviews the Vercel Preview next; merge, production deployment and cleanup wait for the Owner's approval.
+**Complete: merged and deployed (2026-11-10).** PR #13 merged as merge commit **`9ae4a29`** (head `ddd7769`, merged with a head-commit guard). `validate`, `browser` and the Vercel Preview passed on the PR head; CI passed on `main` at `9ae4a29`; the production deployment (`dpl_CshnYp5WJ6NyGNCpoQYXLXM4DKHq`, built from `9ae4a29`) is Ready at https://cmr-site-xi.vercel.app. See Outcome.
 
-**Authorization:** Owner instruction of 2026-11-09 (the "The Science" brief, including the updated hero-animation direction): implement end to end through a validated PR with a working Preview, without intermediate questions. Explicitly not authorized: merging, production deployment, deleting remote branches, a closeout PR before approval. No approval artifact was added; the instruction is recorded here.
+**Authorization:** Owner instructions of 2026-11-09: (1) the "The Science" brief and its hero-animation direction (implement through a validated PR, no merge); (2) the refinement pass on the Preview (same PR, no merge); (3) the final pass, which authorized the last refinements, merging PR #13 only, production verification and post-merge cleanup (no force-push, no rule changes, no unrelated PRs). No approval artifact was added; the instructions are recorded here.
 
 Not touched: `plan/cmr-join-page` and its uncommitted records in the primary worktree; PR #5. PR #11 merged while this was in progress; its header changes (Join tooltip, white CTA) are kept and the four-link spacing was re-validated on top of them.
 
@@ -36,8 +36,8 @@ Not touched: `plan/cmr-join-page` and its uncommitted records in the primary wor
 |---|---|
 | Route | `src/app/the-science/page.tsx` (static). Title "The Science \| Chicago Mountain Runners", description metadata. No sitemap exists in the app, so none was added |
 | Global nav | One entry in `primaryNav` (`src/lib/navigation.tsx`), between Chicago Mtns and About. Header and mobile menu are the existing ones |
-| Hero | `ScienceHero` + `TerrainLines` (Canvas 2D): approved eyebrow, headline, subtitle and intro verbatim; black ground, light-gray terrain lines, a black wash from the left (vertical on phones) |
-| Section bar | `ScienceNav`: sticky under the header's visible bar, eight anchors, current-section indicator, one horizontally scrolling row on small screens |
+| Hero | `ScienceHero` + `TerrainLines` (Canvas 2D): approved eyebrow, headline, subtitle and intro verbatim; black ground, light-gray terrain lines, a black wash from the left (vertical on phones) | *(Final pass: `TerrainLines` replaced by the hill pages' `HillHeroBackground`; headline now "The science behind hill repeats?"; no eyebrow.)*
+| Section bar | `ScienceNav`: sticky under the header's visible bar, eight anchors, current-section indicator, one horizontally scrolling row on small screens | *(Final pass: replaced by the shared `SectionNav`, same behaviour.)*
 | Sections 02–09 | `src/components/science/sections/*`, in the brief's order, headings as given |
 | Figures | Incline geometry with grade slider; four-point energy-cost chart; joint-action schematic; elevation accumulator; breathing-pattern guide; repeat waveform; ascent/descent pair; workout profile icons. All inline SVG (except the hero canvas), monochrome |
 | Sources | `src/content/science-sources.ts`: 22 verified entries, numbered by first citation, stable anchors `#source-<id>`; inline `Cite` links to them; educational-information disclaimer under the list |
@@ -113,15 +113,30 @@ Refinement validation: lint, tsc, tokens:check, build pass; Vitest 469/469; Play
 
 Pre-merge validation (macOS, final tree): lint, tsc, tokens:check, build pass; Vitest 467 passed (2 skipped: hold-dependent tests that `main` now skips because the hold is lifted); Playwright 505 passed. One run-details test (`final-pass.spec.ts`, "cricket-mtn-repeats") failed once under full parallel load and passed 3/3 alone; this work does not touch that page. `@visual`: 34 failures, identical to unmodified `main` at `23687ef` (full-page and footer baselines that PRs #11 and #14–#16 changed without re-baselining; visual specs do not run in CI). Not re-baselined here.
 
-## Remaining for the Owner's review
+## Outcome (2026-11-10)
 
-- The rebuilt hero animation's pace and density in a real browser (screenshots are still frames).
-- The runner illustration's anatomy and pose.
-- The tablet header with four links (16px gaps) and the slightly smaller mobile link type below 393px.
-- Editorial voice, especially Breathing (approved opening verbatim), the founder note and The Mind.
-- The 23 stale `@visual` baselines from PR #11 (see Validation), which need a separate re-baseline.
-- Whether Workouts should later link to specific hill pages once repeat gains are verified.
+**Merge.** `main` had moved to `23687ef` and PR #13 conflicted. Rewriting the branch was not possible (a force-push of a rebase was declined, and the Owner's instruction excluded force-pushing), so `main` was merged into the branch instead (`6c6bde6`) and the final-pass commit applied on top, with the tree checked byte-identical to the validated one before a normal fast-forward push. One CI-only test-timing issue was fixed (`ddd7769`: the incline introduction is observed with a MutationObserver, because on CI's software WebGL the hill hero's first frame can block the main thread long enough to compress the introduction). PR #13 merged by merge commit (the repository's established method; `main` has no branch protection) as **`9ae4a29`**, guarded on head `ddd7769`.
+
+**CI.** PR head `ddd7769`: `validate`, `browser`, Vercel Preview (`dpl_52cjRAENo7C3HFZ1nzjNbFcEdh4d`, Ready, built from `ddd7769`) passed. `main` at `9ae4a29`: CI run 42726839746 passed.
+
+**Production** (https://cmr-site-xi.vercel.app, `dpl_CshnYp5WJ6NyGNCpoQYXLXM4DKHq`, Ready, built from `9ae4a29`). Real-browser smoke at 1440, 768 and 393:
+- `/the-science` 200; title "The science behind hill repeats | Chicago Mountain Runners"; H1 "The science behind hill repeats?"; hero background is the shared `HillHeroBackground` contour field (still frame in headless software WebGL, as on the hill pages); no browser console errors; no horizontal overflow.
+- "The Science" in the primary navigation and the footer Navigate list, both linking to `/the-science`.
+- Sections alternate white and black, Physics to Sources. Figure 3 silhouette with its three numbered muscle markers; Figure 7 with three downhill descent arrows; three workout icons; the closing line and "Explore the hills" on the shared rule under the columns.
+- Section bar: "Descending" link lands with its heading below the bar (desktop bar bottom 124px, heading 201px; tablet 120 / 190; phone 99 / 218) and marks Descending current.
+- Incline: rises to 10% on first view (10%, 5.7°, 10.0 ft); the slider then sets 25% (14.0°, 25.0 ft). Accumulator: 40 ft × 30 = 1,200 ft. Breathing guide: Start, then Inhale → Hold after 4.6s; Pause works.
+- `/`, `/hills`, `/hills/cricket-hill`, `/calendar`, `/join`, `/faq`, `/about` all 200.
+
+**Pre-existing, recorded, not changed:** 34 macOS `@visual` full-page and footer baselines fail identically on unmodified `main` at `23687ef` (changed by PRs #11 and #14–#16 without re-baselining; visual specs do not run in CI). The footer baseline would also need updating for the new "The Science" link; re-baselining all of them is a separate step. One run-details test (`final-pass.spec.ts`, "cricket-mtn-repeats", mobile) failed once locally under full parallel load and passed 3/3 alone and in CI; it is not part of this work.
+
+**Cleanup.** After the merge: the implementation worktree `../cmr-site-science`, the local branches `feat/cmr-the-science` and `science-final` (the merged branch's local name), and the remote `feat/cmr-the-science` are removed (project convention). This closeout branch `docs/aiom-close-the-science` is removed after its PR merges. Not touched: the primary worktree (`plan/cmr-join-page` with its uncommitted records), PR #5 and other branches.
+
+## Follow-ups (Owner; not blocking)
+
+- Re-baseline the macOS `@visual` screenshots (34 stale since PRs #11 and #14–#16, plus the footer for this PR) in a separate, Owner-approved step.
+- Judge the hero motion and Figure 3 on a real device (the automated checks run on software WebGL and still frames).
+- The "running silhouette reference" mentioned in the final brief did not reach the implementing session; Figure 3 followed the written direction.
 
 ## Out of scope
 
-Merging, production deployment, branch cleanup and AIOM closeout (after approval); new photography; hill-specific data; changes to other routes beyond the shared header spacing.
+New photography; hill-specific data; changes to other routes beyond the shared header spacing, the footer "The Science" link and the shared hero background and scroll-padding rule; re-baselining unrelated visual screenshots.
