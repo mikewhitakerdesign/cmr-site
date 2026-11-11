@@ -35,7 +35,13 @@ jobs:
     # Geometry vs. Figma, computed token colors, keyboard focus, and axe
     # (incl. color contrast) in Chromium at 393 / 768 / 1440. Visual snapshot
     # baselines are macOS-only and excluded here (see playwright.config.ts).
-    runs-on: ubuntu-latest
+    #
+    # Pinned to Ubuntu 24.04 (Playwright's supported Linux) rather than the floating `ubuntu-latest`, which
+    # moved to the new 26.04 image. On 2026-11-11 `playwright install --with-deps` failed there repeatedly
+    # (apt could not reach security.ubuntu.com or the Azure mirror, exit 100) before any test ran, after
+    # passing earlier the same day. `--with-deps` is kept so the browser's system libraries and fonts are
+    # still installed.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
