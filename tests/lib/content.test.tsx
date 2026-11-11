@@ -4,7 +4,8 @@ import { Faq } from "@/components/faq/Faq";
 import { LegalDocument } from "@/components/legal/LegalDocument";
 import { faq } from "@/content/faq";
 import { participantWaiver, participationGuidelines, privacyPolicy, websiteTerms, type LegalDoc } from "@/content/legal";
-import { WAIVER_VERSION } from "@/lib/waiver";
+import { legalLinks } from "@/lib/navigation";
+import { WAIVER_ENABLED, WAIVER_VERSION } from "@/lib/waiver";
 import { axeViolations } from "../axe";
 
 const docs: [string, LegalDoc | null][] = [
@@ -93,6 +94,10 @@ describe("FAQ", () => {
 
 describe("participant waiver (draft for attorney review)", () => {
   const w = JSON.stringify(participantWaiver);
+  it("is retained as a draft but disabled: no public link while WAIVER_ENABLED is false", () => {
+    expect(WAIVER_ENABLED).toBe(false);
+    expect(legalLinks.find((l) => /waiver/i.test(l.label))?.href).toBeUndefined();
+  });
   it("is titled, versioned and marked as an unreviewed draft", () => {
     expect(participantWaiver!.title).toBe("Participant Waiver and Assumption of Risk");
     expect(participantWaiver!.version).toBe(WAIVER_VERSION);

@@ -33,13 +33,12 @@ describe("Footer", () => {
     expect(screen.queryByRole("list", { name: "Legal" })).not.toBeInTheDocument();
   });
 
-  it("links the published legal documents by default", () => {
+  it("links the three published legal documents by default (the waiver is disabled)", () => {
     render(<Footer year={2026} />);
     const legal = screen.getByRole("list", { name: "Legal" });
     expect(within(legal).getAllByRole("link").map((a) => [a.textContent, a.getAttribute("href")])).toEqual([
       ["Privacy", "/privacy"],
       ["Terms", "/terms"],
-      ["Participant Waiver", "/participant-waiver"],
       ["Participation Guidelines", "/participation-guidelines"],
     ]);
   });

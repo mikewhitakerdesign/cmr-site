@@ -48,7 +48,7 @@ export const privacyPolicy: LegalDoc | null = {
       heading: "1. Information you provide",
       paragraphs: [
         { h3: "Joining the club" },
-        "When you join CMR, we collect your first name, email address, confirmation that you are at least 18 years old, and your acceptance of the Participant Waiver and Assumption of Risk, recorded with the waiver version and the time you accepted it.",
+        "When you join CMR, we collect your first name, email address, and confirmation that you are at least 18 years old.",
         "We use that information to maintain a membership contact list and send announcements about group runs, schedule changes, and occasional community news.",
         { h3: "Asking a question" },
         "When you use our Questions form, we process the contact information and message you provide so we can review and respond to your inquiry.",

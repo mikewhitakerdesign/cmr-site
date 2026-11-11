@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { participantWaiver, participationGuidelines, privacyPolicy, websiteTerms } from "@/content/legal";
+import { WAIVER_ENABLED } from "@/lib/waiver";
 import { socialLinks, type SocialLinks } from "@/lib/social";
 
 export type NavItem = {
@@ -71,7 +72,7 @@ export const footerNav: NavItem[] = buildFooterNav(socialLinks);
 export const legalLinks: LegalLink[] = [
   { label: "Privacy", href: privacyPolicy ? "/privacy" : undefined },
   { label: "Terms", href: websiteTerms ? "/terms" : undefined },
-  { label: "Participant Waiver", href: participantWaiver ? "/participant-waiver" : undefined },
+  { label: "Participant Waiver", href: WAIVER_ENABLED && participantWaiver ? "/participant-waiver" : undefined },
   { label: "Participation Guidelines", href: participationGuidelines ? "/participation-guidelines" : undefined },
 ];
 

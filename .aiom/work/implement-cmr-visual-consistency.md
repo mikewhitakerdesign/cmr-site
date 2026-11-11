@@ -33,10 +33,14 @@ In review on one PR; **not merged**. Authorization: Owner instruction of 2026-11
 
 ## Launch-readiness additions (2026-11-10)
 
-- Join: "Join the club." hero, "Count me in" button and "Count me in." form heading (sentence case). One combined, required, unchecked checkbox (age 18+ and the Participant Waiver, linked). The button is disabled until first name, a valid email and the box are in place; `onSubmit` still validates and focuses the first problem.
-- Submission (Formspree `xrppvnln`, unchanged): adds `waiver_accepted=true`, `waiver_version=CMR-WAIVER-001`, `waiver_accepted_at` (ISO 8601, stamped when sent); `age_18_plus=yes` is kept (same checkbox).
+- Join: "Join the club." hero, "Count me in" button and "Count me in." form heading (sentence case). The button is disabled until first name and a valid email are in place; `onSubmit` still validates and focuses the first problem. (A combined waiver checkbox was built and then disabled; see below.)
+- Submission stays on Formspree `xrppvnln` with the original fields.
 - Shared hero top padding `src/lib/hero-spacing.ts` (56 / 72 / 96): home, /hills, /about, /the-science, /join, Terms, Privacy, Participation Guidelines, the waiver and run detail pages. Exceptions kept: /calendar and hill detail pages. The homepage action row margin was reduced by the headline's shift so the buttons and card stay where Figma puts them.
-- New route `/participant-waiver` (draft, `noindex`, footer link "Participant Waiver"). Privacy "Joining the club" now says the waiver acceptance, version and time are collected.
+- New route `/participant-waiver` (draft; disabled, see below).
+
+## Waiver disabled before merge (Owner direction, 2026-11-10)
+
+The waiver is pending attorney review and is not part of the public MVP. `WAIVER_ENABLED = false` in `src/lib/waiver.ts`: `/participant-waiver` returns 404 (still `noindex` if enabled), the footer link is hidden, the Join form has no checkbox (an "By joining, you confirm that you are at least 18 years old." statement stands in; the "Count me in" button enables when name and email are valid), and no waiver fields (`waiver_accepted`, version, timestamp) are sent. `age_18_plus=yes` is still sent. The Privacy sentence about waiver acceptance was removed. The draft text, version `CMR-WAIVER-001` and `waiverRecord()` remain in the repository for a future initiative; the checkbox implementation is in commit `0d35c7b`.
 
 ## Open items for Owner and Illinois attorney review (not shown publicly)
 
