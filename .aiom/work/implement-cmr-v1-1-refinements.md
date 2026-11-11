@@ -7,22 +7,22 @@ objective: >-
   copy, Join waiver acknowledgment with a revised (proposed) waiver, Hills on Repeat hero restored, hill-card
   border and divider, FAQ edits and contact link, homepage Group Runs / moon / Hills on pause changes, and the
   founder letter.
-status: in_progress
-stage: validation
+status: complete
+stage: implementation
 active_capability: software-implementation
 bundle_references:
   - software-engineering
   - web-ui-experience
-authority_requirement: owner-authorization-required
+authority_requirement: owner-authorization-satisfied
 validation_state: passed
-blocker_state: owner-approval-of-waiver
-current_responsibility: owner
+blocker_state: none
+current_responsibility: orchestrator
 created_at: '2026-11-11T20:00:00.000Z'
 updated_at: '2026-11-11T21:00:00.000Z'
 ---
 ## Status
 
-Owner approved on 2026-11-11 (final reconciliation brief): the v1.1 changes, CMR-WAIVER-002 for publication, and PR #31's merge after validation. Delivery and production verification are recorded under "Delivery" below.
+Owner approved on 2026-11-11 (final reconciliation brief): the v1.1 changes, CMR-WAIVER-002 for publication, and PR #31's merge after validation. **Complete: merged and verified in production (2026-11-11).**
 
 ## Authorization
 
@@ -76,3 +76,13 @@ The new "joining is required for official runs" position contradicts older copy 
 ## Validation
 
 Lint, tsc, tokens check, 506 unit tests (41 files), production build and the full Playwright suite (596 passed, 151 skipped by design, 0 failed). Formspree was intercepted in every test; nothing was sent to a live form. Results are in the PR.
+
+## Delivery
+
+PR #31 merged as merge commit **`b8f0c95`** (head `eb85751`, merge-commit method, head-commit guard). On the final head `validate`, `browser` and the Vercel checks passed (local: lint, tsc, tokens check, build, 506 unit tests, Playwright 596 passed / 151 skipped by design / 0 failed). Production (`https://www.chicagomountainrunners.com`, read-only requests, no Formspree submissions): `/`, `/hills`, `/calendar`, `/faq`, `/about`, `/join`, `/participant-waiver`, `/privacy`, `/terms` return 200; the waiver shows CMR-WAIVER-002 and "Effective November 11, 2026"; `/calendar` shows the hero paragraph, weather and "Hills on pause"; the FAQ heading is "Frequently asked Qs."; the Join checkbox links the waiver. Hills on pause remains in effect; no membership gate or authentication was added. The two Formspree forms stay separate (Join `xrppvnln`, hill suggestion `mjywvydn`).
+
+One miss found in production: the waiver page's meta description still ended "Draft for review." It is removed in the closeout PR, with a regression assertion.
+
+## Remaining recommendation (nonblocking)
+
+Independent Illinois attorney review of CMR-WAIVER-002 (entity and released-party wording, ordinary-negligence release, property and media provisions, electronic acceptance) is still recommended. It has not happened and is not claimed. The waiver page remains `noindex` and unlisted in the sitemap, by choice.
