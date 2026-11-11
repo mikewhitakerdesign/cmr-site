@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: "Join the club | Chicago Mountain Runners",
   description:
     "Chicago Mountain Runners is a free, informal running community for adults 18 and older. No dues, no minimum pace, no actual mountains. Join for club updates.",
+  alternates: { canonical: "/join" },
 };
 
 /**

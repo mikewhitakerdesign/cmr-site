@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   description: OFFICIAL_RUNS_ON_HOLD
     ? "Official group runs are on hold while we review park-use requirements. Explore Chicago's hills and join the club for updates."
     : "Find your next Chicago group run. Weekly hill repeats with Chicago Mountain Runners, all paces welcome, no registration.",
+  alternates: { canonical: "/calendar" },
 };
 
 /**

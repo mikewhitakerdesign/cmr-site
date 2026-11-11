@@ -33,7 +33,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (OFFICIAL_RUNS_ON_HOLD) return { robots: { index: false } };
   const run = getRun((await params).slug);
   if (!run || run.status === "placeholder") return {};
-  return { title: `${run.title} | Chicago Mountain Runners`, description: run.content?.headline ?? run.description };
+  return {
+    title: `${run.title} | Chicago Mountain Runners`,
+    description: run.content?.headline ?? run.description,
+    alternates: { canonical: `/calendar/${run.slug}` },
+  };
 }
 
 const LABEL = "font-mono text-[13px] leading-5 tracking-[0.1em] uppercase";

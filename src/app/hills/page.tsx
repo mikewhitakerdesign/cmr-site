@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   title: "Hills on Hills | Chicago Mountain Runners",
   description:
     "Explore Chicago area hills and places to train. The hills Chicago Mountain Runners climb in a very flat city: Cricket Hill, Warren Hill, Horner Hill, Schiller Hill and Mt. Trashmore.",
+  alternates: { canonical: "/hills" },
 };
 
 /** "Weekly with CMR" depends on the runs' upcoming dates, so regenerate hourly (as the homepage). */

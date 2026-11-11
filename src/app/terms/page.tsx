@@ -4,6 +4,7 @@ import { websiteTerms } from "@/content/legal";
 
 export const metadata: Metadata = {
   title: "Terms of Use | Chicago Mountain Runners",
+  alternates: { canonical: "/terms" },
   // Not indexed until the Owner-approved text is published (src/content/legal.ts).
   robots: websiteTerms ? undefined : { index: false },
 };
