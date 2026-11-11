@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { JoinForm } from "@/components/join/JoinForm";
@@ -22,22 +22,22 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 const setup = () => ({ user: userEvent.setup(), ...render(<JoinForm />) });
-const submitButton = () => screen.getByRole("button", { name: /Join the club|Joining/ });
+const submitButton = () => screen.getByRole("button", { name: /Count me in|Joining/ });
+// The button is disabled until the form is ready; this is what Enter in a field (or a script) does.
+const forceSubmit = (container: HTMLElement) => fireEvent.submit(container.querySelector("form")!);
 async function fillValid(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText("First name"), "Sam");
   await user.type(screen.getByLabelText("Email address"), "sam@example.com");
-  await user.click(screen.getByRole("checkbox", { name: "I confirm that I'm at least 18 years old." }));
 }
 
 describe("validateJoin", () => {
-  it("requires a first name, a valid email and the 18+ confirmation", () => {
-    expect(validateJoin({ firstName: " ", email: "", over18: false })).toEqual({
+  it("requires a first name and a valid email, and nothing about a waiver", () => {
+    expect(validateJoin({ firstName: " ", email: "" })).toEqual({
       firstName: "Add your first name.",
       email: "Add your email address so we can send club updates.",
-      over18: "Confirm that you're 18 or older to join.",
     });
-    expect(validateJoin({ firstName: "Sam", email: "nope", over18: true }).email).toMatch(/doesn't look right/);
-    expect(validateJoin({ firstName: "Sam", email: "sam@example.com", over18: true })).toEqual({});
+    expect(validateJoin({ firstName: "Sam", email: "nope" }).email).toMatch(/doesn't look right/);
+    expect(validateJoin({ firstName: "Sam", email: "sam@example.com" })).toEqual({});
   });
 });
 
@@ -47,15 +47,32 @@ describe("JoinForm", () => {
     expect(JOIN_FORM_ID).not.toBe(QUESTIONS_FORM_ID);
   });
 
-  it("labels every field, marks them required and leaves the age box unchecked", () => {
+  it("labels every field and marks them required, with no checkbox at all", () => {
     setup();
     expect(screen.getByLabelText("First name")).toHaveAttribute("name", "first_name");
     expect(screen.getByLabelText("First name")).toBeRequired();
     expect(screen.getByLabelText("Email address")).toHaveAttribute("type", "email");
     expect(screen.getByLabelText("Email address")).toHaveAttribute("autocomplete", "email");
-    const age = screen.getByRole("checkbox", { name: "I confirm that I'm at least 18 years old." });
-    expect(age).not.toBeChecked();
-    expect(age).toBeRequired();
+    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+  });
+
+  it("states the 18+ eligibility without a checkbox, and has no waiver link or wording (the waiver is disabled)", () => {
+    const { container } = setup();
+    expect(container).toHaveTextContent("By joining, you confirm that you are at least 18 years old.");
+    expect(screen.queryByRole("link", { name: /waiver/i })).not.toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/waiver|release of liability|assumption of risk/i);
+  });
+
+  it("enables the button once the name and a valid email are in place", async () => {
+    const { user } = setup();
+    expect(submitButton()).toBeDisabled();
+    await user.type(screen.getByLabelText("First name"), "Sam");
+    expect(submitButton()).toBeDisabled();
+    await user.type(screen.getByLabelText("Email address"), "not-an-email");
+    expect(submitButton()).toBeDisabled();
+    await user.clear(screen.getByLabelText("Email address"));
+    await user.type(screen.getByLabelText("Email address"), "sam@example.com");
+    expect(submitButton()).toBeEnabled();
   });
 
   it("explains that joining includes club emails with an unsubscribe option, and links to Privacy", () => {
@@ -66,33 +83,23 @@ describe("JoinForm", () => {
     expect(screen.getByRole("link", { name: "Privacy Policy" })).toHaveAttribute("href", "/privacy");
   });
 
-  it("does not describe the age box as a waiver or agreement to participate", () => {
-    const { container } = setup();
-    expect(container.textContent).not.toMatch(/waiver|release|liabilit|assume|agree to participate/i);
-  });
-
   it("shows linked errors for every missing field, focuses the first, and sends nothing", async () => {
-    const { user } = setup();
-    await user.click(submitButton());
+    const { container } = setup();
+    forceSubmit(container);
     const first = screen.getByLabelText("First name");
     expect(first).toHaveAttribute("aria-invalid", "true");
     expect(first).toHaveAccessibleDescription("Add your first name.");
     expect(first).toHaveFocus();
     expect(screen.getByLabelText("Email address")).toHaveAccessibleDescription(/Add your email address/);
-    expect(screen.getByRole("checkbox")).toHaveAccessibleDescription(/18 or older to join/);
-    expect(fetchMock).not.toHaveBeenCalled();
+        expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("focuses the email, then the age box, when those are the first problems", async () => {
-    const { user } = setup();
+  it("cannot be submitted with an invalid email, even by forcing the form", async () => {
+    const { user, container } = setup();
     await user.type(screen.getByLabelText("First name"), "Sam");
     await user.type(screen.getByLabelText("Email address"), "not-an-email");
-    await user.click(submitButton());
+    forceSubmit(container);
     expect(screen.getByLabelText("Email address")).toHaveFocus();
-    await user.clear(screen.getByLabelText("Email address"));
-    await user.type(screen.getByLabelText("Email address"), "sam@example.com");
-    await user.click(submitButton());
-    expect(screen.getByRole("checkbox")).toHaveFocus();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -116,6 +123,8 @@ describe("JoinForm", () => {
     expect(body.get("first_name")).toBe("Sam");
     expect(body.get("email")).toBe("sam@example.com");
     expect(body.get("age_18_plus")).toBe("yes");
+    // No waiver fields: no agreement is obtained while the waiver is disabled.
+    expect([...body.keys()].filter((k) => /waiver/i.test(k))).toEqual([]);
     expect(body.get("_subject")).toBe("CMR Join signup");
 
     resolve(json(200, { ok: true, next: "https://formspree.io/thanks" }));
@@ -140,7 +149,6 @@ describe("JoinForm", () => {
     expect(screen.queryByText("YOU'RE IN.")).not.toBeInTheDocument();
     expect(screen.getByLabelText("First name")).toHaveValue("Sam");
     expect(screen.getByLabelText("Email address")).toHaveValue("sam@example.com");
-    expect(screen.getByRole("checkbox")).toBeChecked();
     expect(submitButton()).toBeEnabled();
 
     fetchMock.mockResolvedValueOnce(json(200, { ok: true, next: "https://formspree.io/thanks" }));
@@ -181,7 +189,7 @@ describe("JoinForm", () => {
     fetchMock.mockResolvedValue(json(200, { ok: true, next: "https://formspree.io/thanks" }));
     const { user, container } = setup();
     expect(await axeViolations(container)).toEqual([]);
-    await user.click(submitButton());
+    forceSubmit(container);
     expect(await axeViolations(container)).toEqual([]);
     await fillValid(user);
     await user.click(submitButton());

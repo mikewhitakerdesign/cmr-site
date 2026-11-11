@@ -5,7 +5,7 @@ import { Tooltip } from "@/components/Tooltip";
 import { JOIN_TOOLTIP } from "@/lib/navigation";
 import { ArrowUpRightIcon, ClockIcon, MapPinIcon } from "@/components/icons";
 import { FLUID_TYPE, fluidVars } from "@/lib/fluid";
-import { DISPLAY_HEADING, displayHeading } from "@/lib/headings";
+import { DISPLAY_HEADING, impactH2 } from "@/lib/headings";
 import { OFFICIAL_RUNS_ON_HOLD, PERMIT_HOLD_COPY } from "@/lib/permit-hold";
 import { workoutLabel, type RunOccurrence } from "@/lib/runs";
 import { formatSlot, toDateTimeAttr } from "@/lib/schedule";
@@ -53,7 +53,7 @@ export function UpcomingRuns({
     "--runs-list-mt": [53, 44, 56],
   });
   // Owner direction (2026-11-08): the "Get high in the city." size (was 36 / 48 / 64).
-  const heading = displayHeading();
+  const heading = impactH2();
 
   return (
     <section
@@ -199,7 +199,7 @@ function UpcomingRunsOnHold() {
         <p className="text-caption uppercase">Group runs</p>
         <h2
           id="upcoming-runs-heading"
-          style={displayHeading()}
+          style={impactH2()}
           className={cn(FLUID_TYPE, DISPLAY_HEADING, "mt-(--runs-heading-mt-a) md:mt-(--runs-heading-mt-b)")}
         >
           {PERMIT_HOLD_COPY.sectionHeading}

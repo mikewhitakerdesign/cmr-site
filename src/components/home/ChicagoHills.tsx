@@ -2,7 +2,7 @@ import { ArrowLink } from "@/components/ArrowLink";
 import { Container } from "@/components/Container";
 import { HillsExplorer } from "@/components/home/HillsExplorer";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
-import { BODY_TEXT_COLOR, DISPLAY_HEADING, displayHeading } from "@/lib/headings";
+import { BODY_TEXT_COLOR, DISPLAY_HEADING, impactH2 } from "@/lib/headings";
 import { DEFAULT_PROFILE_SLUG, type Hill } from "@/lib/hills";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +39,7 @@ export function ChicagoHills({ hills }: { hills: Hill[] }) {
     "--hills-fig-mt": [28, 14, 0],
     "--hills-list-mt": [34, 34, 48],
   });
-  const heading = displayHeading();
+  const heading = impactH2();
   const copy = fluidType([16, 16, 18], [24, 24, 27]);
 
   const intro = (
@@ -51,7 +51,7 @@ export function ChicagoHills({ hills }: { hills: Hill[] }) {
       >
         Get high in the city.
       </h2>
-      <p style={copy} className={cn(FLUID_TYPE, BODY_TEXT_COLOR, "mt-6 font-medium ss08 lg:max-w-[474px]")}>
+      <p style={copy} className={cn(FLUID_TYPE, BODY_TEXT_COLOR, "mt-6 font-normal ss08 lg:max-w-[474px]")}>
         You don&apos;t need mountains to train for mountains. These are the hills, sledding slopes and
         questionable pieces of landfill elevation we run repeatedly around Chicago.
       </p>

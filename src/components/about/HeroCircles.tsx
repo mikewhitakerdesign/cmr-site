@@ -1,86 +1,40 @@
-"use client";
-
-import { useEffect, useRef } from "react";
-import { MOTION_EVENT, motionOff } from "@/lib/motion";
 import { tintVars } from "@/lib/tints";
 import { cn } from "@/lib/utils";
 
-export type HeroCircle = { text: string; size: number; left: number; top: number };
-
 /**
- * The four About-hero circles (tie-dye fills from `@/lib/tints`).
+ * The four About-hero circles: equal diameters, the homepage club-totals
+ * tie-dye fills (`@/lib/tints` + `cmr-tie-dye`, one tint each), no shadow.
+ *
+ * Layout is CSS grid. From `lg` the four sit in one evenly spaced row; below
+ * it they form a 2 × 2 grid. Each circle fills its grid cell (the track is
+ * capped at the diameter), so a percentage margin equals the diameter: the
+ * circles in the last row take `-mb-[25%]`, which pulls the section boundary up
+ * so they overlap the black founder section by 25% of their diameter. In
+ * the 2 × 2 grid only the bottom two do.
  *
  * Motion is decorative and governed by the site's one motion preference
  * (`html[data-motion]`, src/lib/motion.ts: system reduced motion and the
- * footer's Pause motion): a slow float (CSS, transform only, `.about-float` in
- * cmr.css) and, on desktop pointers only, a restrained drift toward the cursor
- * (≤ 10px, deeper circles move a little more). Nothing moves when motion is
- * off. The list takes no pointer events, so it never interferes with text.
+ * footer's Pause motion): the same slow, tiny float on every circle at once
+ * (CSS transform, `.about-float` in cmr.css), so the row stays aligned.
  */
-export function HeroCircles({ circles }: { circles: HeroCircle[] }) {
-  const ref = useRef<HTMLUListElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || !window.matchMedia?.("(hover: hover) and (pointer: fine) and (min-width: 1280px)").matches) return;
-    const reset = () => {
-      el.style.setProperty("--mx", "0");
-      el.style.setProperty("--my", "0");
-    };
-    const onMove = (e: PointerEvent) => {
-      if (motionOff()) return reset();
-      el.style.setProperty("--mx", String((e.clientX / window.innerWidth - 0.5) * 2));
-      el.style.setProperty("--my", String((e.clientY / window.innerHeight - 0.5) * 2));
-    };
-    window.addEventListener("pointermove", onMove, { passive: true });
-    document.documentElement.addEventListener("pointerleave", reset);
-    window.addEventListener(MOTION_EVENT, reset);
-    return () => {
-      window.removeEventListener("pointermove", onMove);
-      document.documentElement.removeEventListener("pointerleave", reset);
-      window.removeEventListener(MOTION_EVENT, reset);
-    };
-  }, []);
-
+export function HeroCircles({ circles }: { circles: string[] }) {
   return (
     <ul
-      ref={ref}
       className={cn(
-        "relative z-10 mt-12 -mb-10 grid max-w-[460px] grid-cols-2 gap-x-4 gap-y-4 sm:gap-x-6 md:-mb-14 md:max-w-[560px]",
-        "xl:pointer-events-none xl:absolute xl:top-4 xl:right-12 xl:mt-0 xl:mb-0 xl:block xl:h-[776px] xl:w-[440px] xl:max-w-none",
+        "relative z-10 mt-12 grid grid-cols-[repeat(2,minmax(0,200px))] gap-x-6 gap-y-6 md:mt-14 md:grid-cols-[repeat(2,minmax(0,240px))] md:gap-x-8",
+        "lg:mt-16 lg:grid-cols-[repeat(4,minmax(0,280px))] lg:justify-between lg:gap-x-8",
       )}
     >
-      {circles.map((c, i) => (
-        <li
-          key={c.text}
-          style={
-            {
-              ...tintVars(i),
-              "--size": `${c.size}px`,
-              "--left": `${c.left}px`,
-              "--top": `${c.top}px`,
-              "--depth": 6 + i * 2,
-            } as React.CSSProperties
-          }
-          className={cn(
-            "about-parallax",
-            i % 2 === 1 && "mt-6 md:mt-8 xl:mt-0",
-            "xl:absolute xl:left-(--left) xl:top-(--top) xl:w-(--size)",
-          )}
-        >
+      {circles.map((text, i) => (
+        <li key={text} style={tintVars(i)} className={cn(i >= 2 ? "-mb-[25%]" : "lg:-mb-[25%]")}>
           <div
-            style={{ "--float-delay": `${-i * 2.3}s`, "--float-dur": `${7 + i}s` } as React.CSSProperties}
             className={cn(
-              "about-float relative isolate flex aspect-square w-full items-center justify-center overflow-hidden rounded-full px-[14%] text-center",
-              // Same drop shadow as the site's map images (RunMap, FindTheMountain).
-              "shadow-[0_8px_14px_rgba(65,65,65,0.28)]",
-              "text-[15px] leading-[1.15] font-extrabold text-balance sm:text-[19px] md:text-[22px]",
-              "xl:text-[22px] xl:leading-[1.1]",
-              i === 3 && "xl:text-[24px]",
+              "about-float relative isolate flex aspect-square w-full items-center justify-center overflow-hidden rounded-full px-[12%] text-center",
+              "text-[14px] leading-[1.15] font-extrabold text-balance md:text-[20px] lg:text-[17px] xl:text-[22px]",
             )}
           >
             <span aria-hidden className="cmr-tie-dye absolute -z-10" />
-            {c.text}
+            {text}
           </div>
         </li>
       ))}

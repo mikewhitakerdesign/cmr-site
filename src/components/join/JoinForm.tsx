@@ -7,15 +7,16 @@ import { CtaLink } from "@/components/CtaLink";
 import { Field } from "@/components/form/Field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FLUID_TYPE, fluidType } from "@/lib/fluid";
-import { DISPLAY_HEADING } from "@/lib/headings";
+import { FLUID_TYPE } from "@/lib/fluid";
+import { DISPLAY_HEADING, standardH2 } from "@/lib/headings";
 import { JOIN_FORM_ID, JOIN_LIMITS, validateJoin, type JoinErrors } from "@/lib/join";
 import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
 import { cn } from "@/lib/utils";
 
 /**
- * The Join form (Owner-approved flow, 2026-11-09): first name, email address and
- * a required, unchecked-by-default confirmation that the person is 18 or older.
+ * The Join form (Owner-approved flow, 2026-11-09): first name and email address. The 18+ eligibility
+ * is stated above the button ("By joining, you confirm..."), not a checkbox. The participant waiver is
+ * disabled until it is attorney-approved (src/lib/waiver.ts); no waiver fields are sent.
  *
  * Delivery: Formspree (form `xrppvnln`) through `@formspree/react` `useForm`. The
  * browser posts straight to Formspree; nothing is stored by this app, there is no
@@ -23,8 +24,7 @@ import { cn } from "@/lib/utils";
  * Membership is a manually kept private roster (Owner decision), and there is no
  * automated welcome email. The success message is the website's own confirmation.
  *
- * The age confirmation is not a liability waiver, a medical declaration or acceptance of the
- * Terms, and is not described as one. Unsubscribing is manual: the disclosure points to the
+ * Unsubscribing is manual: the disclosure points to the
  * Questions form rather than promising an unsubscribe link that does not exist.
  *
  * Behavior:
@@ -43,18 +43,25 @@ export function JoinForm() {
   const ids = {
     firstName: `${uid}-first-name`,
     email: `${uid}-email`,
-    over18: `${uid}-over18`,
     formError: `${uid}-form-error`,
   };
   const [errors, setErrors] = useState<JoinErrors>({});
   const [state, submit] = useForm<Record<string, string>>(JOIN_FORM_ID);
   const firstNameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
-  const over18Ref = useRef<HTMLInputElement>(null);
   const doneRef = useRef<HTMLDivElement>(null);
   const sending = useRef(false);
+  // The button stays disabled until both fields look valid. Submission is
+  // still validated in onSubmit, so the disabled state is never the only guard.
+  const [ready, setReady] = useState(false);
+  const checkReady = (form: HTMLFormElement) => {
+    const d = new FormData(form);
+    const found = validateJoin({ firstName: String(d.get("first_name") ?? ""), email: String(d.get("email") ?? "") });
+    setReady(Object.keys(found).length === 0);
+  };
 
   useEffect(() => {
+    // The form is replaced by the confirmation, so nothing carries over to another signup.
     if (state.succeeded) doneRef.current?.focus();
   }, [state.succeeded]);
 
@@ -66,15 +73,15 @@ export function JoinForm() {
     const found = validateJoin({
       firstName: String(data.get("first_name") ?? ""),
       email: String(data.get("email") ?? ""),
-      over18: data.get("age_18_plus") === "yes",
     });
     setErrors(found);
     if (found.firstName) return firstNameRef.current?.focus();
     if (found.email) return emailRef.current?.focus();
-    if (found.over18) return over18Ref.current?.focus();
     sending.current = true;
     try {
-      await submit(e);
+      // The 18+ statement beside the button is the eligibility acknowledgment; kept for the roster.
+      data.set("age_18_plus", "yes");
+      await submit(data);
     } finally {
       sending.current = false;
     }
@@ -85,7 +92,6 @@ export function JoinForm() {
   const fieldError = {
     firstName: errors.firstName ?? serverField("first_name"),
     email: errors.email ?? serverField("email"),
-    over18: errors.over18 ?? serverField("age_18_plus"),
   };
   // Any delivery failure shows the Owner's recoverable-error copy; Formspree's wording is not shown.
   const formError = state.errors?.getFormErrors().length ? "We couldn't confirm your signup. Please try again. Your information is still here." : undefined;
@@ -99,7 +105,7 @@ export function JoinForm() {
         data-slot="join-success"
         className="rounded-xl bg-accent p-6 text-accent-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring md:p-10"
       >
-        <h2 style={fluidType([44, 56, 72], [44, 56, 68])} className={cn(FLUID_TYPE, DISPLAY_HEADING)}>
+        <h2 style={standardH2()} className={cn(FLUID_TYPE, DISPLAY_HEADING)}>
           YOU&apos;RE IN.
         </h2>
         <p className="mt-5 max-w-[48ch] text-[20px] leading-[30px]">
@@ -119,7 +125,7 @@ export function JoinForm() {
   }
 
   return (
-    <form noValidate onSubmit={onSubmit} aria-describedby={formError ? ids.formError : undefined} className="flex flex-col gap-6">
+    <form noValidate onSubmit={onSubmit} onChange={(e) => checkReady(e.currentTarget)} aria-describedby={formError ? ids.formError : undefined} className="flex flex-col gap-6">
       <Field id={ids.firstName} label="First name" error={fieldError.firstName}>
         <Input
           ref={firstNameRef}
@@ -151,33 +157,6 @@ export function JoinForm() {
         />
       </Field>
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor={ids.over18} className="flex cursor-pointer items-start gap-3 text-p">
-          <input
-            ref={over18Ref}
-            id={ids.over18}
-            name="age_18_plus"
-            type="checkbox"
-            value="yes"
-            required
-            aria-required="true"
-            aria-invalid={fieldError.over18 ? true : undefined}
-            aria-describedby={fieldError.over18 ? `${ids.over18}-error` : undefined}
-            className={cn(
-              "mt-0.5 size-6 shrink-0 cursor-pointer rounded-sm accent-primary outline-none",
-              "focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-              "aria-invalid:outline-2 aria-invalid:outline-destructive-border",
-            )}
-          />
-          <span>I confirm that I&apos;m at least 18 years old.</span>
-        </label>
-        {fieldError.over18 && (
-          <p id={`${ids.over18}-error`} className="text-p-mini font-medium text-destructive">
-            {fieldError.over18}
-          </p>
-        )}
-      </div>
-
       {/* Formspree honeypot: bots fill it, people never see it. */}
       <input type="text" name="_gotcha" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
       {/* Lets the Owner tell Join mail from Questions mail in the Formspree inbox. */}
@@ -191,6 +170,9 @@ export function JoinForm() {
         </Link>{" "}
         to learn how we handle your information.
       </p>
+      <p className="max-w-[56ch] text-p-sm text-muted-foreground">
+        Club membership is for adults 18 and older. By joining, you confirm that you are at least 18 years old.
+      </p>
 
       {formError && (
         <p id={ids.formError} role="alert" className="rounded-lg border border-destructive-border p-3 text-p-sm">
@@ -198,9 +180,22 @@ export function JoinForm() {
         </p>
       )}
 
-      <Button type="submit" size="xl" disabled={state.submitting} aria-disabled={state.submitting || undefined} className="self-start">
-        {state.submitting ? "Joining…" : "Join the club"}
-      </Button>
+      <div className="flex flex-col gap-2 self-start">
+        <Button
+          type="submit"
+          size="xl"
+          disabled={state.submitting || !ready}
+          aria-disabled={state.submitting || !ready || undefined}
+          aria-describedby={!ready ? `${uid}-hint` : undefined}
+        >
+          {state.submitting ? "Joining…" : "Count me in"}
+        </Button>
+        {!ready && (
+          <p id={`${uid}-hint`} className="text-p-mini text-muted-foreground">
+            Add your name and email to continue.
+          </p>
+        )}
+      </div>
     </form>
   );
 }

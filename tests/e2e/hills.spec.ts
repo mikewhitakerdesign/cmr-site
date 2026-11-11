@@ -19,9 +19,9 @@ const NAMES = ["Cricket Hill", "Warren Hill", "Horner Hill", "Schiller Hill", "M
  */
 const FIGMA = {
   // Hero 25% under Figma's 540 / 697 / 844 (PR #4 final pass).
-  mobile: { heroH: 405, h1: 53.9, lede: 36, display: 48 },
-  tablet: { heroH: 522.75, h1: 104, lede: 36, display: 54 },
-  desktop: { heroH: 633, h1: 176, lede: 64, display: 96 },
+  mobile: { heroH: 405, h1: 52, lede: 36, display: 48 },
+  tablet: { heroH: 522.75, h1: 96, lede: 36, display: 54 },
+  desktop: { heroH: 633, h1: 128, lede: 64, display: 96 },
 } as const;
 const spec = (name: string) => FIGMA[name as keyof typeof FIGMA];
 
@@ -67,8 +67,8 @@ test.describe("/hills directory", () => {
   });
 
   test("title, heading and the five hills in order, each linked", async ({ page }) => {
-    await expect(page).toHaveTitle("Chicago Hills | Chicago Mountain Runners");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Chicago Hills Mountains");
+    await expect(page).toHaveTitle("Hills on Hills | Chicago Mountain Runners");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hills on hills on hills.");
     const rows = page.locator("main ol > li");
     await expect(rows).toHaveCount(5);
     for (const [i, slug] of SLUGS.entries()) {
@@ -84,18 +84,18 @@ test.describe("/hills directory", () => {
     await expect(page.locator("main ol [data-hill-profile]")).toHaveCount(0);
   });
 
-  test("headline: no eyebrow, “Chicago H̶i̶l̶l̶s̶” on one line and “Mountains” alone on the second", async ({ page }) => {
+  test("headline: no eyebrow, “Hills on hills on hills.” in the Display Large size without overflow", async ({ page }) => {
     const h1 = page.getByRole("heading", { level: 1 });
     await expect(page.locator("main section").first().locator("p").first()).not.toContainText("hills ·");
-    for (const w of [320, 393, 768, 1440, 1920]) {
+    for (const w of [320, 393, 768, 1024, 1440, 1920]) {
       await page.setViewportSize({ width: w, height: 900 });
-      const [first, second] = await h1.locator(":scope > span").evaluateAll((els) =>
-        els.map((e) => ({ top: e.getBoundingClientRect().top, h: e.getBoundingClientRect().height, lh: parseFloat(getComputedStyle(e).lineHeight) })),
-      );
-      expect(second.top, `${w}px`).toBeGreaterThan(first.top);
-      expect(first.h, `${w}px: one line`).toBeLessThan(first.lh * 1.5);
-      expect(second.h, `${w}px: one line`).toBeLessThan(second.lh * 1.5);
+      expect(await h1.evaluate((e) => e.scrollWidth - e.clientWidth), `${w}px`).toBeLessThanOrEqual(0);
     }
+    await page.setViewportSize({ width: 1440, height: 900 });
+    expect(await css(h1, "font-size")).toBe("128px");
+    const intro = page.locator("main section").first().locator("p").first();
+    expect(await css(intro, "font-size")).toBe("18px");
+    expect(await css(intro, "line-height")).toBe("27px");
   });
 
   test("rows: no numbers, Grass/dirt, Weekly with CMR", async ({ page }) => {
@@ -107,7 +107,7 @@ test.describe("/hills directory", () => {
   });
 
   test("the header marks Hills as the current section", async ({ page }) => {
-    await expect(page.locator("header").getByRole("link", { name: /Chicago.*Mtns/ })).toHaveAttribute("aria-current", "page");
+    await expect(page.locator("header").getByRole("link", { name: "Hills on Hills" })).toHaveAttribute("aria-current", "page");
   });
 
   test("the whole row is clickable (clicking empty row space opens the hill)", async ({ page }) => {
@@ -218,7 +218,7 @@ test.describe("hill detail pages", () => {
       await expect(page).toHaveTitle(`${NAMES[i]} | Chicago Mountain Runners`);
       expect(await page.locator('meta[name="description"]').getAttribute("content")).toBeTruthy();
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(NAMES[i]);
-      await expect(page.locator("header").getByRole("link", { name: /Chicago.*Mtns/ })).toHaveAttribute("aria-current", "page");
+      await expect(page.locator("header").getByRole("link", { name: "Hills on Hills" })).toHaveAttribute("aria-current", "page");
       await loadAll(page);
       expect(await axe(page)).toEqual([]);
       expect(await overflowX(page)).toBeLessThanOrEqual(0);

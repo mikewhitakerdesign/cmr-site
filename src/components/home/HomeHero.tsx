@@ -6,8 +6,10 @@ import { Tooltip } from "@/components/Tooltip";
 import { JOIN_TOOLTIP } from "@/lib/navigation";
 import { NextRunCard } from "@/components/home/NextRunCard";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
+import { displayXL } from "@/lib/headings";
 import type { RunOccurrence } from "@/lib/runs";
 import { onDarkSurface } from "@/lib/surfaces";
+import { HERO_TOP_PX } from "@/lib/hero-spacing";
 import { cn } from "@/lib/utils";
 
 /**
@@ -54,13 +56,14 @@ import { cn } from "@/lib/utils";
 export function HomeHero({ next, now, held }: { next: RunOccurrence | null; now: Date; held?: boolean }) {
   const layout = fluidVars({
     "--hero-minh": [614, 670, 846],
-    "--hero-pt": [52, 66, 115],
-    "--hero-actions-mt": [74, 34, 154],
+    "--hero-pt": HERO_TOP_PX,
+    // Reduced by the amount the shared hero top padding grew (+4 / +6) or raised (−19) the headline, so the buttons and card stay where Figma puts them.
+    "--hero-actions-mt": [70, 28, 173],
     "--hero-card-mt": [48, 40, 40],
     "--hero-card-w": [345, 380, 542],
     "--hero-cta-h": [48, 56, 56],
   });
-  const heading = fluidType([48, 98, 209], [52, 102, 204]);
+  const heading = displayXL();
   const cta = fluidType([15, 18, 18], [23, 27, 27]);
 
   return (

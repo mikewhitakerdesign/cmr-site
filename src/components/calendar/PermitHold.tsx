@@ -44,7 +44,7 @@ export function PermitHold() {
           <h1 id="permit-hold-heading" style={heading} className={cn(FLUID_TYPE, "font-black tracking-[-0.045em] text-balance")}>
             {PERMIT_HOLD_COPY.heading}
           </h1>
-          <p className="mt-6 max-w-[56ch] text-[20px] leading-[30px] font-medium md:mt-8">{PERMIT_HOLD_COPY.body}</p>
+          <p className="mt-6 max-w-[56ch] text-[20px] leading-[30px] font-normal md:mt-8">{PERMIT_HOLD_COPY.body}</p>
           <p className="mt-4 max-w-[56ch] text-[18px] leading-[27px] text-foreground/80">{PERMIT_HOLD_COPY.supporting}</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row md:mt-10">
             <CtaLink href="/hills" variant="primary" className="h-14 px-7 text-[18px] leading-[27px] font-medium">

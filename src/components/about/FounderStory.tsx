@@ -1,36 +1,40 @@
+import Image from "next/image";
 import { Container } from "@/components/Container";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
+import { standardH2 } from "@/lib/headings";
 import { onDarkSurface } from "@/lib/surfaces";
 import { cn } from "@/lib/utils";
 
 /**
- * Temporary text signature (no handwriting font, no dependency): the founder's
- * name in the page's own type, oblique and light. Replace the <span> with an
- * approved signature asset (next/image, alt="") when one exists. Hidden from
- * assistive tech because the printed name directly below says the same.
+ * The founder's handwritten signature (Owner asset: transparent, white ink for
+ * the black section, rotated to read horizontally). Decorative (alt=""): the
+ * printed name directly below says the same.
  */
 function Signature() {
   return (
-    <span aria-hidden className="block text-[32px] leading-none font-light tracking-tight text-primary-foreground italic md:text-[40px]">
-      Michael Whitaker
-    </span>
+    <Image
+      src="/about/founder-signature.png"
+      alt=""
+      width={1058}
+      height={436}
+      sizes="240px"
+      className="h-auto w-[180px] md:w-[240px]"
+    />
   );
 }
-
-const EMAIL = "michael@whitaker.design";
 
 /**
  * "From mountains to molehills." — the extended full-width black founder
  * section (Figma About 02, 1:5433): the heading on the left and the story in a
  * generous right column from lg, stacked below. The top padding leaves room for
- * the hero circles that overlap this section. Photographs live in Members.
+ * the hero circles that overlap this section. 
  */
 export function FounderStory() {
   const layout = fluidVars({
     "--founder-py": [64, 96, 144],
     "--founder-pt": [104, 152, 200],
   });
-  const heading = fluidType([44, 60, 84], [46, 62, 82]);
+  const heading = standardH2();
   const body = fluidType([16, 18, 20], [26, 28, 31]);
 
   return (
@@ -48,7 +52,7 @@ export function FounderStory() {
           From mountains to molehills.
         </h2>
         <div className="lg:col-start-2 lg:row-start-1 lg:pt-6">
-          <div style={body} className={cn(FLUID_TYPE, "max-w-[640px] space-y-6 font-medium text-primary-foreground/90")}>
+          <div style={body} className={cn(FLUID_TYPE, "max-w-[640px] space-y-6 font-normal text-primary-foreground/90")}>
             <p>
               I&apos;ve spent a good part of my life finding ways to go uphill. It started with endurance sports and
               eventually led to ice climbing, mountaineering, and several years climbing in the Cascades and Canadian
@@ -74,15 +78,6 @@ export function FounderStory() {
             <p className="mt-3 font-bold">Michael Whitaker</p>
             <p className="text-primary-foreground/90">Founder &amp; Director</p>
             <p className="text-primary-foreground/90">Chicago Mountain Runners</p>
-            <p className="mt-4">
-              <span className="text-primary-foreground/90">Email: </span>
-              <a
-                href={`mailto:${EMAIL}`}
-                className="rounded-xs font-medium underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring"
-              >
-                {EMAIL}
-              </a>
-            </p>
           </div>
         </div>
       </Container>

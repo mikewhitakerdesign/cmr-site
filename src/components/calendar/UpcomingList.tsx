@@ -3,7 +3,7 @@ import { Container } from "@/components/Container";
 import { statusLabel } from "@/components/calendar/status";
 import { ArrowUpRightIcon, ClockIcon, MapPinIcon } from "@/components/icons";
 import { FLUID_TYPE, fluidVars } from "@/lib/fluid";
-import { DISPLAY_HEADING, displayHeading } from "@/lib/headings";
+import { DISPLAY_HEADING, impactH2 } from "@/lib/headings";
 import type { Run, RunOccurrence } from "@/lib/runs";
 import { formatShortDate, formatTime, toDateTimeAttr, type StatusOccurrence } from "@/lib/schedule";
 import { onDarkSurface } from "@/lib/surfaces";
@@ -31,7 +31,7 @@ export function UpcomingList({ rows }: { rows: UpcomingRow[] }) {
     >
       <Container>
         <p className="text-caption uppercase">Upcoming runs</p>
-        <h2 id="upcoming-heading" style={displayHeading()} className={cn(FLUID_TYPE, DISPLAY_HEADING, "mt-3 md:mt-4")}>
+        <h2 id="upcoming-heading" style={impactH2()} className={cn(FLUID_TYPE, DISPLAY_HEADING, "mt-3 md:mt-4")}>
           See you on the hill<span className="ss08">.</span>
         </h2>
 

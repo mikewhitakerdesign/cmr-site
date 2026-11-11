@@ -2,6 +2,7 @@ import { Container } from "@/components/Container";
 import { FLUID_TYPE, fluidType } from "@/lib/fluid";
 import { BODY_TEXT_COLOR } from "@/lib/headings";
 import type { LegalDoc } from "@/content/legal";
+import { HERO_TOP, heroTopVars } from "@/lib/hero-spacing";
 import { cn } from "@/lib/utils";
 
 /**
@@ -11,7 +12,7 @@ import { cn } from "@/lib/utils";
  */
 export function LegalDocument({ title, doc }: { title: string; doc: LegalDoc | null }) {
   return (
-    <Container className="py-14 md:py-24">
+    <Container style={heroTopVars()} className={cn(HERO_TOP, "pb-14 md:pb-24")}>
       <article className="max-w-[720px]" aria-labelledby="legal-title">
         <h1 id="legal-title" style={fluidType([44, 64, 88], [44, 64, 84])} className={cn(FLUID_TYPE, "font-black tracking-[-0.04em] text-balance")}>
           {title}
@@ -20,7 +21,13 @@ export function LegalDocument({ title, doc }: { title: string; doc: LegalDoc | n
           <>
             <p className={cn("mt-4 font-mono text-[13px] leading-5 tracking-[0.1em] uppercase", BODY_TEXT_COLOR)}>
               {doc.dateLabel ?? "Last updated"} {doc.updated}
+              {doc.version && <> · Version {doc.version}</>}
             </p>
+            {doc.draftNote && (
+              <p data-slot="legal-draft-note" className="mt-6 rounded-lg border border-foreground p-4 text-[16px] leading-6 font-medium">
+                {doc.draftNote}
+              </p>
+            )}
             <div className="mt-8 flex flex-col gap-4 text-[18px] leading-[27px]">
               {doc.intro?.map((p) => <p key={p}>{p}</p>)}
             </div>

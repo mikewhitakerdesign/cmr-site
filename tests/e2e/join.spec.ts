@@ -23,7 +23,6 @@ const form = (page: Page) => page.locator("#join");
 async function fill(page: Page) {
   await form(page).getByLabel("First name").fill("Sam");
   await form(page).getByLabel("Email address").fill("sam@example.com");
-  await form(page).getByRole("checkbox", { name: "I confirm that I'm at least 18 years old." }).check();
 }
 
 test.beforeEach(async ({ page }) => {
@@ -34,7 +33,7 @@ test.beforeEach(async ({ page }) => {
 
 test.describe("content and layout", () => {
   test("hero uses the approved copy, then the basics, then the form", async ({ page }) => {
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("JOIN THE CLUB.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Join the club.");
     await expect(page.getByText("No dues. No minimum pace. No actual mountains.", { exact: true })).toBeVisible();
     await expect(
       page.getByText(
@@ -43,7 +42,7 @@ test.describe("content and layout", () => {
       ),
     ).toBeVisible();
     const h2s = await page.locator("main h2").allTextContents();
-    expect(h2s.map((h) => h.trim())).toEqual(["Membership essentials", "COUNT ME IN."]);
+    expect(h2s.map((h) => h.trim())).toEqual(["Membership essentials", "Count me in."]);
     await expect(page.getByText("A couple of details, and you're officially unofficial.")).toBeVisible();
   });
 
@@ -61,7 +60,7 @@ test.describe("content and layout", () => {
     await expect(main).toContainText("All club membership and organized runs are for adults 18 and older.");
     await expect(main).toContainText("Unsubscribe whenever you choose.");
     await expect(main).toContainText(OFFICIAL_RUNS_ON_HOLD ? "Official CMR meetups are on hold while we review park-use requirements." : "You don't have to join before attending an organized run.");
-    await expect(main).not.toContainText(/permit(ted)?|insured|insurance|park district|affiliat|waiver/i);
+    await expect(main).not.toContainText(/permit(ted)?|insured|insurance|park district|affiliat/i);
   });
 
   test("fits every width without sideways scroll, and the form is usable", async ({ page }) => {
@@ -79,26 +78,23 @@ test.describe("content and layout", () => {
 });
 
 test.describe("form behavior", () => {
-  test("validates in place, focuses the first problem and sends nothing", async ({ page }) => {
+  test("no waiver or checkbox: the button enables when the name and email are valid, and Enter sends nothing before that", async ({ page }) => {
     const posted: string[] = [];
     await page.unroute("https://formspree.io/**");
     await page.route("https://formspree.io/**", (r) => (posted.push(r.request().url()), r.abort()));
-    await form(page).getByRole("button", { name: "Join the club" }).click();
-    await expect(form(page).getByLabel("First name")).toBeFocused();
-    await expect(form(page).getByLabel("First name")).toHaveAttribute("aria-invalid", "true");
-    await expect(form(page).getByText("Confirm that you're 18 or older to join.")).toBeVisible();
+    await expect(form(page).getByRole("checkbox")).toHaveCount(0);
+    await expect(form(page)).not.toContainText(/waiver/i);
+    await expect(form(page)).toContainText("By joining, you confirm that you are at least 18 years old.");
+    const btn = form(page).getByRole("button", { name: "Count me in" });
+    await expect(btn).toBeDisabled();
+    await form(page).getByLabel("First name").fill("Sam");
+    await form(page).getByLabel("Email address").fill("nope");
+    await form(page).getByLabel("Email address").press("Enter");
+    await expect(btn).toBeDisabled();
+    await form(page).getByLabel("Email address").fill("sam@example.com");
+    await expect(btn).toBeEnabled();
     expect(await axe(page)).toEqual([]);
     expect(posted).toEqual([]);
-  });
-
-  test("the age box starts unchecked and is reachable and operable by keyboard", async ({ page }) => {
-    const box = form(page).getByRole("checkbox", { name: "I confirm that I'm at least 18 years old." });
-    await expect(box).not.toBeChecked();
-    await form(page).getByLabel("Email address").focus();
-    await page.keyboard.press("Tab");
-    await expect(box).toBeFocused();
-    await page.keyboard.press("Space");
-    await expect(box).toBeChecked();
   });
 
   test("sends once to the Join form, then replaces the form with the confirmation, focused", async ({ page }) => {
@@ -111,7 +107,7 @@ test.describe("form behavior", () => {
       await route.fulfill({ status: 200, headers: CORS, contentType: "application/json", body: JSON.stringify({ ok: true, next: "https://formspree.io/thanks" }) });
     });
     await fill(page);
-    const submit = form(page).getByRole("button", { name: "Join the club" });
+    const submit = form(page).getByRole("button", { name: "Count me in" });
     await submit.dblclick();
     await expect(form(page).getByRole("button", { name: "Joining…" })).toBeDisabled();
     const done = form(page).getByRole("status");
@@ -133,19 +129,18 @@ test.describe("form behavior", () => {
         : route.fulfill({ status: 500, headers: CORS, contentType: "application/json", body: JSON.stringify({ errors: [{ message: "Server error." }] }) }),
     );
     await fill(page);
-    await form(page).getByRole("button", { name: "Join the club" }).click();
+    await form(page).getByRole("button", { name: "Count me in" }).click();
     await expect(form(page).getByRole("alert")).toContainText("We couldn't confirm your signup. Please try again. Your information is still here.");
     await expect(page.getByText("YOU'RE IN.")).toHaveCount(0);
     await expect(form(page).getByLabel("First name")).toHaveValue("Sam");
     await expect(form(page).getByLabel("Email address")).toHaveValue("sam@example.com");
-    await expect(form(page).getByRole("checkbox", { name: "I confirm that I'm at least 18 years old." })).toBeChecked();
-    await expect(form(page).getByRole("button", { name: "Join the club" })).toBeEnabled();
+    await expect(form(page).getByRole("button", { name: "Count me in" })).toBeEnabled();
     expect(await axe(page)).toEqual([]);
   });
 
   test("a blocked network is treated as a failure, not a success", async ({ page }) => {
     await fill(page); // Formspree is aborted by beforeEach
-    await form(page).getByRole("button", { name: "Join the club" }).click();
+    await form(page).getByRole("button", { name: "Count me in" }).click();
     await expect(form(page).getByRole("alert")).toBeVisible();
     await expect(page.getByText("YOU'RE IN.")).toHaveCount(0);
   });
@@ -167,7 +162,7 @@ test.describe("navigation", () => {
       await route.fulfill({ status: 200, headers: CORS, contentType: "application/json", body: JSON.stringify({ ok: true, next: "https://formspree.io/thanks" }) });
     });
     await fill(page);
-    await form(page).getByRole("button", { name: "Join the club" }).click();
+    await form(page).getByRole("button", { name: "Count me in" }).click();
     await expect(form(page).getByRole("status")).toBeVisible();
     await page.getByRole("button", { name: "Questions?" }).click();
     const dialog = page.getByRole("dialog", { name: "Questions about the club?" });

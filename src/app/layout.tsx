@@ -27,6 +27,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      // The Science and FAQ set `scroll-behavior: smooth` for their section links; without this, Next
+      // would glide from the previous page's scroll position on arrival. Next turns smooth off only
+      // for the route change itself, so in-page anchors still glide.
+      data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       // data-motion is set by the inline script below before first paint.
       suppressHydrationWarning

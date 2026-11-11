@@ -40,7 +40,7 @@ describe("buildFooterNav", () => {
 
   it("includes only the platforms that are supplied", () => {
     const nav = buildFooterNav({ instagram: null, strava: "https://www.strava.com/clubs/cmr" });
-    expect(nav.map((i) => (typeof i.label === "string" ? i.label : "Chicago Hills Mtns"))).toEqual(["Find a Run", "Chicago Hills Mtns", "The Science", "About", "FAQ", "Join the club", "Strava"]);
+    expect(nav.map((i) => i.label)).toEqual(["Hills on Repeat", "Hills on Hills", "The Science", "About", "FAQ", "Join the club", "Strava"]);
     expect(nav.at(-1)).toMatchObject({ href: "https://www.strava.com/clubs/cmr", external: true });
   });
 });
@@ -53,7 +53,7 @@ describe("environment configuration reaches the footer nav", () => {
 
   it("renders no social links when unconfigured", async () => {
     const { footerNav } = await import("@/lib/navigation");
-    expect(footerNav.map((i) => (typeof i.label === "string" ? i.label : "Chicago Hills Mtns"))).toEqual(["Find a Run", "Chicago Hills Mtns", "The Science", "About", "FAQ", "Join the club"]);
+    expect(footerNav.map((i) => i.label)).toEqual(["Hills on Repeat", "Hills on Hills", "The Science", "About", "FAQ", "Join the club"]);
   });
 
   it("renders configured links in the footer nav", async () => {
@@ -61,14 +61,14 @@ describe("environment configuration reaches the footer nav", () => {
     vi.stubEnv("NEXT_PUBLIC_STRAVA_URL", "https://www.strava.com/clubs/cmr");
     vi.resetModules();
     const { footerNav } = await import("@/lib/navigation");
-    expect(footerNav.map((i) => (typeof i.label === "string" ? i.label : "Chicago Hills Mtns"))).toEqual(["Find a Run", "Chicago Hills Mtns", "The Science", "About", "FAQ", "Join the club", "Instagram", "Strava"]);
+    expect(footerNav.map((i) => i.label)).toEqual(["Hills on Repeat", "Hills on Hills", "The Science", "About", "FAQ", "Join the club", "Instagram", "Strava"]);
   });
 
   it("ignores a configured value that isn't a genuine destination", async () => {
     vi.stubEnv("NEXT_PUBLIC_INSTAGRAM_URL", "https://instagram.com/REPLACE_WITH_CMR_INSTAGRAM_HANDLE");
     vi.resetModules();
     const { footerNav } = await import("@/lib/navigation");
-    expect(footerNav.map((i) => (typeof i.label === "string" ? i.label : "Chicago Hills Mtns"))).not.toContain("Instagram");
+    expect(footerNav.map((i) => i.label)).not.toContain("Instagram");
   });
 
   it("the Join page carries no social links; its only link is the Privacy Policy", async () => {

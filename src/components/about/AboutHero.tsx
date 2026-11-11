@@ -1,41 +1,36 @@
-import { HeroCircles, type HeroCircle } from "@/components/about/HeroCircles";
+import { HeroCircles } from "@/components/about/HeroCircles";
 import { Container } from "@/components/Container";
-import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
+import { FLUID_TYPE, fluidVars } from "@/lib/fluid";
+import { BODY_TEXT_COLOR, pageH1 } from "@/lib/headings";
+import { HERO_TOP_PX } from "@/lib/hero-spacing";
 import { cn } from "@/lib/utils";
 
 /**
- * About hero — Figma About / Desktop 1:5598 (headline, intro copy, four grey
- * circles), tablet 1:5619 and mobile 1:5815 (Figma drew no circles there).
- *
- * The four circles keep the Figma copy and staggered, differently sized
- * composition but take the homepage club-totals tie-dye fills (tintVars +
- * `cmr-tie-dye`), one tint each. From xl they float to the right of the
- * headline and intro; below xl they reflow into a 2 × 2 grid under the copy,
- * with the second column stepped down for the same playful stagger.
+ * About hero — Figma About / Desktop 1:5598 (headline, intro copy), tablet
+ * 1:5619 and mobile 1:5815. The four circles (Owner copy, 2026-11-10) sit in one
+ * row beneath the text and overlap the black founder section (HeroCircles).
  */
-const CIRCLES: HeroCircle[] = [
-  { text: "Show up, climb, regroup, repeat.", size: 190, left: 150, top: 0 },
-  { text: "Totally Free. No Fees.", size: 250, left: 10, top: 175 },
-  { text: "Any Pace welcome. I’m slow AF.", size: 215, left: 215, top: 335 },
-  { text: "First-timers to ultra marathoners all are welcome.", size: 275, left: 20, top: 485 },
+const CIRCLES = [
+  "Show up, run the hill, repeat.",
+  "Totally Free. No Fees.",
+  "Any pace, everybody welcome.",
+  "First-timers to ultra-marathoners.",
 ];
 
 export function AboutHero() {
   const layout = fluidVars({
-    "--about-pt": [56, 64, 80],
-    "--about-pb": [24, 32, 40],
+    "--about-pt": HERO_TOP_PX,
     "--about-copy-mt": [28, 32, 40],
   });
-  const heading = fluidType([44, 76, 100], [46, 78, 98]);
-  const copy = fluidType([16, 18, 18], [24, 27, 27]);
+  const heading = pageH1();
 
   return (
     <section
       aria-labelledby="about-heading"
       style={layout}
-      className="relative z-10 bg-background text-foreground pt-(--about-pt-a) pb-(--about-pb-a) md:pt-(--about-pt-b) md:pb-(--about-pb-b)"
+      className="relative z-10 bg-background text-foreground pt-(--about-pt-a) md:pt-(--about-pt-b)"
     >
-      <Container className="xl:relative xl:min-h-[640px]">
+      <Container>
         <h1
           id="about-heading"
           style={heading}
@@ -43,10 +38,7 @@ export function AboutHero() {
         >
           A running group hunting elevation where there shouldn’t be any.
         </h1>
-        <p
-          style={copy}
-          className={cn(FLUID_TYPE, "mt-(--about-copy-mt-a) max-w-[587px] font-medium ss08 md:mt-(--about-copy-mt-b)")}
-        >
+        <p className={cn("mt-(--about-copy-mt-a) max-w-[560px] text-[18px] leading-[27px] font-normal md:mt-(--about-copy-mt-b)", BODY_TEXT_COLOR)}>
           Chicago Mountain Runners is an independent, open running group built around a simple idea: the city is flat,
           so we make our own mountains. We meet at local (trash) hills, sledding slopes and overlooked pieces of
           elevation and run them until they add up to something.

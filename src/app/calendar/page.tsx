@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import { CommunityCta } from "@/components/calendar/CommunityCta";
 import { PermitHold } from "@/components/calendar/PermitHold";
 import { FindHero } from "@/components/calendar/FindHero";
 import { FirstTimer } from "@/components/calendar/FirstTimer";
-import { HillsLink } from "@/components/calendar/HillsLink";
 import { RunCalendar, type CalendarRun } from "@/components/calendar/RunCalendar";
 import { UpcomingList } from "@/components/calendar/UpcomingList";
 import { WeatherGuidance } from "@/components/weather/WeatherGuidance";
@@ -13,10 +11,10 @@ import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
 import { toClubTime } from "@/lib/schedule";
 
 export const metadata: Metadata = {
-  title: "Find a Run | Chicago Mountain Runners",
+  title: "Hills on Repeat | Chicago Mountain Runners",
   description: OFFICIAL_RUNS_ON_HOLD
     ? "Official group runs are on hold while we review park-use requirements. Explore Chicago's hills and join the club for updates."
-    : "Pick a hill. Show up. Weekly hill repeats in Chicago, all paces welcome, no registration.",
+    : "Find your next Chicago group run. Weekly hill repeats with Chicago Mountain Runners, all paces welcome, no registration.",
 };
 
 /**
@@ -30,8 +28,6 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
     return (
       <>
         <PermitHold />
-        <HillsLink />
-        <CommunityCta />
       </>
     );
   }
@@ -57,8 +53,6 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
       <RunCalendar runs={runs} today={today} initialView={view} initialDate={date} />
       <WeatherGuidance className="border-t border-foreground/15" />
       <FirstTimer />
-      <HillsLink />
-      <CommunityCta />
     </>
   );
 }

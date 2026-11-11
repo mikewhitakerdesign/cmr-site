@@ -1,8 +1,8 @@
 import { ArrowLink } from "@/components/ArrowLink";
 import { Container } from "@/components/Container";
 import { TopoPattern } from "@/components/home/TopoPattern";
-import { FLUID_TYPE, fluidType } from "@/lib/fluid";
-import { DISPLAY_HEADING } from "@/lib/headings";
+import { FLUID_TYPE } from "@/lib/fluid";
+import { DISPLAY_HEADING, standardH2 } from "@/lib/headings";
 import { cn } from "@/lib/utils";
 
 /**
@@ -20,7 +20,7 @@ export function HillsLink() {
         <TopoPattern className="text-(--cmr-contour-on-light)" />
       </div>
       <Container>
-        <h2 id="hills-link-heading" style={fluidType([44, 56, 72], [44, 56, 68])} className={cn(FLUID_TYPE, DISPLAY_HEADING)}>
+        <h2 id="hills-link-heading" style={standardH2()} className={cn(FLUID_TYPE, DISPLAY_HEADING)}>
           Know your mountain<span className="ss08">.</span>
         </h2>
         <p className="mt-5 max-w-[480px] text-[18px] leading-[27px] text-foreground/70">

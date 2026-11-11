@@ -36,7 +36,7 @@ describe("permit-hold notice", () => {
     expect(backdrop).toHaveAttribute("inert");
     expect(backdrop).toHaveAttribute("aria-hidden", "true");
     expect(backdrop.querySelector("a, button, input, time")).toBeNull();
-    expect(backdrop.textContent).toContain("Pick a hill");
+    expect(backdrop.textContent).toContain("Hills on repeat");
     expect(backdrop.textContent).not.toMatch(/weekly|forecast|\d:\d\d/i);
     expect(screen.queryByRole("button")).toBeNull();
     expect(container.querySelector("[data-slot=contour-field]")).toBeNull();

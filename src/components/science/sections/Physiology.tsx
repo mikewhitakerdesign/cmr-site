@@ -10,7 +10,7 @@ export function Physiology() {
         figure={
           <Figure
             label="Figure 3 · Uphill push-off"
-            caption="A silhouette, not an anatomical drawing: the numbered markers show where each muscle group lies on the pushing leg."
+            caption="The numbered markers show where each muscle group lies on the pushing leg."
           >
             <RunnerIllustration />
           </Figure>

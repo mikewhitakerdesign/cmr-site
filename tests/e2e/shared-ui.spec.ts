@@ -149,7 +149,7 @@ test.describe("header", () => {
   test("desktop links are 80% opacity except the current page", async ({ page }, info) => {
     test.skip(info.project.name !== "desktop", "opacity treatment is desktop-only in Figma");
     const nav = page.getByRole("navigation", { name: "Primary" });
-    expect(await css(nav.getByRole("link", { name: "Find a Run" }), "opacity")).toBe("0.8");
+    expect(await css(nav.getByRole("link", { name: "Hills on Repeat" }), "opacity")).toBe("0.8");
     expect(await css(nav.getByRole("link", { name: "About" }), "opacity")).toBe("1");
     await expect(nav.getByRole("link", { name: "About" })).toHaveAttribute("aria-current", "page");
   });
@@ -388,8 +388,11 @@ test.describe("focus indicators on solid black primary buttons", () => {
 test.describe("focus indicators on the Join submit button (solid black primary, white page)", () => {
   test("ring is offset by the page color and appears only on keyboard focus", async ({ page }) => {
     await page.goto("/join");
-    const button = page.locator("#join").getByRole("button", { name: "Join the club" });
-    // The Privacy Policy link sits between the age box and the button; tab from it.
+    const button = page.locator("#join").getByRole("button", { name: "Count me in" });
+    // The button is disabled until the form is ready.
+    await page.locator("#join").getByLabel("First name").fill("Sam");
+    await page.locator("#join").getByLabel("Email address").fill("sam@example.com");
+    // The Privacy Policy link sits above the button; tab from it.
     await page.locator("#join").getByRole("link", { name: "Privacy Policy" }).focus();
     await page.keyboard.press("Tab");
     await expect(button).toBeFocused();
@@ -418,8 +421,7 @@ test.describe("social links (none configured in this build)", () => {
     const nav = page.getByRole("navigation", { name: "Footer" });
     await expect(nav.getByText("Navigate", { exact: true })).toBeVisible();
     const links = nav.getByRole("link"); // the visible copy only
-    await expect(links).toHaveText(["Find a Run", "Chicago Hills Mtns", "The Science", "About", "FAQ", "Join the club"]);
-    await expect(nav.locator("s")).toHaveText("Hills");
+    await expect(links).toHaveText(["Hills on Repeat", "Hills on Hills", "The Science", "About", "FAQ", "Join the club"]);
     const boxes = [];
     for (let i = 0; i < 5; i++) boxes.push(await box(links.nth(i)));
     for (let i = 1; i < 5; i++) {

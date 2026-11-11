@@ -4,7 +4,8 @@ import { Container } from "@/components/Container";
 import { ContourField } from "@/components/ContourField";
 import { TopoPattern } from "@/components/home/TopoPattern";
 import { EYEBROW } from "@/components/hills/styles";
-import { fluidType, fluidVars } from "@/lib/fluid";
+import { fluidVars } from "@/lib/fluid";
+import { displayLarge } from "@/lib/headings";
 import type { HillWithPage } from "@/lib/hills";
 import { onDarkSurface } from "@/lib/surfaces";
 import { cn } from "@/lib/utils";
@@ -58,7 +59,7 @@ export function HillHero({ hill }: { hill: HillWithPage }) {
   // PR #4 final pass (Owner direction): 25% shorter than Figma's 540 / 697 / 844.
   const layout = fluidVars({ "--hero-h": [405, 522.75, 633] });
   // Line height 0.9 at every size, so the mobile cap below scales it too.
-  const heading = fluidType([60, 104, 176], [54, 93.6, 158.4]);
+  const heading = displayLarge();
 
   return (
     <section

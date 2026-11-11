@@ -8,7 +8,7 @@ describe("Footer", () => {
   it("renders only the internal links when no social destinations are configured", () => {
     render(<Footer year={2026} />);
     const nav = screen.getByRole("navigation", { name: "Footer" });
-    expect(within(nav).getAllByRole("link").map((l) => l.textContent)).toEqual(["Find a Run", "Chicago Hills Mtns", "The Science", "About", "FAQ", "Join the club"]);
+    expect(within(nav).getAllByRole("link").map((l) => l.textContent)).toEqual(["Hills on Repeat", "Hills on Hills", "The Science", "About", "FAQ", "Join the club"]);
     expect(screen.queryByRole("link", { name: "Instagram" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Strava" })).not.toBeInTheDocument();
     expect(document.body.innerHTML).not.toMatch(/REPLACE_WITH/i);
@@ -22,7 +22,7 @@ describe("Footer", () => {
     render(<Footer year={2026} links={links} />);
     const nav = screen.getByRole("navigation", { name: "Footer" });
     const rendered = within(nav).getAllByRole("link");
-    expect(rendered.map((l) => l.textContent)).toEqual(["Find a Run", "Chicago Hills Mtns", "The Science", "About", "FAQ", "Join the club", "Instagram", "Strava"]);
+    expect(rendered.map((l) => l.textContent)).toEqual(["Hills on Repeat", "Hills on Hills", "The Science", "About", "FAQ", "Join the club", "Instagram", "Strava"]);
     expect(rendered[6]).toHaveAttribute("href", "https://www.instagram.com/chicagomountainrunners");
     expect(rendered[7]).toHaveAttribute("href", "https://www.strava.com/clubs/cmr");
   });
@@ -33,7 +33,7 @@ describe("Footer", () => {
     expect(screen.queryByRole("list", { name: "Legal" })).not.toBeInTheDocument();
   });
 
-  it("links the three published legal documents by default", () => {
+  it("links the three published legal documents by default (the waiver is disabled)", () => {
     render(<Footer year={2026} />);
     const legal = screen.getByRole("list", { name: "Legal" });
     expect(within(legal).getAllByRole("link").map((a) => [a.textContent, a.getAttribute("href")])).toEqual([

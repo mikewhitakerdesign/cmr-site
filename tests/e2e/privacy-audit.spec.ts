@@ -49,7 +49,7 @@ test("no analytics, tag manager, pixel, chat or embed scripts or frames in the s
   }
 });
 
-test("submitting Join contacts only the Join Formspree form and sends only the three fields", async ({ page }) => {
+test("submitting Join contacts only the Join Formspree form and sends only the signup fields, no waiver record", async ({ page }) => {
   const posts: { url: string; fields: string[] }[] = [];
   const foreign: string[] = [];
   const origin = new URL(test.info().project.use.baseURL ?? "http://localhost:4319").origin;
@@ -67,8 +67,7 @@ test("submitting Join contacts only the Join Formspree form and sends only the t
   const form = page.locator("#join");
   await form.getByLabel("First name").fill("Sam");
   await form.getByLabel("Email address").fill("sam@example.com");
-  await form.getByRole("checkbox", { name: "I confirm that I'm at least 18 years old." }).check();
-  await form.getByRole("button", { name: "Join the club" }).click();
+  await form.getByRole("button", { name: "Count me in" }).click();
   await expect(form.getByRole("status")).toContainText("YOU'RE IN.");
   expect(posts).toHaveLength(1);
   expect(posts[0].url).toBe("https://formspree.io/f/xrppvnln");

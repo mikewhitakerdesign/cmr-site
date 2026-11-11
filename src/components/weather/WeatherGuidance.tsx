@@ -1,6 +1,6 @@
 import { Container } from "@/components/Container";
 import { FLUID_TYPE } from "@/lib/fluid";
-import { DISPLAY_HEADING, displayHeading } from "@/lib/headings";
+import { DISPLAY_HEADING, impactH2 } from "@/lib/headings";
 import { BODY_TEXT_COLOR } from "@/lib/headings";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +15,7 @@ export function WeatherGuidance({ id = "weather-guidance", className }: { id?: s
   return (
     <section aria-labelledby={`${id}-heading`} className={cn("py-16 md:py-24", className)}>
       <Container className="grid gap-8 lg:grid-cols-[1fr_minmax(0,560px)] lg:gap-16">
-        <h2 id={`${id}-heading`} style={displayHeading()} className={cn(FLUID_TYPE, DISPLAY_HEADING, "text-balance")}>
+        <h2 id={`${id}-heading`} style={impactH2()} className={cn(FLUID_TYPE, DISPLAY_HEADING, "text-balance")}>
           Bad weather. Good hills<span className="ss08">.</span>
         </h2>
         <div className={cn("flex flex-col gap-5 text-[18px] leading-[27px]", BODY_TEXT_COLOR)}>

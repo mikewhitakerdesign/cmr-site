@@ -18,13 +18,27 @@ describe("Header", () => {
     const nav = screen.getByRole("navigation", { name: "Primary" });
     const links = within(nav).getAllByRole("link");
     expect(links.map((l) => [l.textContent, l.getAttribute("href")])).toEqual([
-      ["Find a Run", "/calendar"],
-      ["Chicago Hills Mtns", "/hills"],
+      ["Hills on Repeat", "/calendar"],
+      ["Hills on Hills", "/hills"],
       ["The Science", "/the-science"],
       ["About", "/about"],
     ]);
-    // The joke is visual: "Hills" is struck through, but stays in the accessible name.
-    expect(within(nav).getByText("Hills").tagName).toBe("S");
+  });
+
+  it("describes only Hills on Repeat and Hills on Hills with a tooltip (hover and focus), wired by aria-describedby", () => {
+    render(<Header />);
+    const nav = screen.getByRole("navigation", { name: "Primary" });
+    const tips: Record<string, string> = {
+      "Hills on Repeat": "Find your next group run with Chicago Mountain Runners.",
+      "Hills on Hills": "Explore Chicago area hills and places to train.",
+    };
+    for (const [name, text] of Object.entries(tips)) {
+      const link = within(nav).getByRole("link", { name });
+      expect(link).toHaveAccessibleDescription(text);
+    }
+    expect(within(nav).getAllByRole("tooltip", { hidden: true })).toHaveLength(2);
+    expect(within(nav).getByRole("link", { name: "The Science" })).not.toHaveAttribute("aria-describedby");
+    expect(within(nav).getByRole("link", { name: "About" })).not.toHaveAttribute("aria-describedby");
   });
 
   it("omits the out-of-scope Apparel item (Owner decision)", () => {
@@ -95,8 +109,8 @@ describe("Header", () => {
   it("marks the current section, including on child routes", () => {
     pathname.current = "/hills/example-hill";
     render(<Header />);
-    expect(screen.getByRole("link", { name: "Chicago Hills Mtns" })).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("link", { name: "Find a Run" })).not.toHaveAttribute("aria-current");
+    expect(screen.getByRole("link", { name: "Hills on Hills" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Hills on Repeat" })).not.toHaveAttribute("aria-current");
   });
 
   it("accepts custom items and CTA", () => {
@@ -140,8 +154,8 @@ describe("nextHideTopState (mobile top row)", () => {
 describe("mobile link row", () => {
   it("makes each link a full-height cell sharing the row, so a fourth item needs no layout change", () => {
     const items = [
-      { label: "Find a Run", href: "/calendar" },
-      { label: "Chicago Mtns", href: "/hills" },
+      { label: "Hills on Repeat", href: "/calendar" },
+      { label: "Hills on Hills", href: "/hills" },
       { label: "About", href: "/about" },
       { label: "The Science", href: "/the-science" },
     ];

@@ -70,7 +70,9 @@ test.describe("content and layout", () => {
   });
 
   test("no photographs, only monochrome graphics", async ({ page }) => {
-    await expect(page.locator("main img, main picture, main video")).toHaveCount(0);
+    // Figure 3 is the Owner's supplied illustration (a transparent PNG); nothing else is an image.
+    await expect(page.locator("main picture, main video")).toHaveCount(0);
+    await expect(page.locator("main img")).toHaveCount(1);
     // Every stroke and fill in the page's SVG graphics resolves to black, white or a gray.
     const colors = await page.locator("main svg").evaluateAll((svgs) => {
       const out = new Set<string>();
@@ -434,13 +436,11 @@ test.describe("refinement pass: fills, layout, figures", () => {
 
   test("the runner illustration marks and names the three muscle groups, without leader lines", async ({ page }) => {
     const fig = page.locator("[data-slot=runner-illustration]");
-    await expect(fig.locator("svg")).toHaveAccessibleName(/gluteus maximus.*quadriceps.*calf/i);
-    for (const k of ["gluteus", "quadriceps", "calf"]) {
-      await expect(fig.locator(`[data-slot=marker-${k}]`)).toHaveCount(1);
-    }
-    await expect(fig.locator("[data-slot=runner-silhouette]")).toHaveCount(1); // one solid silhouette
-    await expect(fig.locator("svg polyline")).toHaveCount(0);
-    await expect(fig.locator("[data-slot=muscle-key] li")).toHaveText([/Gluteus maximus/, /Quadriceps/, /Calf \(gastrocnemius, soleus\)/]);
+    // The Owner's artwork carries the markers and legend; the image's description names them.
+    await expect(fig.locator("img")).toHaveAccessibleName(/gluteus maximus.*quadriceps.*calf/i);
+    await fig.scrollIntoViewIfNeeded();
+    await expect.poll(() => fig.locator("img").evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
+    await expect(page.locator("figure", { has: fig }).locator("figcaption")).toHaveText("The numbered markers show where each muscle group lies on the pushing leg.");
   });
 
   test("Figure 7: ascent arrows point uphill, descent arrows point downhill", async ({ page }) => {

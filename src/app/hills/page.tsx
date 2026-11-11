@@ -2,15 +2,16 @@ import type { Metadata } from "next";
 import { Container } from "@/components/Container";
 import { HillDirectoryList } from "@/components/hills/HillDirectoryList";
 import { JustShowUp } from "@/components/home/JustShowUp";
-import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
-import { BODY_TEXT_COLOR } from "@/lib/headings";
+import { FLUID_TYPE, fluidVars } from "@/lib/fluid";
+import { BODY_TEXT_COLOR, displayLarge } from "@/lib/headings";
 import { directoryEntries } from "@/lib/hill-directory";
+import { HERO_TOP_PX } from "@/lib/hero-spacing";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Chicago Hills | Chicago Mountain Runners",
+  title: "Hills on Hills | Chicago Mountain Runners",
   description:
-    "The hills Chicago Mountain Runners climb in a very flat city: Cricket Hill, Warren Hill, Horner Hill, Schiller Hill and Mt. Trashmore.",
+    "Explore Chicago area hills and places to train. The hills Chicago Mountain Runners climb in a very flat city: Cricket Hill, Warren Hill, Horner Hill, Schiller Hill and Mt. Trashmore.",
 };
 
 /** "Weekly with CMR" depends on the runs' upcoming dates, so regenerate hourly (as the homepage). */
@@ -37,22 +38,17 @@ export const revalidate = 3600;
  */
 export default function HillsPage() {
   const entries = directoryEntries(new Date());
-  const layout = fluidVars({ "--head-pt": [56, 80, 128], "--head-pb": [48, 64, 96] });
-  // 44 on mobile so "Chicago Hills" holds one line in the 345px column.
-  const heading = fluidType([44, 96, 144], [42, 88, 129.6]);
-  const intro = fluidType([18, 20, 24], [27, 30, 34]);
+  const layout = fluidVars({ "--head-pt": HERO_TOP_PX, "--head-pb": [48, 64, 96] });
+  const heading = displayLarge();
 
   return (
     <>
       <section aria-labelledby="hills-heading" style={layout} className="pt-(--head-pt-a) pb-(--head-pb-a) md:pt-(--head-pt-b) md:pb-(--head-pb-b)">
         <Container>
           <h1 id="hills-heading" style={heading} className={cn(FLUID_TYPE, "font-black tracking-[-0.045em]")}>
-            <span className="block whitespace-nowrap">
-              Chicago <s>Hills</s>
-            </span>{" "}
-            <span className="block">Mountains</span>
+            <span className="lg:block">Hills on hills</span> <span className="lg:block">on hills<span className="ss08">.</span></span>
           </h1>
-          <p style={intro} className={cn(FLUID_TYPE, BODY_TEXT_COLOR, "max-w-[760px] pt-6 font-medium md:pt-8")}>
+          <p className={cn("max-w-[600px] pt-6 text-[18px] leading-[27px] md:pt-8", BODY_TEXT_COLOR)}>
             The places in and around a very flat city where the ground goes up on purpose. Each one has a page: what we know,
             what we&apos;re still measuring, and when we run it.
           </p>

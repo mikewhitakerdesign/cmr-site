@@ -14,6 +14,8 @@ import {
   type CalendarView,
 } from "@/lib/calendar";
 import { addDays, formatLongDate, formatTime, monthName, toDateTimeAttr, type IsoDate, type StatusOccurrence } from "@/lib/schedule";
+import { FLUID_TYPE } from "@/lib/fluid";
+import { DISPLAY_HEADING, standardH2 } from "@/lib/headings";
 import { tintVars } from "@/lib/tints";
 import { cn } from "@/lib/utils";
 
@@ -122,7 +124,7 @@ export function RunCalendar({
   return (
     <section id="calendar" aria-labelledby="calendar-heading" className="py-16 md:py-24">
       <div className="mx-auto w-full max-w-[1400px] px-6 md:px-12">
-        <h2 id="calendar-heading" className="text-[40px] leading-[1.05] font-black tracking-[-0.04em] md:text-[56px]">
+        <h2 id="calendar-heading" style={standardH2()} className={cn(FLUID_TYPE, DISPLAY_HEADING)}>
           Running calendar<span className="ss08">.</span>
         </h2>
         <p className="mt-4 max-w-[560px] text-[18px] leading-[27px] text-foreground/70">

@@ -31,7 +31,7 @@ test.describe("final refinements", () => {
     desktopOnly(info.project.name);
     await page.goto("/calendar");
     const cta = page.locator("header").getByRole("link", { name: "Join the club" });
-    const tip = page.locator("header [role=tooltip]");
+    const tip = page.locator("header [role=tooltip]").last();
     await expect(tip).toBeHidden();
     await cta.hover();
     await expect(tip).toBeVisible();
@@ -56,7 +56,7 @@ test.describe("final refinements", () => {
 
   test("the hold's Join CTA and the homepage Join CTA carry the same tooltip", async ({ page }, info) => {
     desktopOnly(info.project.name);
-    for (const path of ["/calendar", "/"]) {
+    for (const path of ["/hills", "/"]) {
       await page.goto(path);
       const link = page.locator("main").getByRole("link", { name: "Join the club" }).first();
       await expect(link).toHaveAccessibleDescription(TIP);
