@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   title: "The science behind hill repeats | Chicago Mountain Runners",
   description:
     "The science behind hill repeats: the physics, physiology, breathing and psychology of running hills in a very flat city, with sources.",
+  alternates: { canonical: "/the-science" },
 };
 
 /**

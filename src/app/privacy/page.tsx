@@ -4,6 +4,7 @@ import { privacyPolicy } from "@/content/legal";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | Chicago Mountain Runners",
+  alternates: { canonical: "/privacy" },
   // Not indexed until the Owner-approved text is published (src/content/legal.ts).
   robots: privacyPolicy ? undefined : { index: false },
 };

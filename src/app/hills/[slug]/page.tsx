@@ -9,6 +9,7 @@ import { MoreHills } from "@/components/hills/MoreHills";
 import { getHill, hillsWithPages, otherHills } from "@/lib/hills";
 import { withoutHeldRuns } from "@/lib/permit-hold";
 import { getRunsAtHill, type RunOccurrence } from "@/lib/runs";
+import { SITE_NAME } from "@/lib/site";
 
 /** Only the listed hills have pages; anything else (incl. the scaffold placeholder) is a 404. */
 export const dynamicParams = false;
@@ -31,7 +32,8 @@ export async function generateMetadata({ params }: PageProps<"/hills/[slug]">): 
   return {
     title: `${hill.name} | Chicago Mountain Runners`,
     description: hill.page.lede,
-    openGraph: { title: hill.name, description: hill.page.lede },
+    alternates: { canonical: `/hills/${hill.slug}` },
+    openGraph: { siteName: SITE_NAME, title: hill.name, description: hill.page.lede, url: `/hills/${hill.slug}`, type: "website" },
   };
 }
 

@@ -3,7 +3,7 @@ import { join, relative } from "node:path";
 import { describe, expect, it } from "vitest";
 import { GET } from "@/app/calendar/[slug]/ics/route";
 import { directoryEntries } from "@/lib/hill-directory";
-import { OFFICIAL_RUNS_ON_HOLD, PERMIT_HOLD_COPY, officialRunsAvailable, withoutHeldRuns } from "@/lib/permit-hold";
+import { OFFICIAL_RUNS_ON_HOLD, PAUSE_COPY, PERMIT_HOLD_COPY, officialRunsAvailable, withoutHeldRuns } from "@/lib/permit-hold";
 import { NextRequest } from "next/server";
 
 const ROOT = join(__dirname, "..", "..");
@@ -21,7 +21,13 @@ describe("permit-pending hold (src/lib/permit-hold.ts)", () => {
     expect(typeof OFFICIAL_RUNS_ON_HOLD).toBe("boolean");
     const copy = Object.values(PERMIT_HOLD_COPY).join(" ");
     expect(copy).not.toMatch(/park district|cpd|permit(ted)?\b.*(approved|granted|pending application)|applied|application|approved|endorse|insured/i);
-    expect(PERMIT_HOLD_COPY.heading).toBe("THE HILLS AREN'T GOING ANYWHERE.");
+    // /calendar's pause copy: the Owner's exact words, split only so the questions phrase can be a link.
+    expect(PAUSE_COPY.heading).toBe("Hills on pause.");
+    expect(PAUSE_COPY.bodyBeforeLink + PAUSE_COPY.linkText + PAUSE_COPY.bodyAfterLink).toBe(
+      "Weekly hill repeat sessions will be posted shortly. Check back later or send us your questions.",
+    );
+    expect(PAUSE_COPY.description).toBe("Weekly hill repeat sessions will be posted shortly. Check back later or send us your questions.");
+    expect(Object.values(PAUSE_COPY).join(" ")).not.toMatch(/park district|cpd|permit|insur|waiver|liab|application|approved/i);
   });
 
   it("hides every run while held and passes them through when lifted", () => {

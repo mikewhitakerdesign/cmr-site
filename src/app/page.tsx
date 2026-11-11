@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { ChicagoHills } from "@/components/home/ChicagoHills";
 import { ClubTotals } from "@/components/home/ClubTotals";
 import { CommunityIntro } from "@/components/home/CommunityIntro";
@@ -19,6 +20,9 @@ import { getNextOccurrencePerRun, getUpcomingRuns } from "@/lib/runs";
  * not enabled). No client polling (Owner decision D5).
  */
 export const revalidate = 3600;
+
+// Title and description come from the root layout.
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default function Home() {
   const now = new Date();

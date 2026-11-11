@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { OFFICIAL_RUNS_ON_HOLD } from "../../src/lib/permit-hold";
 
 const TIP = "No fees. No commitments. Lots of elevation.";
 const desktopOnly = (name: string) => test.skip(name !== "desktop", "desktop-only behaviour");
@@ -133,7 +134,8 @@ test.describe("final refinements", () => {
     expect(st.border).toBe("0px");
     expect(st.shadow).toContain("rgba(65, 65, 65, 0.28)");
     expect(st.radius).not.toBe("0px");
-    for (const path of ["/", "/calendar", "/hills", "/hills/cricket-hill"]) {
+    // Hold copy is absent only while the hold is lifted (src/lib/permit-hold.ts); while held it is the point.
+    for (const path of OFFICIAL_RUNS_ON_HOLD ? [] : ["/", "/calendar", "/hills", "/hills/cricket-hill"]) {
       await page.goto(path);
       await expect(page.getByText(/on hold|park-use requirements/i)).toHaveCount(0);
     }

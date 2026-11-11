@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { PermitHold } from "@/components/calendar/PermitHold";
+import { HillsOnPause } from "@/components/calendar/HillsOnPause";
 import { FindHero } from "@/components/calendar/FindHero";
 import { FirstTimer } from "@/components/calendar/FirstTimer";
 import { RunCalendar, type CalendarRun } from "@/components/calendar/RunCalendar";
@@ -7,14 +7,15 @@ import { UpcomingList } from "@/components/calendar/UpcomingList";
 import { WeatherGuidance } from "@/components/weather/WeatherGuidance";
 import { parseCalendarState } from "@/lib/calendar";
 import { getUpcomingWithStatus, listedRuns } from "@/lib/runs";
-import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
+import { OFFICIAL_RUNS_ON_HOLD, PAUSE_COPY } from "@/lib/permit-hold";
 import { toClubTime } from "@/lib/schedule";
 
 export const metadata: Metadata = {
   title: "Hills on Repeat | Chicago Mountain Runners",
   description: OFFICIAL_RUNS_ON_HOLD
-    ? "Official group runs are on hold while we review park-use requirements. Explore Chicago's hills and join the club for updates."
+    ? PAUSE_COPY.description
     : "Find your next Chicago group run. Weekly hill repeats with Chicago Mountain Runners, all paces welcome, no registration.",
+  alternates: { canonical: "/calendar" },
 };
 
 /**
@@ -23,11 +24,15 @@ export const metadata: Metadata = {
  * weather is fetched on the server and cached by the fetch layer.
  */
 export default async function CalendarPage({ searchParams }: { searchParams: Promise<{ view?: string; date?: string }> }) {
-  // Permit-pending hold (src/lib/permit-hold.ts): no calendar, no runs, no weather fetch.
+  // Permit-pending hold (src/lib/permit-hold.ts): the page hero (headline only) and the "Hills on pause."
+  // section. No calendar, runs, upcoming list, weather (so no weather request) or first-timer section is
+  // rendered, so nothing of them is in the DOM. Everything below is the unchanged calendar, restored by
+  // setting OFFICIAL_RUNS_ON_HOLD to false.
   if (OFFICIAL_RUNS_ON_HOLD) {
     return (
       <>
-        <PermitHold />
+        <FindHero held />
+        <HillsOnPause />
       </>
     );
   }

@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { QuestionsWidget } from "@/components/QuestionsWidget";
 import { MOTION_INIT_SCRIPT } from "@/lib/motion";
+import { SITE_NAME, SITE_ORIGIN } from "@/lib/site";
 import "./globals.css";
 
 // Family names must match MWDS typography/font definitions (asserted in tests/tokens.test.ts).
@@ -18,9 +19,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Chicago Mountain Runners",
+  // Resolves every relative canonical / Open Graph URL against the one production origin (src/lib/site.ts).
+  // No canonical is set here: a layout canonical would be inherited by pages that forget their own.
+  metadataBase: new URL(SITE_ORIGIN),
+  title: SITE_NAME,
   description:
     "A Chicago running club that finds elevation in a very flat city.",
+  openGraph: { siteName: SITE_NAME, type: "website", locale: "en_US" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

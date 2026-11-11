@@ -1,7 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import Header from "@/components/Header";
-import { PermitHold } from "@/components/calendar/PermitHold";
 import { CommunityCta } from "@/components/calendar/CommunityCta";
 import { Tooltip } from "@/components/Tooltip";
 import { JOIN_TOOLTIP } from "@/lib/navigation";
@@ -28,8 +27,8 @@ describe("Tooltip", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("is on the header, hold and community Join CTAs, with the same text", () => {
-    for (const ui of [<Header key="h" />, <PermitHold key="p" />, <CommunityCta key="c" />]) {
+  it("is on the header and community Join CTAs, with the same text", () => {
+    for (const ui of [<Header key="h" />, <CommunityCta key="c" />]) {
       const { unmount } = render(ui);
       const link = screen.getByRole("link", { name: "Join the club" });
       expect(link).toHaveAccessibleDescription(JOIN_TOOLTIP);

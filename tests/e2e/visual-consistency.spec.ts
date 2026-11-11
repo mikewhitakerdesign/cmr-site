@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { OFFICIAL_RUNS_ON_HOLD } from "../../src/lib/permit-hold";
 
 /** Visual and brand consistency pass: About circles and card, heading roles, nav labels and tooltips, body-text color. */
 
@@ -43,9 +44,12 @@ test.describe("About", () => {
   test("hero paragraph uses the body-text color; the card is 50/50 (stacked on phones) with a caption outside it", async ({ page }, info) => {
     const p = page.locator("#about-heading ~ p");
     const color = await p.evaluate((e) => getComputedStyle(e).color);
-    await page.goto("/calendar"); // the Find a Run hero support text is the reference
-    expect(await page.locator("section[aria-labelledby=find-heading] h1 ~ p").evaluate((e) => getComputedStyle(e).color)).toBe(color);
-    await page.goto("/about");
+    if (!OFFICIAL_RUNS_ON_HOLD) {
+      // The Find a Run hero support text is the reference. (While held that hero is headline-only, so there is none.)
+      await page.goto("/calendar");
+      expect(await page.locator("section[aria-labelledby=find-heading] h1 ~ p").evaluate((e) => getComputedStyle(e).color)).toBe(color);
+      await page.goto("/about");
+    }
     await expect(page.getByRole("heading", { level: 2, name: "Hills on hills on hills." })).toBeVisible();
     await expect(page.getByRole("heading", { name: /^Members$|Get high in the city/ })).toHaveCount(0);
     const card = page.locator("[data-slot=hills-card]");
@@ -132,7 +136,8 @@ test("shared hero top spacing on the standardized pages; /calendar keeps its own
     ["/terms", "#legal-title"],
     ["/privacy", "#legal-title"],
     ["/participation-guidelines", "#legal-title"],
-    ["/calendar/cricket-mtn-repeats", "#run-heading"],
+    // Run pages exist only while official runs are not on hold (while held they redirect to /calendar).
+    ...(OFFICIAL_RUNS_ON_HOLD ? [] : ([["/calendar/cricket-mtn-repeats", "#run-heading"]] as [string, string][])),
   ];
   for (const [path, h] of pages) {
     await page.goto(path);
@@ -140,7 +145,7 @@ test("shared hero top spacing on the standardized pages; /calendar keeps its own
     expect(Math.abs(pt - top), `${path} top padding ${pt}`).toBeLessThan(0.6);
   }
   await page.goto("/calendar");
-  const pt = await page.locator("section[aria-labelledby=find-heading]").evaluate((e) => parseFloat(getComputedStyle(e).paddingTop));
+  const pt = await page.locator("main h1").first().locator("xpath=ancestor::section[1]").evaluate((e) => parseFloat(getComputedStyle(e).paddingTop));
   expect(pt).toBe(info.project.name === "mobile" ? 48 : 64);
 });
 
