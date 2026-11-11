@@ -5,7 +5,7 @@ import { participantWaiver } from "@/content/legal";
 import { WAIVER_ENABLED, WAIVER_TITLE } from "@/lib/waiver";
 
 const description =
-  "The Participation Waiver and Release of Liability for Chicago Mountain Runners, an independent, free, informal adult running community in Illinois. Draft for review.";
+  "The Participation Waiver and Release of Liability for Chicago Mountain Runners, an independent, free, informal adult running community in Illinois.";
 
 export const metadata: Metadata = {
   title: `${WAIVER_TITLE} | Chicago Mountain Runners`,
