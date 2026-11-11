@@ -29,7 +29,7 @@ import { WAIVER_PATH, WAIVER_TITLE, waiverRecord } from "@/lib/waiver";
  * The submission carries the acknowledgment record (src/lib/waiver.ts): waiver_accepted,
  * waiver_version and an ISO 8601 waiver_accepted_at, stamped when the form is sent, plus
  * age_18_plus (the same checkbox). It is a record in Formspree, not a claim of a legally
- * sufficient e-signature. The waiver is a draft pending attorney review. Unsubscribing is manual: the disclosure points to the
+ * sufficient e-signature. The waiver is Owner-approved, not attorney-reviewed. Unsubscribing is manual: the disclosure points to the
  * Questions form rather than promising an unsubscribe link that does not exist.
  *
  * Behavior:
@@ -213,7 +213,7 @@ export function JoinForm() {
 
       <p className="max-w-[56ch] text-p-sm text-muted-foreground">
         Joining is free and includes emails about club runs, schedule changes, and occasional community news. You can
-        unsubscribe at any time by contacting us through the Questions form. Read our{" "}
+        ask to stop emails or leave the club at any time by contacting us through the Questions form. Read our{" "}
         <Link href="/privacy" className="rounded-xs underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring">
           Privacy Policy
         </Link>{" "}

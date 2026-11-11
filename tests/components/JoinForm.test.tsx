@@ -91,7 +91,7 @@ describe("JoinForm", () => {
   it("explains that joining includes club emails with an unsubscribe option, and links to Privacy", () => {
     setup();
     const note = screen.getByText(/includes emails about club runs/);
-    expect(note).toHaveTextContent(/unsubscribe at any time by contacting us through the Questions form/);
+    expect(note).toHaveTextContent(/ask to stop emails or leave the club at any time by contacting us through the Questions form/);
     expect(note).not.toHaveTextContent(/unsubscribe link|one-click/);
     expect(screen.getByRole("link", { name: "Privacy Policy" })).toHaveAttribute("href", "/privacy");
   });

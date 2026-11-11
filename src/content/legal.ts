@@ -33,7 +33,7 @@ export type LegalDoc = {
   draftNote?: string;
 };
 
-const DATE = "November 9, 2026";
+const DATE = "November 11, 2026";
 
 export const privacyPolicy: LegalDoc | null = {
   title: "Privacy Policy",
@@ -78,7 +78,7 @@ export const privacyPolicy: LegalDoc | null = {
       paragraphs: [
         "Joining CMR includes emails about upcoming runs, schedule changes, and occasional community news.",
         "We do not require a paid membership or attendance commitment.",
-        "You can unsubscribe from club announcements at any time by contacting us through the Questions form on our website and asking to stop receiving club emails. We handle these requests by hand, and we do not currently offer a one-click unsubscribe link. We will keep the information reasonably necessary to honor your request and avoid sending unwanted messages.",
+        "You can unsubscribe from club announcements at any time by contacting us through the Questions form on our website and asking to stop receiving club emails. We handle these requests by hand, and we do not currently offer a one-click unsubscribe link. Participating in official CMR activities requires membership, so stopping club communications does not by itself keep you eligible for them. We will keep the information reasonably necessary to honor your request and avoid sending unwanted messages.",
         "If we adopt a dedicated email service in the future, we will update this policy to identify the relevant processing arrangements.",
       ],
     },
@@ -111,7 +111,7 @@ export const privacyPolicy: LegalDoc | null = {
       heading: "8. Your choices",
       paragraphs: [
         "You may contact us to request access to, correction of, or deletion of the personal information we maintain about you, subject to applicable legal and operational requirements.",
-        "You may also unsubscribe from club announcements without losing the ability to attend regular open group runs.",
+        "You may ask us to stop sending club announcements, or to end your membership, at any time. Taking part in official CMR runs and activities requires membership, so ending club communications or membership means you are no longer a member for those activities. Exploring and running Chicago's hills on your own does not require membership.",
       ],
     },
     {
@@ -161,8 +161,8 @@ export const websiteTerms: LegalDoc | null = {
       heading: "2. Membership",
       paragraphs: [
         "CMR membership is free and intended for adults 18 years of age or older. Joining connects you to the community and includes email announcements about runs, schedule changes, and occasional club news.",
-        "Membership is optional for attending regular club runs. There are no dues, minimum pace requirements, or attendance commitments.",
-        "You may unsubscribe from club emails at any time. CMR may decline or discontinue membership or participation when reasonably necessary to address misconduct, safety concerns, or abuse.",
+        "Membership is free and required to take part in official CMR weekly and group runs. It is not required to explore or run Chicago's hills on your own. There are no dues, minimum pace requirements, or attendance commitments.",
+        "You may ask to stop club emails or to leave the club at any time; participating in official CMR activities requires membership. CMR may decline or discontinue membership or participation when reasonably necessary to address misconduct, safety concerns, or abuse.",
       ],
     },
     {
@@ -246,7 +246,7 @@ export const participationGuidelines: LegalDoc | null = {
     {
       heading: "1. Who can participate",
       paragraphs: [
-        "CMR membership and organized club runs are open to adults age 18 and older. Membership is free, and joining is not required to attend a regular club run. Participation is voluntary. Suggested workouts are optional: choose the pace, distance, repetitions, and effort that work for you.",
+        "CMR membership and organized club runs are open to adults age 18 and older. Membership is free and required to take part in official CMR runs; it is not required to explore or run Chicago's hills on your own. Participation is voluntary. Suggested workouts are optional: choose the pace, distance, repetitions, and effort that work for you.",
       ],
     },
     {
@@ -302,8 +302,8 @@ export const participationGuidelines: LegalDoc | null = {
 };
 
 /**
- * Participation Waiver and Release of Liability, CMR-WAIVER-002. PROPOSED REVISION (v1.1 branch) for
- * Owner approval and Illinois attorney review. It revises CMR-WAIVER-001 (the "Participant Waiver and
+ * Participation Waiver and Release of Liability, CMR-WAIVER-002. Published 2026-11-11 on Owner approval; it has
+ * NOT been reviewed by an Illinois attorney (see the v1.1 work item) and no enforceability is claimed. It revises CMR-WAIVER-001 (the "Participant Waiver and
  * Assumption of Risk"), keeping that text's structure and adding coverage for organizer instructions and
  * authority, personal property, ongoing participation, severability and photography/media. It is original
  * CMR text, not copied from any template. It is NOT attorney-approved and must not be treated as an
@@ -316,11 +316,9 @@ export const participationGuidelines: LegalDoc | null = {
  */
 export const participantWaiver: LegalDoc | null = {
   title: "Participation Waiver and Release of Liability",
-  updated: "to be set when approved",
+  updated: "November 11, 2026",
   dateLabel: "Effective",
   version: "CMR-WAIVER-002",
-  draftNote:
-    "Draft for review. This waiver has not been reviewed or approved by an attorney, and accepting it does not guarantee any legal protection for you or for CMR.",
   intro: [
     "Please read this carefully. It describes the risks of taking part in Chicago Mountain Runners activities and asks you to accept those risks and to give up certain legal claims. Sections 6 and 7 are the ones that affect your legal rights.",
     "Chicago Mountain Runners (CMR) is an independent, free, informal running community for adults, based in Illinois. In this document, “CMR Parties” means CMR, its founder, its organizers and its volunteers, and each of their agents and representatives. “CMR Activities” means the group runs, hill repeats, workouts, meetups and related events that CMR announces or organizes.",

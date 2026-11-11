@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   title: "Hills on Repeat | Chicago Mountain Runners",
   description: OFFICIAL_RUNS_ON_HOLD
     ? PAUSE_COPY.description
-    : "Find your next Chicago group run. Weekly hill repeats with Chicago Mountain Runners, all paces welcome, no registration.",
+    : "Find your next Chicago group run. Weekly hill repeats with Chicago Mountain Runners, all paces welcome. Joining the club is free.",
   alternates: { canonical: "/calendar" },
 };
 

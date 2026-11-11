@@ -22,13 +22,19 @@ updated_at: '2026-11-11T21:00:00.000Z'
 ---
 ## Status
 
-Implemented and locally validated on `feat/v1-1-refinements`. **Not merged, not deployed.** Merging is blocked on the Owner's review of the complete waiver text (below): `WAIVER_ENABLED` is `true` on this branch, so merging publishes the waiver page, the footer link and the Join checkbox.
+Owner approved on 2026-11-11 (final reconciliation brief): the v1.1 changes, CMR-WAIVER-002 for publication, and PR #31's merge after validation. Delivery and production verification are recorded under "Delivery" below.
 
 ## Authorization
 
-Owner instruction of 2026-11-11 (v1.1 brief): implement on a feature branch, prepare a PR, do not merge or deploy, and do not merge the waiver without explicit approval. No approval artifact was added.
+Owner instructions of 2026-11-11: (1) the v1.1 brief (feature branch, PR, no merge without approval); (2) the final reconciliation brief approving the v1.1 changes and the CMR-WAIVER-002 approach, and authorizing the commit, push, merge of PR #31 after validation and post-merge cleanup. **Owner approval is not an Illinois attorney's opinion.** The waiver has not been reviewed by counsel and no enforceability is claimed; outside legal review remains recommended but did not block the merge. No approval artifact was added; the instructions are recorded here.
 
-## Waiver: proposed revision (CMR-WAIVER-002)
+Approved decisions: no legal entity is named (informal, volunteer-led; released parties are CMR, its founder, organizers and volunteers, qualified as not attorney-validated); 18+ only, no minor or guardian process; media permission stays separate from the required acceptance (an operating commitment, no new consent form in v1.1); ordinary-negligence release qualified by Illinois law; effective date November 11, 2026 (the merge date); version stays CMR-WAIVER-002; draft notices removed from the page. The waiver page stays `noindex` and out of the sitemap (not changed).
+
+## Membership policy and copy reconciliation
+
+Policy: joining is free and required for official CMR weekly and group runs; membership is not required to explore or run Chicago's hills independently; official runs remain on pause. Updated: Join page (hero line, essentials, form note), Terms (membership and eligibility), Privacy (Your choices, club-updates paragraph; stopping emails does not by itself keep someone eligible), FAQ (unsubscribe answer), run detail copy and first-timer points ("No registration"), run descriptions, and the Hills on Repeat description and hero. Privacy, Terms and Guidelines "Effective" dates are now November 11, 2026. Formspree handling of signups and unsubscribe requests is unchanged.
+
+## Waiver: CMR-WAIVER-002 (history of the proposal)
 
 A proposal for Owner approval and Illinois legal review. It is not legally validated and makes no claim of enforceability. The Owner's Heartbreak Hill sample was **not present in the session**, so the revision is built from the existing CMR text (CMR-WAIVER-001) and the Owner's coverage list only; nothing from any other organization was used.
 

@@ -52,7 +52,7 @@ describe("legal documents", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Privacy Policy" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: "1. Information you provide" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 3, name: "Joining the club" })).toBeInTheDocument();
-    expect(screen.getByText(/^Effective November 9, 2026$/)).toBeInTheDocument();
+    expect(screen.getByText(/^Effective November 11, 2026$/)).toBeInTheDocument();
   });
 
   it.each(docs)("%s page has no axe violations", async (title, doc) => {
@@ -91,12 +91,15 @@ describe("FAQ", () => {
   });
 });
 
-describe("participant waiver (draft for attorney review)", () => {
+describe("participation waiver (Owner-approved, not attorney-reviewed)", () => {
   const w = JSON.stringify(participantWaiver);
-  it("is titled, versioned and marked as an unreviewed draft", () => {
+  it("is titled, versioned, dated, and shows no draft notice", () => {
     expect(participantWaiver!.title).toBe("Participation Waiver and Release of Liability");
     expect(participantWaiver!.version).toBe(WAIVER_VERSION);
-    expect(participantWaiver!.draftNote).toMatch(/not been reviewed or approved by an attorney/);
+    expect(participantWaiver!.version).toBe("CMR-WAIVER-002");
+    expect(participantWaiver!.updated).toBe("November 11, 2026");
+    expect(participantWaiver!.draftNote).toBeUndefined();
+    expect(JSON.stringify(participantWaiver)).not.toMatch(/to be set when approved|Draft for review/i);
   });
   it("covers adults only, the activities, the risks, the release with its limits, medical costs and Illinois law", () => {
     for (const re of [/age 18 or older/, /hill repeats/, /traffic/, /ice, snow/, /death/, /ordinary negligence/, /willful or wanton/, /911/, /laws of the State of Illinois/, /Photography and media/, /separate permission/, /do not accept minors|CMR does not accept minors/, /instructions from CMR organizers/, /cancel, move, shorten, modify or stop/, /loss, theft or damage/, /unenforceable/, /including activities you attend later/]) expect(w).toMatch(re);
@@ -104,12 +107,11 @@ describe("participant waiver (draft for attorney review)", () => {
   it("invents no entity, insurance, permit or affiliation, and implies no guaranteed protection", () => {
     expect(w).not.toMatch(/LLC|nonprofit|non-profit|incorporated|park district|CPD|partner/i);
     expect(w).toMatch(/does not state or suggest that CMR carries insurance|carries insurance that covers participants/);
-    expect(w).toMatch(/does not guarantee any legal protection/);
   });
-  it("renders with its draft note and version, and has no axe violations", async () => {
+  it("renders with its version and date, no draft note, and has no axe violations", async () => {
     const { container } = render(<LegalDocument title={participantWaiver!.title} doc={participantWaiver} />);
     expect(screen.getByText(/Version CMR-WAIVER-002/)).toBeInTheDocument();
-    expect(screen.getByText(/Draft for review/)).toBeInTheDocument();
+    expect(screen.queryByText(/Draft for review/)).not.toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
   });
 });

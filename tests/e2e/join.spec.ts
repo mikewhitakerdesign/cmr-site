@@ -39,7 +39,7 @@ test.describe("content and layout", () => {
     await expect(page.getByText("No dues. No minimum pace. No actual mountains.", { exact: true })).toBeVisible();
     await expect(
       page.getByText(
-        "Chicago Mountain Runners is a free, informal running community for people who enjoy hills, running, and the company of other people who enjoy hills and running. Join to receive club updates and announcements. Come to a run whenever it works for you. No attendance requirements. No minimum pace. No mountains required.",
+        "Chicago Mountain Runners is a free, informal running community for people who enjoy hills, running, and the company of other people who enjoy hills and running. Join to receive club updates and to take part in official runs, whenever it works for you. No attendance requirements. No minimum pace. No mountains required.",
         { exact: true },
       ),
     ).toBeVisible();
@@ -60,8 +60,8 @@ test.describe("content and layout", () => {
     const main = page.locator("main");
     await expect(main).toContainText("No membership fees, minimum mileage, or attendance requirements.");
     await expect(main).toContainText("All club membership and organized runs are for adults 18 and older.");
-    await expect(main).toContainText("Unsubscribe whenever you choose.");
-    await expect(main).toContainText(OFFICIAL_RUNS_ON_HOLD ? "Official CMR meetups are on hold while we review park-use requirements." : "You don't have to join before attending an organized run.");
+    await expect(main).toContainText("You can ask to stop emails whenever you choose.");
+    await expect(main).toContainText(OFFICIAL_RUNS_ON_HOLD ? "Official CMR meetups are on hold while we review park-use requirements." : "Joining is free and required to take part in official weekly and group runs.");
     await expect(main).not.toContainText(/permit(ted)?|insured|insurance|park district|affiliat/i);
   });
 

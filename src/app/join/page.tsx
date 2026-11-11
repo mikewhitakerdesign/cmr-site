@@ -25,10 +25,10 @@ export const metadata: Metadata = {
  */
 const ESSENTIALS: [string, string][] = [
   ["It's free.", "No membership fees, minimum mileage, or attendance requirements."],
-  ["Stay in the loop.", "Get emails about upcoming runs, schedule changes, and occasional club news. Unsubscribe whenever you choose."],
+  ["Stay in the loop.", "Get emails about upcoming runs, schedule changes, and occasional club news. You can ask to stop emails whenever you choose."],
   OFFICIAL_RUNS_ON_HOLD
     ? ["For now.", "Official CMR meetups are on hold while we review park-use requirements. We'll share updates when there's news."]
-    : ["Just show up.", "You don't have to join before attending an organized run."],
+    : ["Join to run with us.", "Joining is free and required to take part in official weekly and group runs. It isn't required to explore Chicago's hills on your own."],
   ["Adults only.", "All club membership and organized runs are for adults 18 and older."],
 ];
 
@@ -70,8 +70,8 @@ export default function JoinPage() {
           </p>
           <p className="mt-6 max-w-[62ch] text-[18px] leading-[27px] text-foreground/80">
             Chicago Mountain Runners is a free, informal running community for people who enjoy hills, running, and the
-            company of other people who enjoy hills and running. Join to receive club updates and announcements. Come to a
-            run whenever it works for you. No attendance requirements. No minimum pace. No mountains required.
+            company of other people who enjoy hills and running. Join to receive club updates and to take part in
+            official runs, whenever it works for you. No attendance requirements. No minimum pace. No mountains required.
           </p>
         </Container>
       </section>

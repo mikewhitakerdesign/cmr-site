@@ -142,7 +142,7 @@ export const faq: FaqCategory[] = [
       },
       {
         q: "Can I stop receiving emails?",
-        a: "Yes. Use the Questions form on our website and ask to be taken off the club email list. We handle these requests by hand, and there's no one-click unsubscribe link.",
+        a: "Yes. Use the Questions form on our website and ask to be taken off the club email list. We handle these requests by hand, and there's no one-click unsubscribe link. Official runs require membership, so if you stop emails and want to leave the club, say so in your request.",
         more: { label: "How we handle your information", href: "/privacy" },
       },
       {

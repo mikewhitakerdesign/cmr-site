@@ -104,7 +104,7 @@ export const runs: Run[] = [
       bring:
         "Running shoes (trail preferable, but road shoes work), water and fueling as you require, and whatever you normally need for an early-morning workout. A headlamp is encouraged for the early start when it's dark.",
       firstTime:
-        "Good. Everyone had a first hill repeat. No registration, no required pace, and no obligation to stay for the entire workout. Come climb a few hills with us.",
+        "Good. Everyone had a first hill repeat. Joining the club is free, there is no required pace, and no obligation to stay for the entire workout. Come climb a few hills with us.",
       placeName: "Cricket Hill",
     },
     schedule: { kind: "weekly", weekday: "SAT", time: "05:30" },

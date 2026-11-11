@@ -158,7 +158,8 @@ test("Join: capitalization; the waiver page loads with its version and draft not
   await page.goto("/participant-waiver");
   await expect(page).toHaveTitle("Participation Waiver and Release of Liability | Chicago Mountain Runners");
   await expect(page.getByText("Version CMR-WAIVER-002")).toBeVisible();
-  await expect(page.getByText(/Draft for review/)).toBeVisible();
+  await expect(page.getByText(/Draft for review/)).toHaveCount(0);
+  await expect(page.getByText("Effective November 11, 2026")).toBeVisible();
   await expect(page.getByRole("heading", { level: 2 })).toHaveCount(13);
   await expect(page.locator("footer").getByRole("link", { name: "Participation Waiver" })).toHaveAttribute("href", "/participant-waiver");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
