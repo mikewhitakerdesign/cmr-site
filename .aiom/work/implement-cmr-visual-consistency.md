@@ -8,21 +8,23 @@ objective: >-
   About hero circles and replace the About Members and hills sections with one
   editorial card, standardize hero-support text color, and swap Science Figure 3
   for the Owner's artwork.
-status: in-progress
+status: complete
 stage: implementation
 active_capability: ui-implementation
 bundle_references:
   - web-ui-experience
 authority_requirement: owner-authorization-satisfied
-validation_state: pending
+validation_state: passed
 blocker_state: none
 current_responsibility: orchestrator
 created_at: '2026-11-10T00:00:00.000Z'
-updated_at: '2026-11-10T00:00:00.000Z'
+updated_at: '2026-11-11T02:30:00.000Z'
 ---
 ## Status
 
-In review on one PR; **not merged**. Authorization: Owner instruction of 2026-11-10 (implement through a validated PR, no merge, no production deploy, no post-merge closeout yet).
+**Complete: merged and deployed (2026-11-10, UTC 2026-11-11).** PR #25 merged as merge commit **`fb32379`** (head `c8846be`, merged with a head-commit guard). `validate`, `browser` and the Vercel Preview passed on the PR head (one `browser` timeout in a contrast test on the first run was re-run and passed); CI on `main` at `fb32379` passed (`validate`, `browser`); the production deployment (https://vercel.com/mikewhitaker-projects/cmr-site/7SKUPRwStBmEQVPACBWRsvezK2Eu, built from `fb32379`) is Ready at https://cmr-site-xi.vercel.app.
+
+**Authorization:** Owner instructions of 2026-11-10: the visual-consistency scope and its successive refinements (implement through PR #25, no merge), then the final instruction to disable the waiver, merge PR #25 after validation, complete the AIOM closeout and clean up branches and worktrees. No approval artifact was added; the instructions are recorded here.
 
 ## Decisions
 
@@ -58,6 +60,16 @@ The waiver is pending attorney review and is not part of the public MVP. `WAIVER
 
 Formspree stores submissions per its plan and retention settings; it is not an immutable audit trail and the timestamp is the visitor's browser clock (client-side, not server-stamped). The page can be bypassed by a direct POST to the public form ID, which the client-side checks cannot prevent. Durable options for later: a small server endpoint that validates, stamps server time, stores the waiver text hash, version, IP and user agent, and sends a confirmation email; or an append-only store (database or object storage) written by that endpoint. Not built in this PR.
 
+## Outcome
+
+Delivered in PR #25: named heading roles (Display XL / Large, Page H1, Impact / Standard H2); "Hills on Repeat" and "Hills on Hills" navigation with tooltips; `/calendar` and `/hills` hero headings ("Hills on repeat.", "Hills on hills on hills." on two lines from lg); About circles in a CSS grid with the founder-section overlap and no shadows, the "Hills on hills on hills." card with the Owner's black-and-white photograph, the founder signature (Owner asset, white ink, transparent) and regular-weight body copy; `/calendar` closing sections removed; The Science Figure 3 replaced with the Owner's artwork and The Science opening at the top (`data-scroll-behavior` on `<html>`); the shared hero top padding (`src/lib/hero-spacing.ts`); Join capitalization ("Join the club.", "Count me in").
+
+**Deferred (waiver):** the Participant Waiver is not part of the MVP. The draft (`CMR-WAIVER-001`) and `waiverRecord()` stay in the repository (`src/content/legal.ts`, `src/lib/waiver.ts`) behind `WAIVER_ENABLED = false`; `/participant-waiver` returns 404 and is linked nowhere; the Join form has no checkbox and sends no waiver fields. A future initiative needs: attorney review of the open items above, an effective date, removal of the draft note and `noindex`, `WAIVER_ENABLED = true`, the Join checkbox restored (see commit `0d35c7b`) and the Privacy sentence restored.
+
+## Production verification (https://cmr-site-xi.vercel.app, Ready, built from `fb32379`)
+
+HTTP 200 for `/`, `/about`, `/calendar`, `/hills`, `/the-science`, `/join`, `/hills/cricket-hill`, `/calendar/cricket-mtn-repeats`, `/privacy`; `/participant-waiver` returns **404**. A real-browser pass at 393 and 1440 found no horizontal overflow and no console errors, the expected `<h1>` on each page, and no waiver link on the pages checked. On `/join` there are no checkboxes, "Count me in" starts disabled and enables once name and email are valid, and a submission with Formspree mocked (production Formspree was not contacted) posts only `first_name, email, _gotcha, _subject, age_18_plus`: no waiver fields.
+
 ## Closeout
 
-Pending Owner approval of the Preview.
+Feature branch `feat/cmr-visual-consistency` and its worktree are removed after this closeout merges. No follow-up is required for the merged work; the waiver initiative above is the only deferred item.
