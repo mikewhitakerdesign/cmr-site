@@ -31,6 +31,29 @@ In review on one PR; **not merged**. Authorization: Owner instruction of 2026-11
 - The photograph is shown in colour as supplied (the mockup's grayscale was not applied: "preserve its original appearance").
 - Out of scope, left as is: homepage statement headings, FAQ and legal H1s, run detail H1, the unused `public/about/founder-ultra.jpg`.
 
+## Launch-readiness additions (2026-11-10)
+
+- Join: "Join the club." hero, "Count me in" button and "Count me in." form heading (sentence case). One combined, required, unchecked checkbox (age 18+ and the Participant Waiver, linked). The button is disabled until first name, a valid email and the box are in place; `onSubmit` still validates and focuses the first problem.
+- Submission (Formspree `xrppvnln`, unchanged): adds `waiver_accepted=true`, `waiver_version=CMR-WAIVER-001`, `waiver_accepted_at` (ISO 8601, stamped when sent); `age_18_plus=yes` is kept (same checkbox).
+- Shared hero top padding `src/lib/hero-spacing.ts` (56 / 72 / 96): home, /hills, /about, /the-science, /join, Terms, Privacy, Participation Guidelines, the waiver and run detail pages. Exceptions kept: /calendar and hill detail pages. The homepage action row margin was reduced by the headline's shift so the buttons and card stay where Figma puts them.
+- New route `/participant-waiver` (draft, `noindex`, footer link "Participant Waiver"). Privacy "Joining the club" now says the waiver acceptance, version and time are collected.
+
+## Open items for Owner and Illinois attorney review (not shown publicly)
+
+1. Whole document is an original draft informed by RRCA guidance and Illinois case law on exculpatory agreements; it is not attorney-approved.
+2. Section 7: release of ordinary negligence. Illinois construes exculpatory clauses strictly and requires clear language; confirm wording, the carve-out for willful and wanton conduct and gross negligence, and whether to name the released parties more specifically.
+3. Releasees are CMR, its founder, organizers, volunteers and their agents. No entity is named because none is stated to exist; confirm whether to name Michael Whitaker individually and whether any park district or landowner should be included (not assumed).
+4. Section 8: no insurance is stated; confirm that the sentence about participants relying on their own insurance is acceptable and that nothing here implies coverage.
+5. Section 9 and electronic acceptance: confirm that a checkbox plus a Formspree record (name, email, version, ISO timestamp) is an acceptable form of assent, and whether a typed name, IP address or user agent should also be captured.
+6. Section 10: Illinois governing law only; no venue or arbitration clause added. Confirm.
+7. Effective date is a placeholder ("to be set when approved"); set it and remove the draft note and `robots: noindex` on approval.
+8. Severability and "heirs" language in Section 7: confirm.
+9. Minors: the waiver excludes under-18s; confirm that no guardian pathway is wanted.
+
+## Limitations of the acknowledgment record
+
+Formspree stores submissions per its plan and retention settings; it is not an immutable audit trail and the timestamp is the visitor's browser clock (client-side, not server-stamped). The page can be bypassed by a direct POST to the public form ID, which the client-side checks cannot prevent. Durable options for later: a small server endpoint that validates, stamps server time, stores the waiver text hash, version, IP and user agent, and sends a confirmation email; or an append-only store (database or object storage) written by that endpoint. Not built in this PR.
+
 ## Closeout
 
 Pending Owner approval of the Preview.

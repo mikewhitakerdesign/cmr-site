@@ -12,10 +12,12 @@ import { DISPLAY_HEADING, standardH2 } from "@/lib/headings";
 import { JOIN_FORM_ID, JOIN_LIMITS, validateJoin, type JoinErrors } from "@/lib/join";
 import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
 import { cn } from "@/lib/utils";
+import { WAIVER_PATH, WAIVER_TITLE, waiverRecord } from "@/lib/waiver";
 
 /**
- * The Join form (Owner-approved flow, 2026-11-09): first name, email address and
- * a required, unchecked-by-default confirmation that the person is 18 or older.
+ * The Join form (Owner-approved flow, 2026-11-09; waiver checkbox 2026-11-10): first name,
+ * email address and one required, unchecked-by-default checkbox that confirms the person is
+ * 18 or older and agrees to the Participant Waiver (linked, not required reading).
  *
  * Delivery: Formspree (form `xrppvnln`) through `@formspree/react` `useForm`. The
  * browser posts straight to Formspree; nothing is stored by this app, there is no
@@ -23,8 +25,10 @@ import { cn } from "@/lib/utils";
  * Membership is a manually kept private roster (Owner decision), and there is no
  * automated welcome email. The success message is the website's own confirmation.
  *
- * The age confirmation is not a liability waiver, a medical declaration or acceptance of the
- * Terms, and is not described as one. Unsubscribing is manual: the disclosure points to the
+ * The submission carries the acknowledgment record (src/lib/waiver.ts): waiver_accepted,
+ * waiver_version and an ISO 8601 waiver_accepted_at, stamped when the form is sent, plus
+ * age_18_plus (the same checkbox). It is a record in Formspree, not a claim of a legally
+ * sufficient e-signature. The waiver is a draft pending attorney review. Unsubscribing is manual: the disclosure points to the
  * Questions form rather than promising an unsubscribe link that does not exist.
  *
  * Behavior:
@@ -43,18 +47,27 @@ export function JoinForm() {
   const ids = {
     firstName: `${uid}-first-name`,
     email: `${uid}-email`,
-    over18: `${uid}-over18`,
+    waiver: `${uid}-waiver`,
     formError: `${uid}-form-error`,
   };
   const [errors, setErrors] = useState<JoinErrors>({});
   const [state, submit] = useForm<Record<string, string>>(JOIN_FORM_ID);
   const firstNameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
-  const over18Ref = useRef<HTMLInputElement>(null);
+  const waiverRef = useRef<HTMLInputElement>(null);
   const doneRef = useRef<HTMLDivElement>(null);
   const sending = useRef(false);
+  // The button stays disabled until both fields look valid and the box is checked. Submission is
+  // still validated in onSubmit, so the disabled state is never the only guard.
+  const [ready, setReady] = useState(false);
+  const checkReady = (form: HTMLFormElement) => {
+    const d = new FormData(form);
+    const found = validateJoin({ firstName: String(d.get("first_name") ?? ""), email: String(d.get("email") ?? ""), waiver: d.get("waiver_accepted") === "true" });
+    setReady(Object.keys(found).length === 0);
+  };
 
   useEffect(() => {
+    // The form is replaced by the confirmation, so the checked box never carries over to another signup.
     if (state.succeeded) doneRef.current?.focus();
   }, [state.succeeded]);
 
@@ -66,15 +79,18 @@ export function JoinForm() {
     const found = validateJoin({
       firstName: String(data.get("first_name") ?? ""),
       email: String(data.get("email") ?? ""),
-      over18: data.get("age_18_plus") === "yes",
+      waiver: data.get("waiver_accepted") === "true",
     });
     setErrors(found);
     if (found.firstName) return firstNameRef.current?.focus();
     if (found.email) return emailRef.current?.focus();
-    if (found.over18) return over18Ref.current?.focus();
+    if (found.waiver) return waiverRef.current?.focus();
     sending.current = true;
     try {
-      await submit(e);
+      // Stamped now, at the moment of sending. age_18_plus is the same checkbox, kept for the roster.
+      data.set("age_18_plus", "yes");
+      for (const [k, v] of Object.entries(waiverRecord())) data.set(k, v);
+      await submit(data);
     } finally {
       sending.current = false;
     }
@@ -85,7 +101,7 @@ export function JoinForm() {
   const fieldError = {
     firstName: errors.firstName ?? serverField("first_name"),
     email: errors.email ?? serverField("email"),
-    over18: errors.over18 ?? serverField("age_18_plus"),
+    waiver: errors.waiver ?? serverField("waiver_accepted"),
   };
   // Any delivery failure shows the Owner's recoverable-error copy; Formspree's wording is not shown.
   const formError = state.errors?.getFormErrors().length ? "We couldn't confirm your signup. Please try again. Your information is still here." : undefined;
@@ -119,7 +135,7 @@ export function JoinForm() {
   }
 
   return (
-    <form noValidate onSubmit={onSubmit} aria-describedby={formError ? ids.formError : undefined} className="flex flex-col gap-6">
+    <form noValidate onSubmit={onSubmit} onChange={(e) => checkReady(e.currentTarget)} aria-describedby={formError ? ids.formError : undefined} className="flex flex-col gap-6">
       <Field id={ids.firstName} label="First name" error={fieldError.firstName}>
         <Input
           ref={firstNameRef}
@@ -152,28 +168,39 @@ export function JoinForm() {
       </Field>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor={ids.over18} className="flex cursor-pointer items-start gap-3 text-p">
+        {/* The link sits inside the label so the sentence reads as one; clicking it opens the page and never toggles the box. */}
+        <label htmlFor={ids.waiver} className="flex cursor-pointer items-start gap-3 text-p">
           <input
-            ref={over18Ref}
-            id={ids.over18}
-            name="age_18_plus"
+            ref={waiverRef}
+            id={ids.waiver}
+            name="waiver_accepted"
             type="checkbox"
-            value="yes"
+            value="true"
             required
             aria-required="true"
-            aria-invalid={fieldError.over18 ? true : undefined}
-            aria-describedby={fieldError.over18 ? `${ids.over18}-error` : undefined}
+            aria-invalid={fieldError.waiver ? true : undefined}
+            aria-describedby={fieldError.waiver ? `${ids.waiver}-error` : undefined}
             className={cn(
               "mt-0.5 size-6 shrink-0 cursor-pointer rounded-sm accent-primary outline-none",
               "focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
               "aria-invalid:outline-2 aria-invalid:outline-destructive-border",
             )}
           />
-          <span>I confirm that I&apos;m at least 18 years old.</span>
+          <span>
+            I confirm that I am 18 or older, have read the{" "}
+            <Link
+              href={WAIVER_PATH}
+              target="_blank"
+              className="rounded-xs font-medium underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring"
+            >
+              {WAIVER_TITLE}
+            </Link>
+            , understand the risks of participating in Chicago Mountain Runners activities, and agree to its terms.
+          </span>
         </label>
-        {fieldError.over18 && (
-          <p id={`${ids.over18}-error`} className="text-p-mini font-medium text-destructive">
-            {fieldError.over18}
+        {fieldError.waiver && (
+          <p id={`${ids.waiver}-error`} className="text-p-mini font-medium text-destructive">
+            {fieldError.waiver}
           </p>
         )}
       </div>
@@ -198,9 +225,22 @@ export function JoinForm() {
         </p>
       )}
 
-      <Button type="submit" size="xl" disabled={state.submitting} aria-disabled={state.submitting || undefined} className="self-start">
-        {state.submitting ? "Joining…" : "Join the club"}
-      </Button>
+      <div className="flex flex-col gap-2 self-start">
+        <Button
+          type="submit"
+          size="xl"
+          disabled={state.submitting || !ready}
+          aria-disabled={state.submitting || !ready || undefined}
+          aria-describedby={!ready ? `${uid}-hint` : undefined}
+        >
+          {state.submitting ? "Joining…" : "Count me in"}
+        </Button>
+        {!ready && (
+          <p id={`${uid}-hint`} className="text-p-mini text-muted-foreground">
+            Add your name and email and check the box to continue.
+          </p>
+        )}
+      </div>
     </form>
   );
 }

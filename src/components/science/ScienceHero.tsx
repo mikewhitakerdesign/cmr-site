@@ -3,6 +3,7 @@ import { HillHeroBackground, seedFor } from "@/components/hills/HillHero";
 import { FLUID_TYPE } from "@/lib/fluid";
 import { pageH1 } from "@/lib/headings";
 import { onDarkSurface } from "@/lib/surfaces";
+import { HERO_TOP, heroTopVars } from "@/lib/hero-spacing";
 import { cn } from "@/lib/utils";
 
 /**
@@ -38,7 +39,7 @@ export function ScienceHero() {
         />
       </div>
 
-      <Container className="pt-16 pb-20 md:pt-24 md:pb-28 lg:pt-28 lg:pb-36">
+      <Container style={heroTopVars()} className={cn(HERO_TOP, "pb-20 md:pb-28 lg:pb-36")}>
         <h1
           id="science-heading"
           style={heading}

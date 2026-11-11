@@ -7,6 +7,7 @@ import { JoinForm } from "@/components/join/JoinForm";
 import { FLUID_TYPE } from "@/lib/fluid";
 import { BODY_TEXT_COLOR, DISPLAY_HEADING, displayLarge, standardH2 } from "@/lib/headings";
 import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
+import { HERO_TOP, heroTopVars } from "@/lib/hero-spacing";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -59,9 +60,9 @@ export default function JoinPage() {
             </div>
           }
         />
-        <Container className="pt-12 pb-16 md:pt-20 md:pb-24">
+        <Container style={heroTopVars()} className={cn(HERO_TOP, "pb-16 md:pb-24")}>
           <h1 id="join-heading" style={displayLarge()} className={cn(FLUID_TYPE, "font-black tracking-[-0.045em] text-balance")}>
-            JOIN THE CLUB.
+            Join the club.
           </h1>
           <p className="mt-6 max-w-[24ch] text-[24px] leading-[1.2] font-semibold tracking-[-0.5px] text-balance md:mt-8 md:max-w-[34ch] md:text-[32px]">
             No dues. No minimum pace. No actual mountains.
@@ -94,7 +95,7 @@ export default function JoinPage() {
         <Container className="grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
           <div>
             <h2 id="form-heading" style={standardH2()} className={cn(FLUID_TYPE, DISPLAY_HEADING, "text-balance")}>
-              COUNT ME IN.
+              Count me in.
             </h2>
             <p className={cn("mt-4 max-w-[28ch] text-[18px] leading-[27px] xl:max-w-none xl:whitespace-nowrap", BODY_TEXT_COLOR)}>A couple of details, and you&apos;re officially unofficial.</p>
           </div>

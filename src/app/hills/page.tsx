@@ -5,6 +5,7 @@ import { JustShowUp } from "@/components/home/JustShowUp";
 import { FLUID_TYPE, fluidVars } from "@/lib/fluid";
 import { BODY_TEXT_COLOR, displayLarge } from "@/lib/headings";
 import { directoryEntries } from "@/lib/hill-directory";
+import { HERO_TOP_PX } from "@/lib/hero-spacing";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -37,7 +38,7 @@ export const revalidate = 3600;
  */
 export default function HillsPage() {
   const entries = directoryEntries(new Date());
-  const layout = fluidVars({ "--head-pt": [56, 80, 128], "--head-pb": [48, 64, 96] });
+  const layout = fluidVars({ "--head-pt": HERO_TOP_PX, "--head-pb": [48, 64, 96] });
   const heading = displayLarge();
 
   return (

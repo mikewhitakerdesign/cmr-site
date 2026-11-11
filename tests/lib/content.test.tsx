@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 import { Faq } from "@/components/faq/Faq";
 import { LegalDocument } from "@/components/legal/LegalDocument";
 import { faq } from "@/content/faq";
-import { participationGuidelines, privacyPolicy, websiteTerms, type LegalDoc } from "@/content/legal";
+import { participantWaiver, participationGuidelines, privacyPolicy, websiteTerms, type LegalDoc } from "@/content/legal";
+import { WAIVER_VERSION } from "@/lib/waiver";
 import { axeViolations } from "../axe";
 
 const docs: [string, LegalDoc | null][] = [
@@ -86,6 +87,29 @@ describe("FAQ", () => {
 
   it("has no axe violations", async () => {
     const { container } = render(<Faq />);
+    expect(await axeViolations(container)).toEqual([]);
+  });
+});
+
+describe("participant waiver (draft for attorney review)", () => {
+  const w = JSON.stringify(participantWaiver);
+  it("is titled, versioned and marked as an unreviewed draft", () => {
+    expect(participantWaiver!.title).toBe("Participant Waiver and Assumption of Risk");
+    expect(participantWaiver!.version).toBe(WAIVER_VERSION);
+    expect(participantWaiver!.draftNote).toMatch(/not been reviewed or approved by an attorney/);
+  });
+  it("covers adults only, the activities, the risks, the release with its limits, medical costs and Illinois law", () => {
+    for (const re of [/age 18 or older/, /hill repeats/, /traffic/, /ice, snow/, /death/, /ordinary negligence/, /willful or wanton/, /911/, /laws of the State of Illinois/]) expect(w).toMatch(re);
+  });
+  it("invents no entity, insurance, permit or affiliation, and implies no guaranteed protection", () => {
+    expect(w).not.toMatch(/LLC|nonprofit|non-profit|incorporated|park district|CPD|partner/i);
+    expect(w).toMatch(/does not state or suggest that CMR carries insurance|carries insurance that covers participants/);
+    expect(w).toMatch(/does not guarantee any legal protection/);
+  });
+  it("renders with its draft note and version, and has no axe violations", async () => {
+    const { container } = render(<LegalDocument title={participantWaiver!.title} doc={participantWaiver} />);
+    expect(screen.getByText(/Version CMR-WAIVER-001/)).toBeInTheDocument();
+    expect(screen.getByText(/Draft for review/)).toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
   });
 });

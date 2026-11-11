@@ -120,3 +120,41 @@ test("About: circles have no shadow; the card keeps its own; hero paragraph is 1
   const p = page.locator("#about-heading ~ p");
   expect(await p.evaluate((e) => { const s = getComputedStyle(e); return [s.fontWeight, s.fontSize, s.lineHeight].join(" "); })).toBe("400 18px 27px");
 });
+
+test("shared hero top spacing on the standardized pages; /calendar keeps its own", async ({ page }, info) => {
+  const top = ({ mobile: 56, tablet: 72, desktop: 96 } as Record<string, number>)[info.project.name];
+  const pages: [string, string][] = [
+    ["/", "#hero-heading"],
+    ["/hills", "#hills-heading"],
+    ["/about", "#about-heading"],
+    ["/the-science", "#science-heading"],
+    ["/join", "#join-heading"],
+    ["/terms", "#legal-title"],
+    ["/privacy", "#legal-title"],
+    ["/participation-guidelines", "#legal-title"],
+    ["/participant-waiver", "#legal-title"],
+    ["/calendar/cricket-mtn-repeats", "#run-heading"],
+  ];
+  for (const [path, h] of pages) {
+    await page.goto(path);
+    const pt = await page.locator(h).evaluate((e) => parseFloat(getComputedStyle((e.id === "hills-heading" || e.id === "about-heading" ? e.closest("section") : e.closest("div.mx-auto"))!).paddingTop));
+    expect(Math.abs(pt - top), `${path} top padding ${pt}`).toBeLessThan(0.6);
+  }
+  await page.goto("/calendar");
+  const pt = await page.locator("section[aria-labelledby=find-heading]").evaluate((e) => parseFloat(getComputedStyle(e).paddingTop));
+  expect(pt).toBe(info.project.name === "mobile" ? 48 : 64);
+});
+
+test("Join: capitalization; the waiver page loads with its version and draft note", async ({ page }) => {
+  await page.goto("/join");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Join the club.");
+  await expect(page.getByRole("button", { name: "Count me in" })).toHaveText("Count me in");
+  expect(await page.getByRole("button", { name: "Count me in" }).evaluate((e) => getComputedStyle(e).textTransform)).toBe("none");
+  await page.goto("/participant-waiver");
+  await expect(page).toHaveTitle("Participant Waiver and Assumption of Risk | Chicago Mountain Runners");
+  await expect(page.getByText("Version CMR-WAIVER-001")).toBeVisible();
+  await expect(page.getByText(/Draft for review/)).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2 })).toHaveCount(12);
+  await expect(page.locator("footer").getByRole("link", { name: "Participant Waiver" })).toHaveAttribute("href", "/participant-waiver");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});

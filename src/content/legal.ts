@@ -27,6 +27,10 @@ export type LegalDoc = {
   dateLabel?: "Effective" | "Last updated";
   intro?: string[];
   sections: LegalSection[];
+  /** Version identifier shown with the date (documents that are versioned, such as the waiver). */
+  version?: string;
+  /** A short notice shown above the document while it is a draft. */
+  draftNote?: string;
 };
 
 const DATE = "November 9, 2026";
@@ -44,7 +48,7 @@ export const privacyPolicy: LegalDoc | null = {
       heading: "1. Information you provide",
       paragraphs: [
         { h3: "Joining the club" },
-        "When you join CMR, we collect your first name, email address, and confirmation that you are at least 18 years old.",
+        "When you join CMR, we collect your first name, email address, confirmation that you are at least 18 years old, and your acceptance of the Participant Waiver and Assumption of Risk, recorded with the waiver version and the time you accepted it.",
         "We use that information to maintain a membership contact list and send announcements about group runs, schedule changes, and occasional community news.",
         { h3: "Asking a question" },
         "When you use our Questions form, we process the contact information and message you provide so we can review and respond to your inquiry.",
@@ -292,6 +296,116 @@ export const participationGuidelines: LegalDoc | null = {
       heading: "8. Questions and concerns",
       paragraphs: [
         "Use CMR's Questions form to report concerns or ask about these guidelines. For an immediate emergency, contact emergency services rather than relying on a website message.",
+      ],
+    },
+  ],
+};
+
+/**
+ * Participant Waiver and Assumption of Risk. DRAFT for Owner and Illinois attorney
+ * review (2026-11-10): original text written for CMR, informed by RRCA club-waiver
+ * guidance and Illinois case-law on exculpatory agreements, not copied from any
+ * template. It is not attorney-approved and must not be treated as an enforceable
+ * waiver until reviewed. Reviewer-only flags (provisions needing legal confirmation)
+ * are recorded in .aiom/work/implement-cmr-visual-consistency.md, not shown here.
+ * Set to `null` to withdraw it (the page then shows the "in review" notice).
+ *
+ * No entity, insurance, permit or nonprofit status is stated or implied: CMR is
+ * described only as an independent, free, informal adult running community based in Illinois.
+ */
+export const participantWaiver: LegalDoc | null = {
+  title: "Participant Waiver and Assumption of Risk",
+  updated: "to be set when approved",
+  dateLabel: "Effective",
+  version: "CMR-WAIVER-001",
+  draftNote:
+    "Draft for review. This waiver has not been reviewed or approved by an attorney, and signing or accepting it does not guarantee any legal protection for you or for CMR.",
+  intro: [
+    "Please read this carefully. It describes the risks of taking part in Chicago Mountain Runners activities and asks you to accept those risks and to give up certain legal claims. Sections 6 and 7 are the ones that affect your legal rights.",
+    "Chicago Mountain Runners (CMR) is an independent, free, informal running community for adults, based in Illinois. In this document, “CMR Parties” means CMR, its founder, its organizers and its volunteers, and each of their agents and representatives. “CMR Activities” means the group runs, workouts, meetups and related events that CMR announces or organizes.",
+  ],
+  sections: [
+    {
+      heading: "1. Who may participate",
+      paragraphs: [
+        "CMR Activities are for adults age 18 or older. If you are under 18, do not take part in CMR Activities and do not accept this waiver.",
+        "By accepting this waiver you confirm that you are at least 18 years old.",
+      ],
+    },
+    {
+      heading: "2. Participation is voluntary",
+      paragraphs: [
+        "You choose whether to take part in any CMR Activity, and you may stop, slow down, skip a repeat or leave at any time. Nobody is required to attend, to keep a pace, or to complete a workout. Suggestions from organizers or other participants are only suggestions.",
+      ],
+    },
+    {
+      heading: "3. What CMR Activities involve",
+      paragraphs: [
+        "CMR Activities include running, jogging and walking, hill repeats, climbing and descending hills, trail running, group training, and related activities such as warm-ups, cool-downs, travel between locations and time spent socializing before or after a run.",
+        "Activities take place outdoors in public parks and other public places that CMR does not own or control.",
+      ],
+    },
+    {
+      heading: "4. Risks you understand",
+      paragraphs: [
+        "Running and training on hills carry real risks. These include, without limitation: falls and collisions; uneven, steep, loose or slippery ground; roots, rocks, holes and other hazards; ice, snow, mud, rain and wet or dry grass; heat, cold, wind, lightning and other weather; poor light and low visibility; traffic and vehicles at crossings and on shared paths; cyclists, other park users, dogs and wildlife; and the actions of other participants.",
+        "Physical exertion can also cause muscle, joint and bone injuries, overexertion, dehydration, heat or cold illness, cardiac events and other medical problems. Any of these risks can result in serious injury, illness, permanent disability or death.",
+        "Some risks are unknown or cannot be foreseen. Organizers and volunteers are people who run, not medical professionals, safety officers or guides, and they cannot remove these risks.",
+      ],
+    },
+    {
+      heading: "5. Your responsibilities",
+      paragraphs: [
+        "You are responsible for deciding whether you are healthy and fit enough to take part, and for consulting a physician if you are unsure. You are responsible for your own judgment and safety, including your pace, your footing, your gear, your hydration, and whether conditions are safe for you on a given day.",
+        "You agree to follow applicable laws and park rules, to watch for traffic and other people, to treat other people with respect, and to stop and get help if you feel unwell or injured.",
+      ],
+    },
+    {
+      heading: "6. Assumption of risk",
+      paragraphs: [
+        "You voluntarily accept and assume the inherent and reasonably foreseeable risks of taking part in CMR Activities, including the risks described in Section 4, whether or not they are listed there.",
+      ],
+    },
+    {
+      heading: "7. Release of liability for ordinary negligence",
+      paragraphs: [
+        { h3: "What you give up" },
+        "To the fullest extent Illinois law allows, you release and agree not to sue the CMR Parties for injury, illness, death, or loss or damage to property that arises from your participation in CMR Activities, including claims that the injury or loss was caused by the ordinary negligence (a failure to use reasonable care) of a CMR Party.",
+        "You understand that you are giving up the right to bring a claim for ordinary negligence against the CMR Parties. This release is intended to apply to you, your heirs, executors and legal representatives.",
+        { h3: "What this release does not do" },
+        "This release does not apply to, and CMR does not ask you to give up, claims for willful or wanton misconduct, gross negligence, intentional harm, or anything else that Illinois law does not allow to be released. If any part of this section is found to be unenforceable, the rest of this waiver stays in effect to the extent the law permits.",
+      ],
+    },
+    {
+      heading: "8. Medical help and costs",
+      paragraphs: [
+        "CMR does not provide medical supervision, medical advice, first aid services or emergency response. If you are hurt or become ill, you or another person may call 911 or seek medical help, and you agree that you are responsible for the cost of any medical treatment, ambulance or other emergency service you receive.",
+        "Nothing in this waiver or on this website states or suggests that CMR carries insurance that covers participants. Please rely on your own health and accident insurance.",
+      ],
+    },
+    {
+      heading: "9. Your acknowledgment",
+      paragraphs: [
+        "By checking the box on the Join form, or by otherwise indicating your acceptance, you state that you are 18 or older, that you have read this waiver, that you understand the risks of taking part, that you have had the chance to ask questions, and that you accept these terms voluntarily.",
+        "When you accept this waiver through the Join form, CMR keeps a record of your acceptance that includes the waiver version, the time of acceptance, and the name and email address you provided. That record is kept for CMR's own administration. It does not by itself guarantee that this waiver is enforceable.",
+      ],
+    },
+    {
+      heading: "10. Governing law",
+      paragraphs: [
+        "This waiver is governed by the laws of the State of Illinois, without regard to conflict-of-law rules.",
+      ],
+    },
+    {
+      heading: "11. Versions and changes",
+      paragraphs: [
+        "This waiver has a version number and an effective date, shown at the top of the page. CMR may publish a new version from time to time. Your acceptance applies to the version you accepted, as recorded when you joined.",
+      ],
+    },
+    {
+      heading: "12. Questions",
+      paragraphs: [
+        "If you have questions about this waiver, use CMR's Questions form before you accept it. You may also wish to speak with a lawyer of your choice.",
       ],
     },
   ],

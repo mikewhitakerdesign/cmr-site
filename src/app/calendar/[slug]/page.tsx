@@ -20,6 +20,7 @@ import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
 import { getRun, listedRuns, nextWithStatus, type Run } from "@/lib/runs";
 import { describeSchedule, formatLongDate, formatTime, toDateTimeAttr } from "@/lib/schedule";
 import { onDarkSurface } from "@/lib/surfaces";
+import { HERO_TOP, heroTopVars } from "@/lib/hero-spacing";
 import { cn } from "@/lib/utils";
 
 // The next occurrence and the weather depend on now; the weather fetch is cached by the fetch layer.
@@ -62,7 +63,7 @@ export default async function RunPage({ params }: { params: Promise<{ slug: stri
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 opacity-50">
           <ContourField className="bg-background text-(--cmr-contour-on-light)" scale={460} levels={10} seed={7} speed={0.027} fallback={<TopoPattern />} />
         </div>
-        <Container className="pt-10 pb-14 md:pt-14 md:pb-20">
+        <Container style={heroTopVars()} className={cn(HERO_TOP, "pb-14 md:pb-20")}>
           <nav aria-label="Breadcrumb">
             <ol className={cn(LABEL, "flex flex-wrap gap-x-2 text-foreground/75")}>
               <li>

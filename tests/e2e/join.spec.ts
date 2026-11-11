@@ -19,11 +19,12 @@ const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers
 const JOIN_URL = "https://formspree.io/f/xrppvnln";
 
 const form = (page: Page) => page.locator("#join");
+const WAIVER = "I confirm that I am 18 or older, have read the Participant Waiver and Assumption of Risk, understand the risks of participating in Chicago Mountain Runners activities, and agree to its terms.";
 
 async function fill(page: Page) {
   await form(page).getByLabel("First name").fill("Sam");
   await form(page).getByLabel("Email address").fill("sam@example.com");
-  await form(page).getByRole("checkbox", { name: "I confirm that I'm at least 18 years old." }).check();
+  await form(page).getByRole("checkbox", { name: "I confirm that I am 18 or older, have read the Participant Waiver and Assumption of Risk, understand the risks of participating in Chicago Mountain Runners activities, and agree to its terms." }).check();
 }
 
 test.beforeEach(async ({ page }) => {
@@ -34,7 +35,7 @@ test.beforeEach(async ({ page }) => {
 
 test.describe("content and layout", () => {
   test("hero uses the approved copy, then the basics, then the form", async ({ page }) => {
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("JOIN THE CLUB.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Join the club.");
     await expect(page.getByText("No dues. No minimum pace. No actual mountains.", { exact: true })).toBeVisible();
     await expect(
       page.getByText(
@@ -43,7 +44,7 @@ test.describe("content and layout", () => {
       ),
     ).toBeVisible();
     const h2s = await page.locator("main h2").allTextContents();
-    expect(h2s.map((h) => h.trim())).toEqual(["Membership essentials", "COUNT ME IN."]);
+    expect(h2s.map((h) => h.trim())).toEqual(["Membership essentials", "Count me in."]);
     await expect(page.getByText("A couple of details, and you're officially unofficial.")).toBeVisible();
   });
 
@@ -61,7 +62,7 @@ test.describe("content and layout", () => {
     await expect(main).toContainText("All club membership and organized runs are for adults 18 and older.");
     await expect(main).toContainText("Unsubscribe whenever you choose.");
     await expect(main).toContainText(OFFICIAL_RUNS_ON_HOLD ? "Official CMR meetups are on hold while we review park-use requirements." : "You don't have to join before attending an organized run.");
-    await expect(main).not.toContainText(/permit(ted)?|insured|insurance|park district|affiliat|waiver/i);
+    await expect(main).not.toContainText(/permit(ted)?|insured|insurance|park district|affiliat/i);
   });
 
   test("fits every width without sideways scroll, and the form is usable", async ({ page }) => {
@@ -79,20 +80,51 @@ test.describe("content and layout", () => {
 });
 
 test.describe("form behavior", () => {
-  test("validates in place, focuses the first problem and sends nothing", async ({ page }) => {
+  test("the button stays disabled until the fields are valid and the box is checked; Enter sends nothing", async ({ page }) => {
     const posted: string[] = [];
     await page.unroute("https://formspree.io/**");
     await page.route("https://formspree.io/**", (r) => (posted.push(r.request().url()), r.abort()));
-    await form(page).getByRole("button", { name: "Join the club" }).click();
-    await expect(form(page).getByLabel("First name")).toBeFocused();
-    await expect(form(page).getByLabel("First name")).toHaveAttribute("aria-invalid", "true");
-    await expect(form(page).getByText("Confirm that you're 18 or older to join.")).toBeVisible();
+    const btn = form(page).getByRole("button", { name: "Count me in" });
+    await expect(btn).toBeDisabled();
+    await form(page).getByLabel("First name").fill("Sam");
+    await form(page).getByLabel("Email address").fill("sam@example.com");
+    await expect(btn).toBeDisabled();
+    await form(page).getByLabel("Email address").press("Enter");
+    await expect(btn).toBeDisabled();
+    await form(page).getByRole("checkbox", { name: WAIVER }).check();
+    await expect(btn).toBeEnabled();
+    await form(page).getByRole("checkbox", { name: WAIVER }).uncheck();
+    await expect(btn).toBeDisabled();
     expect(await axe(page)).toEqual([]);
     expect(posted).toEqual([]);
   });
 
+  test("the waiver link opens the waiver without toggling or submitting, and the sent data carries the waiver record", async ({ page, context }) => {
+    const bodies: string[] = [];
+    await page.unroute("https://formspree.io/**");
+    await page.route("https://formspree.io/**", async (route) => {
+      if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers: CORS });
+      bodies.push(route.request().postData() ?? "");
+      await route.fulfill({ status: 200, headers: CORS, contentType: "application/json", body: JSON.stringify({ ok: true, next: "https://formspree.io/thanks" }) });
+    });
+    const box = form(page).getByRole("checkbox", { name: WAIVER });
+    const [popup] = await Promise.all([context.waitForEvent("page"), form(page).getByRole("link", { name: "Participant Waiver and Assumption of Risk" }).click()]);
+    await popup.waitForLoadState();
+    expect(popup.url()).toMatch(/\/participant-waiver$/);
+    await expect(popup.getByRole("heading", { level: 1 })).toHaveText("Participant Waiver and Assumption of Risk");
+    await popup.close();
+    await expect(box).not.toBeChecked();
+    await fill(page);
+    await form(page).getByRole("button", { name: "Count me in" }).click();
+    await expect(form(page).getByRole("status")).toBeVisible();
+    expect(bodies).toHaveLength(1);
+    expect(bodies[0]).toContain('name="waiver_accepted"');
+    expect(bodies[0]).toMatch(/name="waiver_version"\r?\n\r?\nCMR-WAIVER-001/);
+    expect(bodies[0]).toMatch(/name="waiver_accepted_at"\r?\n\r?\n\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/);
+  });
+
   test("the age box starts unchecked and is reachable and operable by keyboard", async ({ page }) => {
-    const box = form(page).getByRole("checkbox", { name: "I confirm that I'm at least 18 years old." });
+    const box = form(page).getByRole("checkbox", { name: "I confirm that I am 18 or older, have read the Participant Waiver and Assumption of Risk, understand the risks of participating in Chicago Mountain Runners activities, and agree to its terms." });
     await expect(box).not.toBeChecked();
     await form(page).getByLabel("Email address").focus();
     await page.keyboard.press("Tab");
@@ -111,7 +143,7 @@ test.describe("form behavior", () => {
       await route.fulfill({ status: 200, headers: CORS, contentType: "application/json", body: JSON.stringify({ ok: true, next: "https://formspree.io/thanks" }) });
     });
     await fill(page);
-    const submit = form(page).getByRole("button", { name: "Join the club" });
+    const submit = form(page).getByRole("button", { name: "Count me in" });
     await submit.dblclick();
     await expect(form(page).getByRole("button", { name: "Joining…" })).toBeDisabled();
     const done = form(page).getByRole("status");
@@ -133,19 +165,19 @@ test.describe("form behavior", () => {
         : route.fulfill({ status: 500, headers: CORS, contentType: "application/json", body: JSON.stringify({ errors: [{ message: "Server error." }] }) }),
     );
     await fill(page);
-    await form(page).getByRole("button", { name: "Join the club" }).click();
+    await form(page).getByRole("button", { name: "Count me in" }).click();
     await expect(form(page).getByRole("alert")).toContainText("We couldn't confirm your signup. Please try again. Your information is still here.");
     await expect(page.getByText("YOU'RE IN.")).toHaveCount(0);
     await expect(form(page).getByLabel("First name")).toHaveValue("Sam");
     await expect(form(page).getByLabel("Email address")).toHaveValue("sam@example.com");
-    await expect(form(page).getByRole("checkbox", { name: "I confirm that I'm at least 18 years old." })).toBeChecked();
-    await expect(form(page).getByRole("button", { name: "Join the club" })).toBeEnabled();
+    await expect(form(page).getByRole("checkbox", { name: "I confirm that I am 18 or older, have read the Participant Waiver and Assumption of Risk, understand the risks of participating in Chicago Mountain Runners activities, and agree to its terms." })).toBeChecked();
+    await expect(form(page).getByRole("button", { name: "Count me in" })).toBeEnabled();
     expect(await axe(page)).toEqual([]);
   });
 
   test("a blocked network is treated as a failure, not a success", async ({ page }) => {
     await fill(page); // Formspree is aborted by beforeEach
-    await form(page).getByRole("button", { name: "Join the club" }).click();
+    await form(page).getByRole("button", { name: "Count me in" }).click();
     await expect(form(page).getByRole("alert")).toBeVisible();
     await expect(page.getByText("YOU'RE IN.")).toHaveCount(0);
   });
@@ -167,7 +199,7 @@ test.describe("navigation", () => {
       await route.fulfill({ status: 200, headers: CORS, contentType: "application/json", body: JSON.stringify({ ok: true, next: "https://formspree.io/thanks" }) });
     });
     await fill(page);
-    await form(page).getByRole("button", { name: "Join the club" }).click();
+    await form(page).getByRole("button", { name: "Count me in" }).click();
     await expect(form(page).getByRole("status")).toBeVisible();
     await page.getByRole("button", { name: "Questions?" }).click();
     const dialog = page.getByRole("dialog", { name: "Questions about the club?" });

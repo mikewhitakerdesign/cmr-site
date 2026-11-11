@@ -20,8 +20,8 @@ export const JOIN_FORM_ID = "xrppvnln";
 /** Field limits, mirrored by `maxLength` on the inputs. */
 export const JOIN_LIMITS = { firstName: 60, email: 254 } as const;
 
-export type JoinValues = { firstName: string; email: string; over18: boolean };
-export type JoinErrors = Partial<Record<"firstName" | "email" | "over18", string>>;
+export type JoinValues = { firstName: string; email: string; waiver: boolean };
+export type JoinErrors = Partial<Record<"firstName" | "email" | "waiver", string>>;
 
 /** Client-side checks, mirrored by Formspree's own validation on the server. */
 export function validateJoin(values: JoinValues): JoinErrors {
@@ -29,6 +29,6 @@ export function validateJoin(values: JoinValues): JoinErrors {
   if (!values.firstName.trim()) errors.firstName = "Add your first name.";
   if (!values.email.trim()) errors.email = "Add your email address so we can send club updates.";
   else if (!isEmail(values.email)) errors.email = "That email doesn't look right. Check it and try again.";
-  if (!values.over18) errors.over18 = "Confirm that you're 18 or older to join.";
+  if (!values.waiver) errors.waiver = "Confirm that you're 18 or older and agree to the Participant Waiver to join.";
   return errors;
 }

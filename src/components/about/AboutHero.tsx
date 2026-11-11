@@ -2,6 +2,7 @@ import { HeroCircles } from "@/components/about/HeroCircles";
 import { Container } from "@/components/Container";
 import { FLUID_TYPE, fluidVars } from "@/lib/fluid";
 import { BODY_TEXT_COLOR, pageH1 } from "@/lib/headings";
+import { HERO_TOP_PX } from "@/lib/hero-spacing";
 import { cn } from "@/lib/utils";
 
 /**
@@ -18,7 +19,7 @@ const CIRCLES = [
 
 export function AboutHero() {
   const layout = fluidVars({
-    "--about-pt": [56, 64, 80],
+    "--about-pt": HERO_TOP_PX,
     "--about-copy-mt": [28, 32, 40],
   });
   const heading = pageH1();

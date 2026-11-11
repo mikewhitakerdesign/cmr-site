@@ -388,8 +388,12 @@ test.describe("focus indicators on solid black primary buttons", () => {
 test.describe("focus indicators on the Join submit button (solid black primary, white page)", () => {
   test("ring is offset by the page color and appears only on keyboard focus", async ({ page }) => {
     await page.goto("/join");
-    const button = page.locator("#join").getByRole("button", { name: "Join the club" });
-    // The Privacy Policy link sits between the age box and the button; tab from it.
+    const button = page.locator("#join").getByRole("button", { name: "Count me in" });
+    // The button is disabled until the form is ready.
+    await page.locator("#join").getByLabel("First name").fill("Sam");
+    await page.locator("#join").getByLabel("Email address").fill("sam@example.com");
+    await page.locator("#join").getByRole("checkbox").check();
+    // The Privacy Policy link sits between the checkbox and the button; tab from it.
     await page.locator("#join").getByRole("link", { name: "Privacy Policy" }).focus();
     await page.keyboard.press("Tab");
     await expect(button).toBeFocused();
