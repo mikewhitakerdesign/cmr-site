@@ -1,7 +1,7 @@
 "use client";
 
 import { useForm } from "@formspree/react";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import { Field } from "@/components/form/Field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,9 +56,18 @@ export function QuestionsPanel({ idBase, open, onClose }: { idBase: string; open
   const doneRef = useRef<HTMLParagraphElement>(null);
   const [sentTo, setSentTo] = useState("");
 
-  useEffect(() => {
+  const focusCurrent = () => {
     if (open) (state.succeeded ? doneRef : messageRef).current?.focus();
-  }, [open, state.succeeded]);
+  };
+
+  // Sending (and "Ask another question") swaps the form for the success message or back, which removes the
+  // focused button. Move focus in the same commit, before the browser can dispatch another event: with a passive
+  // effect it sat on <body> for a moment, and Escape (handled by the panel) did nothing in that gap.
+  useLayoutEffect(focusCurrent, [open, state.succeeded]);
+
+  // Opening focuses the question field. This stays a passive effect on purpose: QuestionsDialog opens its <dialog>
+  // in a layout effect of its own, which runs after this component's layout effects, so focus must wait for it.
+  useEffect(focusCurrent, [open, state.succeeded]);
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
