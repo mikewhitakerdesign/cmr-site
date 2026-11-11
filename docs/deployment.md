@@ -3,7 +3,7 @@
 Vercel, Git-integrated, team `mikewhitaker-projects`, project `cmr-site`
 (framework preset Next.js, no `vercel.json`). Every push to a branch gets a
 preview deployment; merging to `main` deploys production. The default Vercel
-address is https://cmr-site-xi.vercel.app.
+address is https://cmr-site-xi.vercel.app, which now permanently redirects to the canonical domain.
 
 ## Domains
 
@@ -13,9 +13,9 @@ address is https://cmr-site-xi.vercel.app.
 | `chicagomountainrunners.com` | 308 → `https://www.chicagomountainrunners.com` |
 | `hillsonhills.com` | 308 → `https://www.chicagomountainrunners.com` |
 | `www.hillsonhills.com` | 308 → `https://www.chicagomountainrunners.com` |
-| `cmr-site-xi.vercel.app` | Serves the site (no redirect); its pages name the canonical host |
+| `cmr-site-xi.vercel.app` | 308 → `https://www.chicagomountainrunners.com` (path and query preserved). Deployment, branch and preview URLs (`cmr-site-<hash>-…vercel.app`) are separate hostnames and are not redirected |
 
-All four hostnames are attached to the `cmr-site` Vercel project. The three
+All hostnames are attached to the `cmr-site` Vercel project. The three
 redirects are **Vercel domain-level redirects** (project → Settings → Domains,
 or the API's `redirect` and `redirectStatusCode: 308` on a project domain), the
 same mechanism `whitaker.design` and `methods.club` use for `www`. Vercel
@@ -95,4 +95,4 @@ deployment → **Instant Rollback**.
 
 Reverting the domains: remove the four hostnames from the project (Settings →
 Domains, or `DELETE /v9/projects/cmr-site/domains/<hostname>`) and delete the
-six Cloudflare records. The site keeps serving at `cmr-site-xi.vercel.app`.
+six Cloudflare records. To make `cmr-site-xi.vercel.app` serve the site again, clear its redirect (`PATCH /v9/projects/cmr-site/domains/cmr-site-xi.vercel.app` with `redirect: null`).

@@ -9,22 +9,22 @@ objective: >-
   and methods.club: Cloudflare DNS-only records to Vercel, Vercel-managed TLS
   and domain-level 308 redirects, one origin constant for canonical URLs,
   robots.txt and the sitemap.
-status: active
+status: complete
 stage: implementation
 active_capability: software-implementation
 bundle_references:
   - software-engineering
   - external-action-integration
-authority_requirement: owner-authorization-required
-validation_state: in-progress
-blocker_state: awaiting-owner-review
-current_responsibility: owner
+authority_requirement: owner-authorization-satisfied
+validation_state: passed
+blocker_state: none
+current_responsibility: orchestrator
 created_at: '2026-11-11T00:00:00.000Z'
-updated_at: '2026-11-11T17:00:00.000Z'
+updated_at: '2026-11-11T18:00:00.000Z'
 ---
 ## Status
 
-**Approved to merge (2026-11-11); production verification and closeout follow.** The Owner added the Cloudflare records, approved resuming verification, directed the Hills on Repeat gate and Questions dialog into this PR, then approved the merge with a one-time CI exception (below). Until the merge deploys, the custom domains serve the previous production build (no canonicals, calendar visible, no sitemap).
+**Complete: merged, deployed and verified in production (2026-11-11).** PR #27 merged as merge commit **`6bf77b1`** (head `bd21612`, merged with a head-commit guard, merge-commit method, one-time Owner-approved CI exception for the `browser` job; see below). The production deployment (`cmr-site-d9c7bvimb`, built from `6bf77b1`) is Ready and serves https://www.chicagomountainrunners.com; the legacy `cmr-site-xi.vercel.app` redirects to it.
 
 ## Authorization
 
@@ -44,7 +44,7 @@ Owner instruction of 2026-11-11 (this session): configure these four hostnames u
 | Vercel domain-level 308 redirects (no application redirect code) | Reused; here the canonical host is `www`, and the apex plus both `hillsonhills.com` hosts redirect to it |
 | One origin constant for metadata, robots, sitemap | Reused from methods.club (a constant, not an env var) |
 | `SITE_INDEXABLE` gate | **Not reused.** CMR's production deployment is already public; indexing is already decided per page (`robots: { index: false }` for in-review legal documents, the disabled waiver). No new environment variable or Vercel setting is needed |
-| Redirecting the `.vercel.app` address to the domain (whitaker.design does) | **Not done** (not requested); canonical tags point at the production host. Open option for the Owner |
+| Redirecting the `.vercel.app` address to the domain (whitaker.design does) | **Done after launch** (Owner-approved 2026-11-11, applied once the canonical domain was verified in production): `cmr-site-xi.vercel.app` 308 → canonical |
 | Per-project DNS values | **Not copied.** CMR's `CNAME` target is `02928dbe640ba2eb.vercel-dns-017.com`, fetched from Vercel for this project |
 
 ## Done so far
@@ -59,7 +59,7 @@ Code (branch `feat/cmr-custom-domains`): `src/lib/site.ts` (origin constant); `m
 
 `A @ 216.198.79.1`, `A @ 64.29.17.1`, `CNAME www 02928dbe640ba2eb.vercel-dns-017.com`.
 
-## Risk the Owner must accept or resolve before merge
+## Risk the Owner must accept or resolve before merge (resolved: the Owner kept `OFFICIAL_RUNS_ON_HOLD = true`)
 
 `implement-cmr-final-site-polish.md` (2026-11-09) lifted the permit hold because CMR was in private development and recorded that the Chicago Park District permit requirements, liability insurance and any formal authorization for recurring events "must be resolved before the domain is connected, members are invited or runs are advertised", and that the hold should be re-applied with the one flag (`OFFICIAL_RUNS_ON_HOLD = true`) if the Owner goes public before then. The current instruction connects the domain. This work item does not change the flag and does not decide that risk. **Owner to confirm one of:** (a) those items are resolved or accepted and the site goes public with runs shown; (b) set `OFFICIAL_RUNS_ON_HOLD = true` in this PR first. Related release dependencies recorded earlier: records marked `verified`, photograph rights (`public/home/README.md`), and the Formspree allowed-domains setting (add `www.chicagomountainrunners.com`; an Owner account setting, not changed here).
 
@@ -104,6 +104,35 @@ DNS records added; resume verification. Refine the Hills on Repeat gate before m
 
 **Scope.** This exception covers PR #27 only. It is not a standing waiver; the `browser` job remains part of the project's gate and the next PR should run it normally.
 
-## Remaining
+## Resolved before merge
 
-1. Merge PR #27 (merge commit); verify the production deployment is Ready. 2. Verify production on all four hosts (HTTPS, redirects with path and query, canonicals, robots.txt, sitemap, `/calendar` pause page, Questions dialog, footer pill, other pages, console and network). 3. Then, and only then, redirect `cmr-site-xi.vercel.app` to the canonical domain (Vercel domain-level 308) and verify previews are unaffected. 4. Closeout PR: reconcile this Work Item with the production results; remove the worktree and branch; sync `main`.
+- **`www` proxied (orange cloud):** the Owner switched the record to DNS only. Verified: authoritative servers, 1.1.1.1, 8.8.8.8 and 9.9.9.9 return `02928dbe640ba2eb.vercel-dns-017.com`; Vercel serves a certificate issued for `www.chicagomountainrunners.com` (to 2027-02-09); Cloudflare's managed `robots.txt` is gone.
+- **Formspree:** Owner confirmed "Restrict Submissions to Domain" is blank for the project; no change needed.
+- **Launch risk:** Owner kept `OFFICIAL_RUNS_ON_HOLD = true` (approved 2026-11-11).
+
+## Remaining (superseded; kept as the record of the plan)
+
+1. Merge PR #27; verify the deployment. 2. Verify production. 3. Redirect `cmr-site-xi.vercel.app`. 4. Closeout PR. All done; see below.
+
+## Production verification (2026-11-11, after the `6bf77b1` deployment was Ready)
+
+- **Domains** (authoritative DNS, certificates, HTTPS and HTTP): `chicagomountainrunners.com`, `hillsonhills.com` and `www.hillsonhills.com` each answer one HTTPS `308` to `https://www.chicagomountainrunners.com/hills/cricket-hill?utm_source=x&a=b%20c` (path and query intact, valid Let's Encrypt certificates to 2027-02-09); plain `http://` takes two hops (same-host HTTPS upgrade, then the 308), as `www.whitaker.design` does; no loops. `www.chicagomountainrunners.com` serves 200 from Vercel directly.
+- **Metadata:** canonical on every page is the `www` URL (root is the bare origin; queries excluded); `/robots.txt` is the site's own (`Allow: /` plus `Sitemap: https://www.chicagomountainrunners.com/sitemap.xml`); `/sitemap.xml` lists 15 canonical URLs, no run pages and no waiver; `/about/` redirects to `/about`; `/participant-waiver` is 404; `/calendar/<run>` redirects to `/calendar` and its `.ics` is 404.
+- **Hills on Repeat:** `/calendar` shows the hero and the centred "Hills on pause." with the approved body and the questions link; no calendar, run, time, weather, permit or insurance content; the calendar implementation is preserved behind `OFFICIAL_RUNS_ON_HOLD` and returns when it is `false`.
+- **Real-browser pass on production** (Chromium, 393 / 768 / 1440; 78 checks, 0 failures): ten pages return 200 with exactly one `h1` and no horizontal overflow; the Questions dialog opens centred with the question field focused, locks scrolling, and closes with Escape, the close button and a backdrop click with focus returning to the link; the floating "Questions?" panel opens and closes as before; header navigation intact; no console errors and no failed or 4xx/5xx requests.
+- **Formspree** (Owner-requested, one real submission per form, clearly labelled tests with a non-real address, so two test messages are in the Owner's inbox): the Questions dialog and the Join form each showed their success state, and both POSTs returned 200 to `mwlljgld` and `xrppvnln`.
+- **Legacy URL:** `cmr-site-xi.vercel.app` was set to a Vercel domain-level `308` to `www.chicagomountainrunners.com` (previously no redirect) only after the canonical domain was verified. `https://cmr-site-xi.vercel.app/hills/cricket-hill?utm_source=x&a=b%20c` redirects to the same path and query on the canonical host (one hop; HTTP two). Deployment and preview URLs are different hostnames and are unchanged (still redirect to Vercel sign-in, 302, before and after).
+
+## Outcome
+
+Delivered in PR #27: canonical origin constant, `metadataBase`, per-page canonicals, `robots.ts` and `sitemap.ts`; the Hills on Repeat "Hills on pause." gate with the calendar preserved behind the flag; the shared `QuestionsPanel` with the new `QuestionsDialog`; `docs/deployment.md`; unit, flag-state and Playwright tests. `OFFICIAL_RUNS_ON_HOLD` is `true`: the homepage, hill pages and Join show their existing held wording.
+
+## Open items (not blocking; for later initiatives)
+
+- The Park District permit requirements, liability insurance and formal event authorization recorded in `implement-cmr-final-site-polish.md` remain unresolved; the hold stays on until the Owner lifts it (one flag).
+- The `browser` CI job should run normally on the next PR; if the runner's apt access is still failing, re-run it or open a separate, evidence-led CI change (the exception here covers PR #27 only).
+- No social share image yet (link previews use title and description); the `.ics` event URLs use the request origin, which is now the canonical host.
+
+## Closeout
+
+Feature branch `feat/cmr-custom-domains` and its worktree are removed after this closeout merges; local `main` is fast-forwarded to `origin/main`.
