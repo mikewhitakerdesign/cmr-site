@@ -8,22 +8,22 @@ objective: >-
   after a question is sent, Escape sometimes did not close the floating panel.
   Fix the underlying focus gap without weakening the test, and add deterministic
   regression coverage.
-status: active
+status: complete
 stage: implementation
 active_capability: software-implementation
 bundle_references:
   - software-engineering
   - web-ui-experience
 authority_requirement: owner-authorization-satisfied
-validation_state: in-progress
+validation_state: passed
 blocker_state: none
 current_responsibility: orchestrator
 created_at: '2026-11-11T00:00:00.000Z'
-updated_at: '2026-11-11T00:00:00.000Z'
+updated_at: '2026-11-11T19:00:00.000Z'
 ---
 ## Status
 
-**In progress (2026-11-11):** fix and regression tests on branch `fix/questions-escape-test-race`; PR, CI and merge follow.
+**Complete: merged, deployed and verified (2026-11-11).** PR #29 merged as merge commit **`db0d4da`** (head `cfa5916`, merged with a head-commit guard, merge-commit method). `validate` and `browser` passed on the PR head in three consecutive runs (one run plus two re-runs, all 560 passed, 151 skipped by design) and on `main` at `db0d4da`; the Vercel preview and the production deployment (`cmr-site-nblhn49qu`, built from `db0d4da`) are Ready.
 
 ## Authorization
 
@@ -45,4 +45,13 @@ Owner instruction of 2026-11-11 (after the custom-domain launch): resolve the in
 
 ## Local validation
 
-After the fix, with the same CPU-throttled flow: Escape closed the panel in 60 of 60 runs (1x, 4x, 6x and 10x), focus already on the message when it appeared in 60 of 60. `questions-focus.spec.ts`: 60 of 60 (20 repeats). The original `home.spec.ts` test: 90 of 90 (30 repeats on each of mobile, tablet and desktop). Dialog, hold and shared-UI Questions specs: 135 of 135 (5 repeats). Full gates: see the PR.
+After the fix, with the same CPU-throttled flow: Escape closed the panel in 60 of 60 runs (1x, 4x, 6x and 10x), focus already on the message when it appeared in 60 of 60. `questions-focus.spec.ts`: 60 of 60 (20 repeats). The original `home.spec.ts` test: 90 of 90 (30 repeats on each of mobile, tablet and desktop). Dialog, hold and shared-UI Questions specs: 135 of 135 (5 repeats). Full local gates: lint, tokens check, 497 unit tests, build, and the full Playwright suite (560 passed, 0 failed).
+
+## CI and production verification
+
+- **PR #29 CI:** run `43067836779`, three attempts on head `cfa5916`, each `validate` and `browser` green. The original test ran and passed on mobile, tablet and desktop; the new spec ran on desktop (skipped on the other two by design). `main` at `db0d4da`: `validate` and `browser` green.
+- **Production** (`https://www.chicagomountainrunners.com`, Formspree intercepted, nothing sent): the same throttled flow, 10 runs per cell, passed 40 of 40: floating panel and `/calendar` dialog, at normal speed and 6x CPU; Escape closed the panel, focus was already on the success message when it appeared, and focus returned to the opener each time. The launch surface is unchanged: the canonical home 200, the apex and the legacy `cmr-site-xi.vercel.app` 308 with paths and queries preserved, and `/calendar` still shows "Hills on pause.".
+
+## Closeout
+
+No application, workflow, flag or other change beyond `QuestionsPanel.tsx` and the new spec. The maintenance branch and worktree are removed after this closeout merges. The `science.spec.ts` flakes seen on 2026-11-09 and 2026-11-10 (different tests) are a separate matter and were not touched; if they recur they warrant their own investigation.
