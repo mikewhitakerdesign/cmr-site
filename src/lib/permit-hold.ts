@@ -39,6 +39,8 @@ export const PAUSE_COPY = {
   bodyBeforeLink: "Weekly hill repeat sessions will be posted shortly. Check back later or ",
   linkText: "send us your questions",
   bodyAfterLink: ".",
+  /** The same message without the Questions link, for the homepage (which has its own links). */
+  bodyShort: "Weekly hill repeat sessions will be posted shortly. Check back later.",
   /** The page description while held. */
   description: "Weekly hill repeat sessions will be posted shortly. Check back later or send us your questions.",
 } as const;

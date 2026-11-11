@@ -215,7 +215,7 @@ function NextCard({ run, next, now }: { run: Run; next: ReturnType<typeof nextWi
           </span>
         </li>
       </ul>
-      <p className="mt-5 text-p font-semibold">No registration. Just show up.</p>
+      <p className="mt-5 text-p font-semibold">Free to join. Membership is required for official runs.</p>
       {run.status !== "verified" && (
         <p data-slot="provisional" className="mt-3 text-p-sm text-primary-foreground/75">
           Schedule details are not yet confirmed. Check back for updates.

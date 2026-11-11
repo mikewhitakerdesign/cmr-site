@@ -15,7 +15,7 @@ async function renderCalendar(held: boolean) {
   vi.resetModules();
   vi.doMock("@/lib/permit-hold", async (orig) => ({ ...(await orig<typeof import("@/lib/permit-hold")>()), OFFICIAL_RUNS_ON_HOLD: held }));
   // The weather panel fetches on the server; this test never needs it.
-  vi.doMock("@/components/weather/WeatherPanel", () => ({ WeatherPanel: () => null }));
+  vi.doMock("@/components/weather/WeatherPanel", () => ({ WeatherPanel: () => <div data-testid="weather-panel" /> }));
   vi.doMock("@/components/weather/WeatherGuidance", () => ({ WeatherGuidance: () => null }));
   const { default: CalendarPage } = await import("@/app/calendar/page");
   const ui = await CalendarPage({ searchParams: Promise.resolve({}) });
@@ -27,6 +27,9 @@ describe("/calendar flag states", () => {
     const { container } = await renderCalendar(true);
     expect(screen.getByRole("heading", { level: 1, name: "Hills on repeat." })).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: "Hills on pause." })).toBeInTheDocument();
+    // v1.1: the hero paragraph and the weather widget are back above the pause notice.
+    expect(screen.getByText(/Chicago isn't known for its mountains/)).toBeInTheDocument();
+    expect(screen.getByTestId("weather-panel")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "See you on the hill." })).toBeNull();
     expect(screen.queryByRole("heading", { name: /New here/ })).toBeNull();
     expect(screen.getByRole("button", { name: "send us your questions" })).toBeInTheDocument();

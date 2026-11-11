@@ -72,7 +72,7 @@ export const footerNav: NavItem[] = buildFooterNav(socialLinks);
 export const legalLinks: LegalLink[] = [
   { label: "Privacy", href: privacyPolicy ? "/privacy" : undefined },
   { label: "Terms", href: websiteTerms ? "/terms" : undefined },
-  { label: "Participant Waiver", href: WAIVER_ENABLED && participantWaiver ? "/participant-waiver" : undefined },
+  { label: "Participation Waiver", href: WAIVER_ENABLED && participantWaiver ? "/participant-waiver" : undefined },
   { label: "Participation Guidelines", href: participationGuidelines ? "/participation-guidelines" : undefined },
 ];
 

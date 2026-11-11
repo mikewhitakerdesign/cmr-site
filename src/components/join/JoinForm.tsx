@@ -12,11 +12,13 @@ import { DISPLAY_HEADING, standardH2 } from "@/lib/headings";
 import { JOIN_FORM_ID, JOIN_LIMITS, validateJoin, type JoinErrors } from "@/lib/join";
 import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
 import { cn } from "@/lib/utils";
+import { WAIVER_PATH, WAIVER_TITLE, waiverRecord } from "@/lib/waiver";
 
 /**
- * The Join form (Owner-approved flow, 2026-11-09): first name and email address. The 18+ eligibility
- * is stated above the button ("By joining, you confirm..."), not a checkbox. The participant waiver is
- * disabled until it is attorney-approved (src/lib/waiver.ts); no waiver fields are sent.
+ * The Join form (Owner-approved flow, 2026-11-09; waiver checkbox 2026-11-10): first name,
+ * email address and one required, unchecked-by-default checkbox that confirms the person is
+ * 18 or older and agrees to the Participation Waiver and Release of Liability (linked, not required reading). v1.1 restored this
+ * from commit 0d35c7b with the proposed CMR-WAIVER-002 wording.
  *
  * Delivery: Formspree (form `xrppvnln`) through `@formspree/react` `useForm`. The
  * browser posts straight to Formspree; nothing is stored by this app, there is no
@@ -24,7 +26,10 @@ import { cn } from "@/lib/utils";
  * Membership is a manually kept private roster (Owner decision), and there is no
  * automated welcome email. The success message is the website's own confirmation.
  *
- * Unsubscribing is manual: the disclosure points to the
+ * The submission carries the acknowledgment record (src/lib/waiver.ts): waiver_accepted,
+ * waiver_version and an ISO 8601 waiver_accepted_at, stamped when the form is sent, plus
+ * age_18_plus (the same checkbox). It is a record in Formspree, not a claim of a legally
+ * sufficient e-signature. The waiver is Owner-approved, not attorney-reviewed. Unsubscribing is manual: the disclosure points to the
  * Questions form rather than promising an unsubscribe link that does not exist.
  *
  * Behavior:
@@ -43,25 +48,27 @@ export function JoinForm() {
   const ids = {
     firstName: `${uid}-first-name`,
     email: `${uid}-email`,
+    waiver: `${uid}-waiver`,
     formError: `${uid}-form-error`,
   };
   const [errors, setErrors] = useState<JoinErrors>({});
   const [state, submit] = useForm<Record<string, string>>(JOIN_FORM_ID);
   const firstNameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
+  const waiverRef = useRef<HTMLInputElement>(null);
   const doneRef = useRef<HTMLDivElement>(null);
   const sending = useRef(false);
-  // The button stays disabled until both fields look valid. Submission is
+  // The button stays disabled until both fields look valid and the box is checked. Submission is
   // still validated in onSubmit, so the disabled state is never the only guard.
   const [ready, setReady] = useState(false);
   const checkReady = (form: HTMLFormElement) => {
     const d = new FormData(form);
-    const found = validateJoin({ firstName: String(d.get("first_name") ?? ""), email: String(d.get("email") ?? "") });
+    const found = validateJoin({ firstName: String(d.get("first_name") ?? ""), email: String(d.get("email") ?? ""), waiver: d.get("waiver_accepted") === "true" });
     setReady(Object.keys(found).length === 0);
   };
 
   useEffect(() => {
-    // The form is replaced by the confirmation, so nothing carries over to another signup.
+    // The form is replaced by the confirmation, so the checked box never carries over to another signup.
     if (state.succeeded) doneRef.current?.focus();
   }, [state.succeeded]);
 
@@ -73,14 +80,17 @@ export function JoinForm() {
     const found = validateJoin({
       firstName: String(data.get("first_name") ?? ""),
       email: String(data.get("email") ?? ""),
+      waiver: data.get("waiver_accepted") === "true",
     });
     setErrors(found);
     if (found.firstName) return firstNameRef.current?.focus();
     if (found.email) return emailRef.current?.focus();
+    if (found.waiver) return waiverRef.current?.focus();
     sending.current = true;
     try {
-      // The 18+ statement beside the button is the eligibility acknowledgment; kept for the roster.
+      // Stamped now, at the moment of sending. age_18_plus is the same checkbox, kept for the roster.
       data.set("age_18_plus", "yes");
+      for (const [k, v] of Object.entries(waiverRecord())) data.set(k, v);
       await submit(data);
     } finally {
       sending.current = false;
@@ -92,6 +102,7 @@ export function JoinForm() {
   const fieldError = {
     firstName: errors.firstName ?? serverField("first_name"),
     email: errors.email ?? serverField("email"),
+    waiver: errors.waiver ?? serverField("waiver_accepted"),
   };
   // Any delivery failure shows the Owner's recoverable-error copy; Formspree's wording is not shown.
   const formError = state.errors?.getFormErrors().length ? "We couldn't confirm your signup. Please try again. Your information is still here." : undefined;
@@ -157,6 +168,44 @@ export function JoinForm() {
         />
       </Field>
 
+      <div className="flex flex-col gap-1.5">
+        {/* The link sits inside the label so the sentence reads as one; clicking it opens the page and never toggles the box. */}
+        <label htmlFor={ids.waiver} className="flex cursor-pointer items-start gap-3 text-p">
+          <input
+            ref={waiverRef}
+            id={ids.waiver}
+            name="waiver_accepted"
+            type="checkbox"
+            value="true"
+            required
+            aria-required="true"
+            aria-invalid={fieldError.waiver ? true : undefined}
+            aria-describedby={fieldError.waiver ? `${ids.waiver}-error` : undefined}
+            className={cn(
+              "mt-0.5 size-6 shrink-0 cursor-pointer rounded-sm accent-primary outline-none",
+              "focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              "aria-invalid:outline-2 aria-invalid:outline-destructive-border",
+            )}
+          />
+          <span>
+            I have read and agree to the Chicago Mountain Runners{" "}
+            <Link
+              href={WAIVER_PATH}
+              target="_blank"
+              className="rounded-xs font-medium underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring"
+            >
+              {WAIVER_TITLE}
+            </Link>
+            .
+          </span>
+        </label>
+        {fieldError.waiver && (
+          <p id={`${ids.waiver}-error`} className="text-p-mini font-medium text-destructive">
+            {fieldError.waiver}
+          </p>
+        )}
+      </div>
+
       {/* Formspree honeypot: bots fill it, people never see it. */}
       <input type="text" name="_gotcha" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
       {/* Lets the Owner tell Join mail from Questions mail in the Formspree inbox. */}
@@ -164,12 +213,13 @@ export function JoinForm() {
 
       <p className="max-w-[56ch] text-p-sm text-muted-foreground">
         Joining is free and includes emails about club runs, schedule changes, and occasional community news. You can
-        unsubscribe at any time by contacting us through the Questions form. Read our{" "}
+        ask to stop emails or leave the club at any time by contacting us through the Questions form. Read our{" "}
         <Link href="/privacy" className="rounded-xs underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring">
           Privacy Policy
         </Link>{" "}
         to learn how we handle your information.
       </p>
+
       <p className="max-w-[56ch] text-p-sm text-muted-foreground">
         Club membership is for adults 18 and older. By joining, you confirm that you are at least 18 years old.
       </p>
@@ -192,7 +242,7 @@ export function JoinForm() {
         </Button>
         {!ready && (
           <p id={`${uid}-hint`} className="text-p-mini text-muted-foreground">
-            Add your name and email to continue.
+            Add your name and email and check the box to continue.
           </p>
         )}
       </div>

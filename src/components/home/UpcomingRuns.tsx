@@ -6,7 +6,7 @@ import { JOIN_TOOLTIP } from "@/lib/navigation";
 import { ArrowUpRightIcon, ClockIcon, MapPinIcon } from "@/components/icons";
 import { FLUID_TYPE, fluidVars } from "@/lib/fluid";
 import { DISPLAY_HEADING, impactH2 } from "@/lib/headings";
-import { OFFICIAL_RUNS_ON_HOLD, PERMIT_HOLD_COPY } from "@/lib/permit-hold";
+import { OFFICIAL_RUNS_ON_HOLD, PAUSE_COPY } from "@/lib/permit-hold";
 import { workoutLabel, type RunOccurrence } from "@/lib/runs";
 import { formatSlot, toDateTimeAttr } from "@/lib/schedule";
 import { onDarkSurface } from "@/lib/surfaces";
@@ -202,10 +202,10 @@ function UpcomingRunsOnHold() {
           style={impactH2()}
           className={cn(FLUID_TYPE, DISPLAY_HEADING, "mt-(--runs-heading-mt-a) md:mt-(--runs-heading-mt-b)")}
         >
-          {PERMIT_HOLD_COPY.sectionHeading}
+          Hills on pause<span className="ss08">.</span>
         </h2>
         <p className="mt-(--runs-list-mt-a) max-w-[60ch] text-p text-primary-foreground/90 md:mt-(--runs-list-mt-b)">
-          {PERMIT_HOLD_COPY.body} {PERMIT_HOLD_COPY.supporting}
+          {PAUSE_COPY.bodyShort}
         </p>
         <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:gap-10">
           <ArrowLink href="/hills" className="text-p">

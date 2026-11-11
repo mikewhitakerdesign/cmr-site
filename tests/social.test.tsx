@@ -71,11 +71,11 @@ describe("environment configuration reaches the footer nav", () => {
     expect(footerNav.map((i) => i.label)).not.toContain("Instagram");
   });
 
-  it("the Join page carries no social links; its only link is the Privacy Policy", async () => {
+  it("the Join page carries no social links; its only links are the waiver and the Privacy Policy", async () => {
     vi.stubEnv("NEXT_PUBLIC_INSTAGRAM_URL", "https://www.instagram.com/cmr");
     vi.resetModules();
     const { default: JoinPage } = await import("@/app/join/page");
     render(<JoinPage />);
-    expect(screen.getAllByRole("link").map((a) => a.textContent)).toEqual(["Privacy Policy"]);
+    expect(screen.getAllByRole("link").map((a) => a.textContent)).toEqual(["Participation Waiver and Release of Liability", "Privacy Policy"]);
   });
 });

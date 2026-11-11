@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/Container";
+import { HillSuggestionLink } from "@/components/hills/HillSuggestionLink";
 import { HillDirectoryList } from "@/components/hills/HillDirectoryList";
 import { JustShowUp } from "@/components/home/JustShowUp";
 import { FLUID_TYPE, fluidVars } from "@/lib/fluid";
@@ -52,6 +53,10 @@ export default function HillsPage() {
           <p className={cn("max-w-[600px] pt-6 text-[18px] leading-[27px] md:pt-8", BODY_TEXT_COLOR)}>
             The places in and around a very flat city where the ground goes up on purpose. Each one has a page: what we know,
             what we&apos;re still measuring, and when we run it.
+          </p>
+          <p className={cn("max-w-[600px] pt-4 text-[18px] leading-[27px]", BODY_TEXT_COLOR)}>
+            We&apos;re adding more hills as time and our legs allow. Got a hill we should consider adding to this directory?{" "}
+            <HillSuggestionLink>We&apos;d love to hear about it.</HillSuggestionLink>
           </p>
         </Container>
       </section>

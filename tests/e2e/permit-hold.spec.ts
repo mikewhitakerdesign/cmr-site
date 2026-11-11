@@ -34,11 +34,14 @@ test.describe("/calendar while held", () => {
     await expect(pause.getByRole("heading", { level: 2 })).toHaveText("Hills on pause.");
     await expect(pause.locator("[data-slot=pause-body]")).toHaveText("Weekly hill repeat sessions will be posted shortly. Check back later or send us your questions.");
     await expect(pause.getByRole("button", { name: "send us your questions" })).toBeVisible();
-    // The calendar is not rendered at all: no grid, run list, weather, "Add to calendar" or time.
+    // The calendar is not rendered at all: no grid, run list, "Add to calendar" or run time. (v1.1: the hero paragraph
+    // and the weather widget are back above the notice, so the weather's own date <time> is allowed.)
+    await expect(page.locator("[data-weather]").first()).toBeVisible();
     await expect(page.getByRole("grid")).toHaveCount(0);
     await expect(page.getByText(RUN_NAMES)).toHaveCount(0);
-    await expect(page.getByText(/Add to calendar|Month|forecast|Bad weather|See you on the hill|New here/)).toHaveCount(0);
-    await expect(page.locator("time, #upcoming")).toHaveCount(0);
+    await expect(page.getByText(/Add to calendar|Month|See you on the hill|New here/)).toHaveCount(0);
+    await expect(page.locator("#upcoming")).toHaveCount(0);
+    await expect(page.locator("time:not([data-weather] *)")).toHaveCount(0);
     await expect(page.locator("main a[href^='/calendar']")).toHaveCount(0);
     // No public permit, agency, insurance or legal wording.
     expect(await page.locator("main").innerText()).not.toMatch(/park district|permit|insur|waiver|liabil/i);
@@ -140,7 +143,8 @@ test.describe("what stays open", () => {
   test("the homepage says runs are on hold instead of listing one", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("[data-slot=runs-on-hold]")).toBeVisible();
-    await expect(page.getByText("Official group runs are on hold while we review park-use requirements.")).toBeVisible();
+    await expect(page.locator("[data-slot=runs-on-hold]").getByRole("heading", { level: 2 })).toHaveText("Hills on pause.");
+    await expect(page.locator("[data-slot=runs-on-hold]").getByText("Weekly hill repeat sessions will be posted shortly. Check back later.")).toBeVisible();
     await expect(page.locator("time")).toHaveCount(0);
     expect(await noHScroll(page)).toBe(true);
   });

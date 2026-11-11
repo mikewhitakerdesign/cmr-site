@@ -5,7 +5,7 @@ import { participantWaiver } from "@/content/legal";
 import { WAIVER_ENABLED, WAIVER_TITLE } from "@/lib/waiver";
 
 const description =
-  "The Participant Waiver and Assumption of Risk for Chicago Mountain Runners, an independent, free, informal adult running community in Illinois. Draft for review.";
+  "The Participation Waiver and Release of Liability for Chicago Mountain Runners, an independent, free, informal adult running community in Illinois. Draft for review.";
 
 export const metadata: Metadata = {
   title: `${WAIVER_TITLE} | Chicago Mountain Runners`,
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  // Disabled until attorney-approved (src/lib/waiver.ts): the draft lives in src/content/legal.ts only.
+  // Switched by WAIVER_ENABLED (src/lib/waiver.ts); the v1.1 text is a proposal awaiting Owner approval.
   if (!WAIVER_ENABLED) notFound();
   return <LegalDocument title={WAIVER_TITLE} doc={participantWaiver} />;
 }

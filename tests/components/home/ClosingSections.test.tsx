@@ -1,24 +1,30 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { FlatStateOfMind } from "@/components/home/FlatStateOfMind";
-import { JustShowUp } from "@/components/home/JustShowUp";
+import { JUST_SHOW_UP_COPY, JustShowUp } from "@/components/home/JustShowUp";
 import { axeViolations } from "../../axe";
 
 describe("JustShowUp", () => {
   it("renders the heading, the copy and both CTAs to v1 routes", () => {
-    render(<JustShowUp held={false} />);
+    render(<JustShowUp />);
     expect(screen.getByRole("heading", { level: 2, name: "JUST SHOW UP." })).toBeInTheDocument();
     expect(
       screen.getByText(
-        "No membership fee. No pace requirement. No complicated initiation ritual. Find a run, show up and climb the same hill until it means something.",
+        JUST_SHOW_UP_COPY,
       ),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Find a Run" })).toHaveAttribute("href", "/calendar");
     expect(screen.getByRole("link", { name: "Join the club" })).toHaveAttribute("href", "/join");
   });
 
+  it("carries the v1.1 copy, including the invitation to join the weekly group runs", () => {
+    expect(JUST_SHOW_UP_COPY).toBe(
+      "No membership fee. No pace requirement. No complicated initiation ritual. Find a hill, show up and climb it until it means something. Join the club to join the weekly group runs.",
+    );
+  });
+
   it("uses the Figma photo decoratively under the 50% gradient and the legibility shade", () => {
-    const { container } = render(<JustShowUp held={false} />);
+    const { container } = render(<JustShowUp />);
     const backdrop = container.querySelector("[aria-hidden]")!;
     expect(backdrop.querySelector("img")?.getAttribute("src")).toContain("just-show-up.jpg");
     expect(backdrop.querySelector("img")).toHaveAttribute("alt", "");
@@ -27,12 +33,12 @@ describe("JustShowUp", () => {
   });
 
   it("loads its photo lazily (below the fold)", () => {
-    const { container } = render(<JustShowUp held={false} />);
+    const { container } = render(<JustShowUp />);
     expect(container.querySelector("img")).toHaveAttribute("loading", "lazy");
   });
 
   it("has no axe violations", async () => {
-    const { container } = render(<JustShowUp held={false} />);
+    const { container } = render(<JustShowUp />);
     expect(await axeViolations(container)).toEqual([]);
   });
 });

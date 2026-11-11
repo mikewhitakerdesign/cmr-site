@@ -6,7 +6,7 @@ import { JustShowUp } from "@/components/home/JustShowUp";
 import { NextRunCard } from "@/components/home/NextRunCard";
 import { UpcomingRuns } from "@/components/home/UpcomingRuns";
 import { hillsWithPages } from "@/lib/hills";
-import { PERMIT_HOLD_COPY } from "@/lib/permit-hold";
+import { PAUSE_COPY } from "@/lib/permit-hold";
 import { getNextOccurrencePerRun, getRunsAtHill, getUpcomingRuns } from "@/lib/runs";
 import { axeViolations } from "../axe";
 
@@ -47,7 +47,7 @@ describe("Hills on pause (second section of /calendar while held)", () => {
 describe("held variants show no run, date or run-detail link", () => {
   it("homepage Upcoming runs", async () => {
     const { container } = render(<UpcomingRuns held occurrences={getNextOccurrencePerRun(now)} now={now} />);
-    expect(screen.getByRole("heading", { level: 2, name: PERMIT_HOLD_COPY.sectionHeading })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Hills on pause." })).toBeInTheDocument();
     expect(container.textContent).not.toMatch(/Cricket Mtn|Horner Hell|\d:\d\d\s?(AM|PM)/i);
     expect(container.querySelector("time")).toBeNull();
     expect(hrefs(container).every((h) => !h?.startsWith("/calendar"))).toBe(true);
@@ -60,7 +60,7 @@ describe("held variants show no run, date or run-detail link", () => {
     expect(container.textContent).not.toMatch(/Cricket Mtn|Horner Hell/);
     expect(container.querySelector("time")).toBeNull();
     expect(hrefs(container).every((h) => !h?.startsWith("/calendar"))).toBe(true);
-    expect(screen.getByText(PERMIT_HOLD_COPY.short)).toBeInTheDocument();
+    expect(screen.getByText(PAUSE_COPY.bodyShort)).toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
   });
 
@@ -74,7 +74,7 @@ describe("held variants show no run, date or run-detail link", () => {
   });
 
   it("Just show up no longer suggests organized runs exist", () => {
-    render(<JustShowUp held />);
+    render(<JustShowUp />);
     expect(screen.queryByText(/find a run, show up/i)).toBeNull();
     expect(screen.getByText(/Find a hill, show up/)).toBeInTheDocument();
   });

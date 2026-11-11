@@ -10,10 +10,17 @@ import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
  * Not yet added, pending operational approval (per the handoff): "Will you take
  * photos at runs?" and "Do I need to sign a participation waiver?".
  */
-export type FaqItem = { q: string; a: string; more?: { label: string; href: string } };
+export type FaqItem = {
+  q: string;
+  a: string;
+  more?: { label: string; href: string };
+  /** A phrase inside `a` that opens the Questions dialog (the same form as the floating "Questions?" panel). */
+  questionsLink?: string;
+};
 export type FaqCategory = { id: string; number: string; title: string; items: FaqItem[] };
 
-export const FAQ_TITLE = "FREQUENTLY ASKED.";
+/** Sentence-case on purpose ("Qs" keeps its lowercase s): the heading must not be uppercased in CSS. */
+export const FAQ_TITLE = "Frequently asked Qs.";
 export const FAQ_INTRO =
   "Everything you need to know about running with Chicago Mountain Runners. Except why we keep running up the same hill. We're still working on that one.";
 
@@ -27,17 +34,15 @@ export const faq: FaqCategory[] = [
     items: [
       {
         q: "What is Chicago Mountain Runners?",
-        a: "A free, informal running community finding elevation in a city that doesn't have much of it. We get together for hill workouts, group runs, and the occasional questionable use of the word mountain.",
+        a: "A free, informal running community finding elevation in a city that doesn't have much of it. We get together for hill workouts, group runs.",
       },
       {
         q: "What does joining the club mean?",
-        a: "Joining connects you to the CMR community and signs you up for emails about runs, schedule changes, and occasional club news. There are no membership fees or attendance requirements.",
+        a: "Joining lets you take part in CMR's official weekly and group runs. It also connects you to the community and signs you up for emails about runs, schedule changes, and occasional club news. There are no membership fees or attendance requirements.",
       },
       {
         q: "Do I need to join before attending a run?",
-        a:
-          "Nope. Our regular group runs are open to adults 18 and older, whether or not they've joined." +
-          (HOLD ? " Official CMR meetups remain on hold while park-use requirements are reviewed." : ""),
+        a: "Yes. Joining CMR is required to take part in official weekly or group runs. You don't need to join to explore Chicago's hills on your own or run them independently.",
       },
       {
         q: "Does membership cost anything?",
@@ -80,7 +85,7 @@ export const faq: FaqCategory[] = [
       },
       {
         q: "Can I bring a friend?",
-        a: "Of course. Friends must be at least 18 and follow the same participation guidelines. They don't have to join the club first.",
+        a: "Of course. Friends must be at least 18, follow the same participation guidelines, and join the club to take part in official runs. Joining is free.",
       },
       {
         q: "Can I leave early?",
@@ -96,7 +101,7 @@ export const faq: FaqCategory[] = [
       {
         q: "Where and when does CMR meet?",
         a: HOLD
-          ? "The Running Calendar will be the official source for scheduled runs, meeting locations, and details. For now, official meetups are on hold while we review park-use requirements. The public Hills directory remains available for independent exploration."
+          ? "The Running Calendar will be the official source for scheduled runs, meeting locations, and details. The public Hills directory is available for independent exploration."
           : "The Running Calendar is the official source for scheduled runs, meeting locations, and details. The public Hills directory is available for independent exploration.",
       },
       {
@@ -105,7 +110,7 @@ export const faq: FaqCategory[] = [
       },
       {
         q: "What happens if an organizer can't attend?",
-        a: "We'll try to arrange a replacement. If no organizer is available, we'll cancel the official CMR meetup and update the calendar.",
+        a: "We'll try to arrange a replacement. If no organizer is available or present on the hill, consider the official CMR run cancelled. We'll do our best to cancel the meetup and update the calendar before scheduled runs, though.",
       },
       {
         q: "Who is responsible for my safety?",
@@ -137,12 +142,13 @@ export const faq: FaqCategory[] = [
       },
       {
         q: "Can I stop receiving emails?",
-        a: "Yes. Use the Questions form on our website and ask to be taken off the club email list. We handle these requests by hand, and there's no one-click unsubscribe link. Unsubscribing doesn't affect your ability to attend open group runs.",
+        a: "Yes. Use the Questions form on our website and ask to be taken off the club email list. We handle these requests by hand, and there's no one-click unsubscribe link. Official runs require membership, so if you stop emails and want to leave the club, say so in your request.",
         more: { label: "How we handle your information", href: "/privacy" },
       },
       {
         q: "How can I contact CMR?",
-        a: "Use the Questions form on our website (the Questions? button on every page). It's separate from the Join form and doesn't automatically sign you up for club announcements.",
+        a: "Use the Questions form on our website (also the Questions? button on every page). It's separate from the Join form and doesn't automatically sign you up for club announcements.",
+        questionsLink: "Questions form",
       },
     ],
   },

@@ -5,6 +5,7 @@ import { JoinForm } from "@/components/join/JoinForm";
 import { JOIN_FORM_ID, validateJoin } from "@/lib/join";
 import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
 import { QUESTIONS_FORM_ID } from "@/lib/questions";
+import { WAIVER_TITLE, WAIVER_VERSION } from "@/lib/waiver";
 import { axeViolations } from "../axe";
 
 /**
@@ -23,21 +24,26 @@ afterEach(() => vi.unstubAllGlobals());
 
 const setup = () => ({ user: userEvent.setup(), ...render(<JoinForm />) });
 const submitButton = () => screen.getByRole("button", { name: /Count me in|Joining/ });
+const WAIVER_SENTENCE =
+  "I have read and agree to the Chicago Mountain Runners Participation Waiver and Release of Liability.";
+const waiverBox = () => screen.getByRole("checkbox", { name: WAIVER_SENTENCE });
 // The button is disabled until the form is ready; this is what Enter in a field (or a script) does.
 const forceSubmit = (container: HTMLElement) => fireEvent.submit(container.querySelector("form")!);
 async function fillValid(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText("First name"), "Sam");
   await user.type(screen.getByLabelText("Email address"), "sam@example.com");
+  await user.click(waiverBox());
 }
 
 describe("validateJoin", () => {
-  it("requires a first name and a valid email, and nothing about a waiver", () => {
-    expect(validateJoin({ firstName: " ", email: "" })).toEqual({
+  it("requires a first name, a valid email and the combined age and waiver confirmation", () => {
+    expect(validateJoin({ firstName: " ", email: "", waiver: false })).toEqual({
       firstName: "Add your first name.",
       email: "Add your email address so we can send club updates.",
+      waiver: "Read and agree to the Participation Waiver and Release of Liability to join.",
     });
-    expect(validateJoin({ firstName: "Sam", email: "nope" }).email).toMatch(/doesn't look right/);
-    expect(validateJoin({ firstName: "Sam", email: "sam@example.com" })).toEqual({});
+    expect(validateJoin({ firstName: "Sam", email: "nope", waiver: true }).email).toMatch(/doesn't look right/);
+    expect(validateJoin({ firstName: "Sam", email: "sam@example.com", waiver: true })).toEqual({});
   });
 });
 
@@ -47,38 +53,45 @@ describe("JoinForm", () => {
     expect(JOIN_FORM_ID).not.toBe(QUESTIONS_FORM_ID);
   });
 
-  it("labels every field and marks them required, with no checkbox at all", () => {
+  it("labels every field, marks them required and leaves the one combined box unchecked", () => {
     setup();
     expect(screen.getByLabelText("First name")).toHaveAttribute("name", "first_name");
     expect(screen.getByLabelText("First name")).toBeRequired();
     expect(screen.getByLabelText("Email address")).toHaveAttribute("type", "email");
     expect(screen.getByLabelText("Email address")).toHaveAttribute("autocomplete", "email");
-    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("checkbox")).toHaveLength(1);
+    expect(waiverBox()).not.toBeChecked();
+    expect(waiverBox()).toBeRequired();
   });
 
-  it("states the 18+ eligibility without a checkbox, and has no waiver link or wording (the waiver is disabled)", () => {
-    const { container } = setup();
-    expect(container).toHaveTextContent("By joining, you confirm that you are at least 18 years old.");
-    expect(screen.queryByRole("link", { name: /waiver/i })).not.toBeInTheDocument();
-    expect(container.textContent).not.toMatch(/waiver|release of liability|assumption of risk/i);
+  it("links the waiver title in the label; the box needs no visit to the page (the click behavior is checked in the browser)", () => {
+    setup();
+    const link = screen.getByRole("link", { name: WAIVER_TITLE });
+    expect(link).toHaveAttribute("href", "/participant-waiver");
+    expect(link.closest("label")).toContainElement(waiverBox().closest("label")!.querySelector("a"));
+    expect(waiverBox()).not.toBeChecked();
   });
 
-  it("enables the button once the name and a valid email are in place", async () => {
+  it("keeps the button disabled until the name, a valid email and the box are all in place", async () => {
     const { user } = setup();
     expect(submitButton()).toBeDisabled();
     await user.type(screen.getByLabelText("First name"), "Sam");
+    await user.type(screen.getByLabelText("Email address"), "sam@example.com");
     expect(submitButton()).toBeDisabled();
+    await user.click(waiverBox());
+    expect(submitButton()).toBeEnabled();
+    await user.click(waiverBox());
+    expect(submitButton()).toBeDisabled();
+    await user.click(waiverBox());
+    await user.clear(screen.getByLabelText("Email address"));
     await user.type(screen.getByLabelText("Email address"), "not-an-email");
     expect(submitButton()).toBeDisabled();
-    await user.clear(screen.getByLabelText("Email address"));
-    await user.type(screen.getByLabelText("Email address"), "sam@example.com");
-    expect(submitButton()).toBeEnabled();
   });
 
   it("explains that joining includes club emails with an unsubscribe option, and links to Privacy", () => {
     setup();
     const note = screen.getByText(/includes emails about club runs/);
-    expect(note).toHaveTextContent(/unsubscribe at any time by contacting us through the Questions form/);
+    expect(note).toHaveTextContent(/ask to stop emails or leave the club at any time by contacting us through the Questions form/);
     expect(note).not.toHaveTextContent(/unsubscribe link|one-click/);
     expect(screen.getByRole("link", { name: "Privacy Policy" })).toHaveAttribute("href", "/privacy");
   });
@@ -91,15 +104,20 @@ describe("JoinForm", () => {
     expect(first).toHaveAccessibleDescription("Add your first name.");
     expect(first).toHaveFocus();
     expect(screen.getByLabelText("Email address")).toHaveAccessibleDescription(/Add your email address/);
-        expect(fetchMock).not.toHaveBeenCalled();
+    expect(waiverBox()).toHaveAccessibleDescription(/Read and agree to the Participation Waiver and Release of Liability/);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("cannot be submitted with an invalid email, even by forcing the form", async () => {
+  it("cannot be submitted without the acknowledgment, even by forcing the form", async () => {
     const { user, container } = setup();
     await user.type(screen.getByLabelText("First name"), "Sam");
     await user.type(screen.getByLabelText("Email address"), "not-an-email");
     forceSubmit(container);
     expect(screen.getByLabelText("Email address")).toHaveFocus();
+    await user.clear(screen.getByLabelText("Email address"));
+    await user.type(screen.getByLabelText("Email address"), "sam@example.com");
+    forceSubmit(container);
+    expect(waiverBox()).toHaveFocus();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -123,8 +141,12 @@ describe("JoinForm", () => {
     expect(body.get("first_name")).toBe("Sam");
     expect(body.get("email")).toBe("sam@example.com");
     expect(body.get("age_18_plus")).toBe("yes");
-    // No waiver fields: no agreement is obtained while the waiver is disabled.
-    expect([...body.keys()].filter((k) => /waiver/i.test(k))).toEqual([]);
+    // The acknowledgment record: accepted, which version, and when (ISO 8601, stamped at sending).
+    expect(body.get("waiver_accepted")).toBe("true");
+    expect(body.get("waiver_version")).toBe(WAIVER_VERSION);
+    const at = String(body.get("waiver_accepted_at"));
+    expect(at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+    expect(Math.abs(Date.now() - new Date(at).getTime())).toBeLessThan(60_000);
     expect(body.get("_subject")).toBe("CMR Join signup");
 
     resolve(json(200, { ok: true, next: "https://formspree.io/thanks" }));
@@ -149,6 +171,7 @@ describe("JoinForm", () => {
     expect(screen.queryByText("YOU'RE IN.")).not.toBeInTheDocument();
     expect(screen.getByLabelText("First name")).toHaveValue("Sam");
     expect(screen.getByLabelText("Email address")).toHaveValue("sam@example.com");
+    expect(waiverBox()).toBeChecked();
     expect(submitButton()).toBeEnabled();
 
     fetchMock.mockResolvedValueOnce(json(200, { ok: true, next: "https://formspree.io/thanks" }));

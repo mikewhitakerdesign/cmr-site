@@ -27,7 +27,7 @@ export function FindHero({ now, held = false }: { now?: Date; held?: boolean }) 
           {!held && (
           <p className={cn("mt-6 max-w-[560px] text-[18px] leading-[27px] md:mt-8", BODY_TEXT_COLOR)}>
             Chicago isn&apos;t known for its mountains. We&apos;re working with what we&apos;ve got. Join us for weekly hill repeats,
-            questionable amounts of vertical, and good company. All paces welcome. No registration. No excuses about the elevation.
+            questionable amounts of vertical, and good company. All paces welcome. Joining is free. No excuses about the elevation.
           </p>
           )}
         </div>

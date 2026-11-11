@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Container } from "@/components/Container";
+import { QuestionsDialogLink } from "@/components/QuestionsDialogLink";
 import { SectionNav } from "@/components/SectionNav";
 import { FAQ_INTRO, FAQ_TITLE, faq } from "@/content/faq";
 import { FLUID_TYPE, fluidType } from "@/lib/fluid";
@@ -49,7 +50,17 @@ export function Faq() {
                     </svg>
                   </summary>
                   <div className="pb-6">
-                    <p className="max-w-[62ch] text-[18px] leading-[27px]">{item.a}</p>
+                    <p className="max-w-[62ch] text-[18px] leading-[27px]">
+                      {item.questionsLink && item.a.includes(item.questionsLink) ? (
+                        <>
+                          {item.a.slice(0, item.a.indexOf(item.questionsLink))}
+                          <QuestionsDialogLink className="font-medium">{item.questionsLink}</QuestionsDialogLink>
+                          {item.a.slice(item.a.indexOf(item.questionsLink) + item.questionsLink.length)}
+                        </>
+                      ) : (
+                        item.a
+                      )}
+                    </p>
                     {item.more && (
                       <Link href={item.more.href} className={cn(FOCUS, "mt-3 inline-block text-p font-medium underline underline-offset-4")}>
                         {item.more.label}

@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 const POINTS = [
   ["All paces", "Run, jog, hike, or mix it up."],
   ["Your own effort", "Climb at a pace that works for you. Nobody is keeping score."],
-  ["No registration", "Show up. There is nothing to sign up for."],
+  ["Free to join", "Joining the club is free and required for official runs. There is nothing else to sign up for."],
   ["Stay as long as you like", "A few laps or the whole session, with breaks whenever you need them."],
 ] as const;
 
