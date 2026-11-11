@@ -126,7 +126,12 @@ const feet = (n: number) => n.toLocaleString("en-US");
  */
 function MoonLine({ moon }: { moon: NonNullable<ClubTotalsData["moon"]> }) {
   return (
-    <div data-slot="moon" className="mx-auto mt-14 max-w-[680px] text-center md:mt-16 lg:mt-24">
+    <div
+      data-slot="moon"
+      // v1.1: the About "Hills on hills on hills." card's gray fill (bg-border) and drop shadow, with the
+      // Group Runs card's radius (rounded-lg); 40px vertical padding (Owner target 36–42px).
+      className="mx-auto mt-14 max-w-[680px] rounded-lg bg-border px-6 py-10 text-center shadow-[0_8px_14px_rgba(65,65,65,0.28)] md:mt-16 md:px-10 lg:mt-24"
+    >
       <h3 className="inline-flex items-center gap-2 text-[20px] leading-7 font-black tracking-[-0.02em] lg:text-[24px] lg:leading-8">
         <RocketIcon className="size-5 shrink-0 lg:size-6" />
         We&apos;re going to the moon!

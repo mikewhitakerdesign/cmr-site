@@ -19,10 +19,12 @@ const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers
 const JOIN_URL = "https://formspree.io/f/xrppvnln";
 
 const form = (page: Page) => page.locator("#join");
+const WAIVER = "I have read and agree to the Chicago Mountain Runners Participation Waiver and Release of Liability.";
 
 async function fill(page: Page) {
   await form(page).getByLabel("First name").fill("Sam");
   await form(page).getByLabel("Email address").fill("sam@example.com");
+  await form(page).getByRole("checkbox", { name: "I have read and agree to the Chicago Mountain Runners Participation Waiver and Release of Liability." }).check();
 }
 
 test.beforeEach(async ({ page }) => {
@@ -78,23 +80,57 @@ test.describe("content and layout", () => {
 });
 
 test.describe("form behavior", () => {
-  test("no waiver or checkbox: the button enables when the name and email are valid, and Enter sends nothing before that", async ({ page }) => {
+  test("the button stays disabled until the fields are valid and the box is checked; Enter sends nothing", async ({ page }) => {
     const posted: string[] = [];
     await page.unroute("https://formspree.io/**");
     await page.route("https://formspree.io/**", (r) => (posted.push(r.request().url()), r.abort()));
-    await expect(form(page).getByRole("checkbox")).toHaveCount(0);
-    await expect(form(page)).not.toContainText(/waiver/i);
-    await expect(form(page)).toContainText("By joining, you confirm that you are at least 18 years old.");
     const btn = form(page).getByRole("button", { name: "Count me in" });
     await expect(btn).toBeDisabled();
     await form(page).getByLabel("First name").fill("Sam");
-    await form(page).getByLabel("Email address").fill("nope");
+    await form(page).getByLabel("Email address").fill("sam@example.com");
+    await expect(btn).toBeDisabled();
     await form(page).getByLabel("Email address").press("Enter");
     await expect(btn).toBeDisabled();
-    await form(page).getByLabel("Email address").fill("sam@example.com");
+    await form(page).getByRole("checkbox", { name: WAIVER }).check();
     await expect(btn).toBeEnabled();
+    await form(page).getByRole("checkbox", { name: WAIVER }).uncheck();
+    await expect(btn).toBeDisabled();
     expect(await axe(page)).toEqual([]);
     expect(posted).toEqual([]);
+  });
+
+  test("the waiver link opens the waiver without toggling or submitting, and the sent data carries the waiver record", async ({ page, context }) => {
+    const bodies: string[] = [];
+    await page.unroute("https://formspree.io/**");
+    await page.route("https://formspree.io/**", async (route) => {
+      if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers: CORS });
+      bodies.push(route.request().postData() ?? "");
+      await route.fulfill({ status: 200, headers: CORS, contentType: "application/json", body: JSON.stringify({ ok: true, next: "https://formspree.io/thanks" }) });
+    });
+    const box = form(page).getByRole("checkbox", { name: WAIVER });
+    const [popup] = await Promise.all([context.waitForEvent("page"), form(page).getByRole("link", { name: "Participation Waiver and Release of Liability" }).click()]);
+    await popup.waitForLoadState();
+    expect(popup.url()).toMatch(/\/participant-waiver$/);
+    await expect(popup.getByRole("heading", { level: 1 })).toHaveText("Participation Waiver and Release of Liability");
+    await popup.close();
+    await expect(box).not.toBeChecked();
+    await fill(page);
+    await form(page).getByRole("button", { name: "Count me in" }).click();
+    await expect(form(page).getByRole("status")).toBeVisible();
+    expect(bodies).toHaveLength(1);
+    expect(bodies[0]).toContain('name="waiver_accepted"');
+    expect(bodies[0]).toMatch(/name="waiver_version"\r?\n\r?\nCMR-WAIVER-002/);
+    expect(bodies[0]).toMatch(/name="waiver_accepted_at"\r?\n\r?\n\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/);
+  });
+
+  test("the age box starts unchecked and is reachable and operable by keyboard", async ({ page }) => {
+    const box = form(page).getByRole("checkbox", { name: "I have read and agree to the Chicago Mountain Runners Participation Waiver and Release of Liability." });
+    await expect(box).not.toBeChecked();
+    await form(page).getByLabel("Email address").focus();
+    await page.keyboard.press("Tab");
+    await expect(box).toBeFocused();
+    await page.keyboard.press("Space");
+    await expect(box).toBeChecked();
   });
 
   test("sends once to the Join form, then replaces the form with the confirmation, focused", async ({ page }) => {
@@ -134,6 +170,7 @@ test.describe("form behavior", () => {
     await expect(page.getByText("YOU'RE IN.")).toHaveCount(0);
     await expect(form(page).getByLabel("First name")).toHaveValue("Sam");
     await expect(form(page).getByLabel("Email address")).toHaveValue("sam@example.com");
+    await expect(form(page).getByRole("checkbox", { name: "I have read and agree to the Chicago Mountain Runners Participation Waiver and Release of Liability." })).toBeChecked();
     await expect(form(page).getByRole("button", { name: "Count me in" })).toBeEnabled();
     expect(await axe(page)).toEqual([]);
   });
@@ -195,7 +232,7 @@ test.describe("legal pages and FAQ", () => {
 
   test("/faq has four categories, disclosures that open by keyboard, and no axe violations", async ({ page }) => {
     await page.goto("/faq");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("FREQUENTLY ASKED.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Frequently asked Qs.");
     await expect(page.locator("main h2")).toHaveCount(4);
     await expect(page.locator("main details")).toHaveCount(23);
     const first = page.locator("details").first();
@@ -210,7 +247,7 @@ test.describe("legal pages and FAQ", () => {
     // Held: the schedule answer says meetups are on hold; nothing points at a run page.
     const where = page.locator("details", { hasText: "Where and when does CMR meet?" });
     await where.locator("summary").click();
-    await expect(where).toContainText(OFFICIAL_RUNS_ON_HOLD ? "official meetups are on hold while we review park-use requirements" : "The Running Calendar is the official source");
+    await expect(where).toContainText(OFFICIAL_RUNS_ON_HOLD ? "The Running Calendar will be the official source for scheduled runs" : "The Running Calendar is the official source");
     expect(await axe(page)).toEqual([]);
     expect(await noHScroll(page)).toBe(true);
   });

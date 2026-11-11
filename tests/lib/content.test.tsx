@@ -4,8 +4,7 @@ import { Faq } from "@/components/faq/Faq";
 import { LegalDocument } from "@/components/legal/LegalDocument";
 import { faq } from "@/content/faq";
 import { participantWaiver, participationGuidelines, privacyPolicy, websiteTerms, type LegalDoc } from "@/content/legal";
-import { legalLinks } from "@/lib/navigation";
-import { WAIVER_ENABLED, WAIVER_VERSION } from "@/lib/waiver";
+import { WAIVER_VERSION } from "@/lib/waiver";
 import { axeViolations } from "../axe";
 
 const docs: [string, LegalDoc | null][] = [
@@ -70,7 +69,7 @@ describe("FAQ", () => {
 
   it("renders every question as a heading inside a disclosure, with its answer in the page", () => {
     const { container } = render(<Faq />);
-    expect(screen.getByRole("heading", { level: 1, name: "FREQUENTLY ASKED." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Frequently asked Qs." })).toBeInTheDocument();
     expect(container.querySelectorAll("details")).toHaveLength(23);
     for (const c of faq) for (const i of c.items) {
       expect(screen.getByRole("heading", { level: 3, name: i.q })).toBeInTheDocument();
@@ -94,17 +93,13 @@ describe("FAQ", () => {
 
 describe("participant waiver (draft for attorney review)", () => {
   const w = JSON.stringify(participantWaiver);
-  it("is retained as a draft but disabled: no public link while WAIVER_ENABLED is false", () => {
-    expect(WAIVER_ENABLED).toBe(false);
-    expect(legalLinks.find((l) => /waiver/i.test(l.label))?.href).toBeUndefined();
-  });
   it("is titled, versioned and marked as an unreviewed draft", () => {
-    expect(participantWaiver!.title).toBe("Participant Waiver and Assumption of Risk");
+    expect(participantWaiver!.title).toBe("Participation Waiver and Release of Liability");
     expect(participantWaiver!.version).toBe(WAIVER_VERSION);
     expect(participantWaiver!.draftNote).toMatch(/not been reviewed or approved by an attorney/);
   });
   it("covers adults only, the activities, the risks, the release with its limits, medical costs and Illinois law", () => {
-    for (const re of [/age 18 or older/, /hill repeats/, /traffic/, /ice, snow/, /death/, /ordinary negligence/, /willful or wanton/, /911/, /laws of the State of Illinois/]) expect(w).toMatch(re);
+    for (const re of [/age 18 or older/, /hill repeats/, /traffic/, /ice, snow/, /death/, /ordinary negligence/, /willful or wanton/, /911/, /laws of the State of Illinois/, /Photography and media/, /separate permission/, /do not accept minors|CMR does not accept minors/, /instructions from CMR organizers/, /cancel, move, shorten, modify or stop/, /loss, theft or damage/, /unenforceable/, /including activities you attend later/]) expect(w).toMatch(re);
   });
   it("invents no entity, insurance, permit or affiliation, and implies no guaranteed protection", () => {
     expect(w).not.toMatch(/LLC|nonprofit|non-profit|incorporated|park district|CPD|partner/i);
@@ -113,7 +108,7 @@ describe("participant waiver (draft for attorney review)", () => {
   });
   it("renders with its draft note and version, and has no axe violations", async () => {
     const { container } = render(<LegalDocument title={participantWaiver!.title} doc={participantWaiver} />);
-    expect(screen.getByText(/Version CMR-WAIVER-001/)).toBeInTheDocument();
+    expect(screen.getByText(/Version CMR-WAIVER-002/)).toBeInTheDocument();
     expect(screen.getByText(/Draft for review/)).toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
   });

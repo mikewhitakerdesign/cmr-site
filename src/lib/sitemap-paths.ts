@@ -8,7 +8,7 @@ import { listedRuns } from "@/lib/runs";
  *   - a legal document is listed only once its text is published (an entry of `null` is noindex),
  *   - run pages exist only while official runs are not on hold and the run has content,
  *   - hill pages are the hills with page content (the same set as `generateStaticParams`),
- *   - the participant waiver is noindex and disabled, so it is never listed.
+ *   - the participation waiver is noindex, so it is never listed.
  * `held` and the inputs are parameters so tests can exercise both states.
  */
 export function sitemapPaths({

@@ -110,9 +110,12 @@ test("prevents background scrolling while open and restores it", async ({ page }
   await page.evaluate(() => window.scrollTo(0, 0));
   await link(page).click();
   await expect(page.locator("html")).toHaveCSS("overflow", "hidden");
+  // Opening the link may itself scroll it into view (the page is taller since the v1.1 hero); the lock must
+  // hold the position the page has when the dialog opens.
+  const before = await page.evaluate(() => window.scrollY);
   await page.mouse.move(4, 4);
   await page.mouse.wheel(0, 600);
-  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  expect(await page.evaluate(() => window.scrollY)).toBe(before);
   await page.keyboard.press("Escape");
   await expect(page.locator("html")).not.toHaveCSS("overflow", "hidden");
 });

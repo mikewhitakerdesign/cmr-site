@@ -40,10 +40,10 @@ for (const [path, canonical] of CANONICAL) {
   });
 }
 
-test("the participant waiver stays out of the site (404, noindex)", async ({ page }) => {
+test("the participation waiver (a proposed v1.1 draft) is reachable but noindex and not in the sitemap", async ({ page, request }) => {
   const res = await page.goto("/participant-waiver");
-  expect(res?.status()).toBe(404);
-  // Next emits the not-found noindex and the page's own; both say the same thing.
+  expect(res?.status()).toBe(200);
+  expect(await (await request.get("/sitemap.xml")).text()).not.toContain("participant-waiver");
   await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute("content", /noindex/);
 });
 

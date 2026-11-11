@@ -16,7 +16,7 @@ test.describe("FAQ", () => {
     const h = (await hero.boundingBox())!;
     const n = (await page.locator("[data-slot=faq-nav]").boundingBox())!;
     expect(n.y).toBeGreaterThanOrEqual(h.y + h.height - 1);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("FREQUENTLY ASKED.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Frequently asked Qs.");
   });
 
   test("the bar sticks just under the header's bar and never overlaps it", async ({ page }) => {

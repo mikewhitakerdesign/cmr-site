@@ -21,7 +21,7 @@ export function validateQuestion(values: { message: string; email: string }): Fi
   return errors;
 }
 
-const textareaClass = cn(
+export const textareaClass = cn(
   "min-h-28 w-full resize-y rounded-lg border border-border bg-input px-(--space-md) py-2.5 shadow-xs",
   "text-p-sm text-foreground placeholder:text-muted-foreground outline-none transition-[color,box-shadow,border-color]",
   "focus-visible:border-border-4 focus-visible:ring-3 focus-visible:ring-ring",

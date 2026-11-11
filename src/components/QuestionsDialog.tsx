@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useLayoutEffect, useRef, type KeyboardEvent } from "react";
+import type { ReactNode } from "react";
 import { QuestionsPanel, questionsPanelIds } from "@/components/QuestionsPanel";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -26,7 +27,7 @@ function trapTab(e: KeyboardEvent<HTMLDialogElement>) {
 }
 
 /**
- * The Questions form as a centered modal dialog (Owner direction, 2026-11-11),
+ * The shared centered modal <dialog> shell (see QuestionsDialog and HillSuggestionDialog). Originally the Questions form as a centered modal dialog (Owner direction, 2026-11-11),
  * opened from an inline link (e.g. "send us your questions" on /calendar while
  * official runs are on hold). The form is QuestionsPanel, the same component
  * the floating "Questions?" panel renders, so the Formspree endpoint,
@@ -43,9 +44,19 @@ function trapTab(e: KeyboardEvent<HTMLDialogElement>) {
  *
  * The panel stays mounted while the dialog is closed, so a draft survives.
  */
-export function QuestionsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const uid = useId();
-  const ids = questionsPanelIds(uid);
+export function ModalDialog({
+  open,
+  onClose,
+  labelledBy,
+  describedBy,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  labelledBy: string;
+  describedBy: string;
+  children: ReactNode;
+}) {
   const ref = useRef<HTMLDialogElement>(null);
   const pressedOnBackdrop = useRef(false);
 
@@ -73,8 +84,8 @@ export function QuestionsDialog({ open, onClose }: { open: boolean; onClose: () 
   return (
     <dialog
       ref={ref}
-      aria-labelledby={ids.title}
-      aria-describedby={ids.intro}
+      aria-labelledby={labelledBy}
+      aria-describedby={describedBy}
       // Native Escape (and dialog.close()) land here, so state follows the platform.
       onClose={onClose}
       // The dialog has no padding of its own, so a press on the dialog element itself is a press on the backdrop.
@@ -88,8 +99,19 @@ export function QuestionsDialog({ open, onClose }: { open: boolean; onClose: () 
       className="fixed inset-0 m-auto max-h-[calc(100dvh-2rem)] w-[min(480px,calc(100vw-2rem))] overflow-y-auto overscroll-contain rounded-xl border border-foreground bg-background p-0 text-foreground shadow-lg backdrop:bg-[rgb(255_255_255/0.65)]"
     >
       <div className="p-5 md:p-8">
-        <QuestionsPanel idBase={uid} open={open} onClose={onClose} />
+        {children}
       </div>
     </dialog>
+  );
+}
+
+/** The Questions form in the shared modal shell. */
+export function QuestionsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const uid = useId();
+  const ids = questionsPanelIds(uid);
+  return (
+    <ModalDialog open={open} onClose={onClose} labelledBy={ids.title} describedBy={ids.intro}>
+      <QuestionsPanel idBase={uid} open={open} onClose={onClose} />
+    </ModalDialog>
   );
 }

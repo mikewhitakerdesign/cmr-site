@@ -24,14 +24,15 @@ export const metadata: Metadata = {
  * weather is fetched on the server and cached by the fetch layer.
  */
 export default async function CalendarPage({ searchParams }: { searchParams: Promise<{ view?: string; date?: string }> }) {
-  // Permit-pending hold (src/lib/permit-hold.ts): the page hero (headline only) and the "Hills on pause."
-  // section. No calendar, runs, upcoming list, weather (so no weather request) or first-timer section is
+  // Permit-pending hold (src/lib/permit-hold.ts): the page hero (headline, intro, weather) and the "Hills on pause."
+  // section. No calendar, runs, upcoming list or first-timer section is
   // rendered, so nothing of them is in the DOM. Everything below is the unchanged calendar, restored by
   // setting OFFICIAL_RUNS_ON_HOLD to false.
+  // v1.1: the hero paragraph and today's weather are restored above the notice (they were hidden by the hold).
   if (OFFICIAL_RUNS_ON_HOLD) {
     return (
       <>
-        <FindHero held />
+        <FindHero now={new Date()} />
         <HillsOnPause />
       </>
     );

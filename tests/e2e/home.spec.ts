@@ -96,7 +96,7 @@ test.describe("structure and content", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("MAKE YOUR OWN MTNS");
     const h2s = await page.locator("main h2").allTextContents();
     // The next-run card title is an h2 inside the hero; section headings follow in order.
-    expect(h2s.slice(1)).toEqual(["2026 club totals.", OFFICIAL_RUNS_ON_HOLD ? "Group runs are on hold." : "See you on the hill.", "Get high in the city.", "JUST SHOW UP."]);
+    expect(h2s.slice(1)).toEqual(["2026 club totals.", OFFICIAL_RUNS_ON_HOLD ? "Hills on pause." : "See you on the hill.", "Get high in the city.", "JUST SHOW UP."]);
     await expect(community(page)).toContainText("questioning our sanity decisions.");
     await expect(flat(page)).toContainText("FLAT IS A STATE OF MIND.");
     await expect(page.locator("header")).toBeVisible();
@@ -236,12 +236,17 @@ test.describe("layout against Figma", () => {
     }
   });
 
-  test("next-run card: rounded at every size, a quiet static contour inside, no canvas", async ({ page }) => {
+  test("Group runs card: rounded at every size, with the hill-hero animated contour lines behind the text (v1.1)", async ({ page }) => {
     const card = hero(page).getByRole("article");
     expect(await css(card, "border-radius")).toBe("8px");
-    await expect(card.locator("[data-slot=topo-pattern]")).toHaveCount(1);
-    await expect(card.locator("canvas")).toHaveCount(0);
-    expect(parseFloat(await css(card.locator("[data-slot=topo-pattern]"), "opacity"))).toBeLessThan(0.5);
+    // The same background component as the hill-detail hero; one canvas (or its static fallback), decorative.
+    const bg = card.locator("[data-slot=hill-hero-background]");
+    await expect(bg).toHaveCount(1);
+    await expect(bg).toHaveCSS("position", "absolute");
+    await expect(bg.locator("canvas, [data-slot=topo-pattern]")).toHaveCount(1);
+    expect(await bg.evaluate((e) => e.getAttribute("aria-hidden") ?? e.closest("[aria-hidden]")?.getAttribute("aria-hidden"))).not.toBeNull();
+    // Still inside the card (clipped), behind the text.
+    expect(await css(card, "overflow")).toBe("hidden");
   });
 
   test("desktop card overhangs the hero, stays on top and unclipped; inside the hero elsewhere", async ({ page }, info) => {

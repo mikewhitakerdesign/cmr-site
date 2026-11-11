@@ -1,8 +1,8 @@
 import { ArrowLink } from "@/components/ArrowLink";
 import { ClockIcon, MapPinIcon } from "@/components/icons";
-import { TopoPattern } from "@/components/home/TopoPattern";
+import { HillHeroBackground } from "@/components/hills/HillHero";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
-import { OFFICIAL_RUNS_ON_HOLD, PERMIT_HOLD_COPY } from "@/lib/permit-hold";
+import { OFFICIAL_RUNS_ON_HOLD, PAUSE_COPY } from "@/lib/permit-hold";
 import type { RunOccurrence } from "@/lib/runs";
 import { formatSlot, toDateTimeAttr } from "@/lib/schedule";
 import { cn } from "@/lib/utils";
@@ -32,7 +32,14 @@ import { cn } from "@/lib/utils";
  * every size, and a very quiet static contour pattern inside the card (the
  * site's vector TopoPattern, `--cmr-contour-on-dark` at 45%: ≈ #262626 on
  * black). White text crossing a line still measures > 15:1. No canvas.
+ *
+ * v1.1: the background is the hill-detail hero's animated ContourField (HillHeroBackground; grey lines on
+ * black, still under reduced motion, static pattern without WebGL2). While held it shows the "Hills on pause"
+ * message (PAUSE_COPY) with the same Explore the hills link.
  */
+/** Fixed terrain for the card's contour lines (the seed hill pages derive from their slug). */
+const GROUP_RUNS_SEED = 4.2;
+
 export function NextRunCard({
   next: nextRun,
   now,
@@ -68,7 +75,8 @@ export function NextRunCard({
         className,
       )}
     >
-      <TopoPattern className="-z-10 text-(--cmr-contour-on-dark) opacity-45" />
+      {/* v1.1: the hill-detail hero's animated contour lines (grey on black), replacing the static pattern. */}
+      <HillHeroBackground seed={GROUP_RUNS_SEED} />
       <p className="text-caption uppercase">{held ? "Group runs" : "Next run"}</p>
 
       <h2
@@ -76,7 +84,7 @@ export function NextRunCard({
         style={title}
         className={cn(FLUID_TYPE, "mt-(--card-title-mt-a) font-semibold tracking-[-1px] md:mt-(--card-title-mt-b)")}
       >
-        {next ? next.run.title : held ? "Group runs on hold" : "Schedule coming soon"}
+        {next ? next.run.title : held ? "Hills on pause" : "Schedule coming soon"}
       </h2>
 
       {next ? (
@@ -95,7 +103,7 @@ export function NextRunCard({
         </>
       ) : held ? (
         <>
-          <p className="mt-(--card-time-mt-a) text-p md:mt-(--card-time-mt-b)">{PERMIT_HOLD_COPY.short}</p>
+          <p className="mt-(--card-time-mt-a) text-p md:mt-(--card-time-mt-b)">{PAUSE_COPY.bodyShort}</p>
           <ArrowLink href="/hills" className="mt-(--card-place-mt-a) text-p md:mt-(--card-link-mt-b)">
             Explore the hills
           </ArrowLink>

@@ -71,9 +71,9 @@ export function HillAbout({ hill }: { hill: HillWithPage }) {
         </div>
 
         {/* Starts level with the first line of the copy beside it (the heading is its own grid row). */}
-        <div data-slot="hill-specs" className="self-start rounded-xl bg-muted p-6 md:col-start-2 md:row-start-2 md:p-8">
-          <h3 className={cn(EYEBROW, "text-foreground/70")}>Know what you&apos;re running</h3>
-          <dl className="pt-6">
+        <div data-slot="hill-specs" className="self-start rounded-xl border border-border bg-muted p-6 md:col-start-2 md:row-start-2 md:p-8">
+          <h3 className={cn(EYEBROW, "border-b border-border pb-4 text-foreground/70")}>Know what you&apos;re running</h3>
+          <dl className="pt-2">
             {rows.map(([label, value]) => (
               <div key={label} className="flex items-baseline justify-between gap-4 border-b border-foreground/15 py-3 text-[14px] leading-5 last:border-b-0">
                 <dt className="font-mono text-foreground/70">{label}</dt>

@@ -392,7 +392,8 @@ test.describe("focus indicators on the Join submit button (solid black primary, 
     // The button is disabled until the form is ready.
     await page.locator("#join").getByLabel("First name").fill("Sam");
     await page.locator("#join").getByLabel("Email address").fill("sam@example.com");
-    // The Privacy Policy link sits above the button; tab from it.
+    await page.locator("#join").getByRole("checkbox").check();
+    // The Privacy Policy link sits between the checkbox and the button; tab from it.
     await page.locator("#join").getByRole("link", { name: "Privacy Policy" }).focus();
     await page.keyboard.press("Tab");
     await expect(button).toBeFocused();

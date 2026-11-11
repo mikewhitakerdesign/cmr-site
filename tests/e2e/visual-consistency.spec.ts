@@ -136,6 +136,7 @@ test("shared hero top spacing on the standardized pages; /calendar keeps its own
     ["/terms", "#legal-title"],
     ["/privacy", "#legal-title"],
     ["/participation-guidelines", "#legal-title"],
+    ["/participant-waiver", "#legal-title"],
     // Run pages exist only while official runs are not on hold (while held they redirect to /calendar).
     ...(OFFICIAL_RUNS_ON_HOLD ? [] : ([["/calendar/cricket-mtn-repeats", "#run-heading"]] as [string, string][])),
   ];
@@ -149,15 +150,16 @@ test("shared hero top spacing on the standardized pages; /calendar keeps its own
   expect(pt).toBe(info.project.name === "mobile" ? 48 : 64);
 });
 
-test("Join capitalization; the draft waiver is not public: /participant-waiver is 404 and linked nowhere", async ({ page }) => {
+test("Join: capitalization; the waiver page loads with its version and draft note", async ({ page }) => {
   await page.goto("/join");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Join the club.");
   await expect(page.getByRole("button", { name: "Count me in" })).toHaveText("Count me in");
   expect(await page.getByRole("button", { name: "Count me in" }).evaluate((e) => getComputedStyle(e).textTransform)).toBe("none");
-  const res = await page.goto("/participant-waiver");
-  expect(res?.status()).toBe(404);
-  for (const path of ["/", "/join", "/privacy", "/about"]) {
-    await page.goto(path);
-    await expect(page.locator('a[href*="waiver"]')).toHaveCount(0);
-  }
+  await page.goto("/participant-waiver");
+  await expect(page).toHaveTitle("Participation Waiver and Release of Liability | Chicago Mountain Runners");
+  await expect(page.getByText("Version CMR-WAIVER-002")).toBeVisible();
+  await expect(page.getByText(/Draft for review/)).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2 })).toHaveCount(13);
+  await expect(page.locator("footer").getByRole("link", { name: "Participation Waiver" })).toHaveAttribute("href", "/participant-waiver");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });

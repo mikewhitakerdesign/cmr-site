@@ -6,7 +6,6 @@ import { Tooltip } from "@/components/Tooltip";
 import { JOIN_TOOLTIP } from "@/lib/navigation";
 import { FLUID_TYPE, fluidType, fluidVars } from "@/lib/fluid";
 import { impactH2 } from "@/lib/headings";
-import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
 import { onDarkSurface } from "@/lib/surfaces";
 import { cn } from "@/lib/utils";
 
@@ -35,7 +34,11 @@ import { cn } from "@/lib/utils";
  * −0.045em at 144px but makes letters collide at 56px — "JUSTSHOW" in the
  * mobile frame). Owner decision D4: correct colliding type.
  */
-export function JustShowUp({ held = OFFICIAL_RUNS_ON_HOLD }: { held?: boolean }) {
+/** The one body copy for every "Just show up." section (home, Hills on hills, About); v1.1 replaced the held/unheld pair. */
+export const JUST_SHOW_UP_COPY =
+  "No membership fee. No pace requirement. No complicated initiation ritual. Find a hill, show up and climb it until it means something. Join the club to join the weekly group runs.";
+
+export function JustShowUp() {
   const layout = fluidVars({
     "--jsu-minh": [460, 430, 626.6],
     "--jsu-pt": [64, 64, 144],
@@ -89,10 +92,7 @@ export function JustShowUp({ held = OFFICIAL_RUNS_ON_HOLD }: { held?: boolean })
             "mt-(--jsu-copy-mt-a) font-normal text-primary-foreground/90 md:mt-(--jsu-copy-mt-b) md:max-w-[540px] lg:max-w-[630px]",
           )}
         >
-          {held
-            ? // Permit-pending hold: no suggestion that organized runs exist yet.
-              "No membership fee. No pace requirement. No complicated initiation ritual. Find a hill, show up and climb it until it means something."
-            : "No membership fee. No pace requirement. No complicated initiation ritual. Find a run, show up and climb the same hill until it means something."}
+          {JUST_SHOW_UP_COPY}
         </p>
         <div className="mt-(--jsu-cta-mt-a) flex flex-wrap gap-3 text-[18px] leading-[27px] md:mt-(--jsu-cta-mt-b) *:h-(--jsu-cta-h-a) md:*:h-(--jsu-cta-h-b)">
           <CtaLink href="/calendar" variant="primary" className="px-7">
