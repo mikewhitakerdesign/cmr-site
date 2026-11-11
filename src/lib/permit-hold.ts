@@ -6,9 +6,10 @@
  * run as available, scheduled or approved. This module is the ONE switch.
  *
  * LIFTED 2026-11-09 for private development and review (Owner authorization, see
- * .aiom/work/implement-cmr-final-site-polish.md). This is NOT a statement that CMR has Park
- * District permission or insurance; those stay open pre-public-launch follow-ups. To re-apply
- * the hold, set OFFICIAL_RUNS_ON_HOLD to true.
+ * .aiom/work/implement-cmr-final-site-polish.md); RE-APPLIED 2026-11-11 for the custom-domain launch
+ * (see .aiom/work/configure-cmr-custom-domains.md). Neither is a statement that CMR has Park District
+ * permission or insurance; those stay open follow-ups. Set OFFICIAL_RUNS_ON_HOLD to false to restore the
+ * calendar and every run reference exactly as built.
  *
  * To lift the hold (Owner authorization required): set OFFICIAL_RUNS_ON_HOLD to false.
  * Nothing else needs to change; every place that shows a run, a run date, a run
@@ -16,7 +17,7 @@
  * rather than deleted, so the Find a Run experience returns exactly as built.
  *
  * What the hold covers (and `tests/lib/permit-hold-coverage.test.ts` enforces):
- *   - /calendar shows the hold notice instead of the calendar
+ *   - /calendar shows its hero and the "Hills on pause." section instead of the calendar
  *   - /calendar/[slug] and /calendar/[slug]/ics are unavailable
  *   - the homepage shows no run, date or "run details" link
  *   - hill pages and the hills directory show no scheduled run
@@ -26,10 +27,23 @@
  * requirements and that official meetups are on hold. It does not say a permit
  * was applied for, approved or denied, and it names no agency.
  */
-export const OFFICIAL_RUNS_ON_HOLD = false;
+export const OFFICIAL_RUNS_ON_HOLD = true;
+
+/**
+ * /calendar while held (Owner direction, 2026-11-11): the page hero, then one centred "Hills on pause."
+ * section. The body is in three parts so "send us your questions" can be the link that opens the
+ * Questions dialog; joined, it reads exactly as the Owner wrote it. No permit, agency or insurance wording.
+ */
+export const PAUSE_COPY = {
+  heading: "Hills on pause.",
+  bodyBeforeLink: "Weekly hill repeat sessions will be posted shortly. Check back later or ",
+  linkText: "send us your questions",
+  bodyAfterLink: ".",
+  /** The page description while held. */
+  description: "Weekly hill repeat sessions will be posted shortly. Check back later or send us your questions.",
+} as const;
 
 export const PERMIT_HOLD_COPY = {
-  heading: "THE HILLS AREN'T GOING ANYWHERE.",
   body: "We're reviewing park-use requirements before launching our organized group runs. Official meetups are on hold for now.",
   supporting: "In the meantime, explore Chicago's hills and join the club for updates.",
   /** Short forms for places where the full notice would be too heavy (home, hill pages, directory). */

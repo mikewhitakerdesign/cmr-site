@@ -27,81 +27,63 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe("/calendar while held", () => {
-  test("shows the notice, with two routes forward, and nothing else about runs", async ({ page }) => {
+  test("shows the page hero and the Hills on pause section, and nothing else about runs", async ({ page }) => {
     await page.goto("/calendar");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("THE HILLS AREN'T GOING ANYWHERE.");
-    await expect(page.getByText("We're reviewing park-use requirements before launching our organized group runs. Official meetups are on hold for now.")).toBeVisible();
-    await expect(page.getByText("In the meantime, explore Chicago's hills and join the club for updates.")).toBeVisible();
-    const hold = page.locator("[data-slot=permit-hold]");
-    await expect(hold.getByRole("link", { name: "Explore the hills" })).toHaveAttribute("href", "/hills");
-    await expect(hold.getByRole("link", { name: "Join the club" })).toHaveAttribute("href", "/join");
-    // No calendar, run list, weather, "Add to calendar" or time.
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hills on repeat.");
+    const pause = page.locator("[data-slot=hills-on-pause]");
+    await expect(pause.getByRole("heading", { level: 2 })).toHaveText("Hills on pause.");
+    await expect(pause.locator("[data-slot=pause-body]")).toHaveText("Weekly hill repeat sessions will be posted shortly. Check back later or send us your questions.");
+    await expect(pause.getByRole("button", { name: "send us your questions" })).toBeVisible();
+    // The calendar is not rendered at all: no grid, run list, weather, "Add to calendar" or time.
     await expect(page.getByRole("grid")).toHaveCount(0);
     await expect(page.getByText(RUN_NAMES)).toHaveCount(0);
-    await expect(page.getByText(/Add to calendar|Week|Month|forecast|Bad weather/)).toHaveCount(0);
-    await expect(page.locator("time")).toHaveCount(0);
+    await expect(page.getByText(/Add to calendar|Month|forecast|Bad weather|See you on the hill|New here/)).toHaveCount(0);
+    await expect(page.locator("time, #upcoming")).toHaveCount(0);
+    await expect(page.locator("main a[href^='/calendar']")).toHaveCount(0);
+    // No public permit, agency, insurance or legal wording.
+    expect(await page.locator("main").innerText()).not.toMatch(/park district|permit|insur|waiver|liabil/i);
   });
 
-  test("is a glass panel over the real Find a Run headline: inert, schedule-free backdrop, no black hero", async ({ page }) => {
+  test("the pause section is centred and matches the black statement sections", async ({ page }) => {
     await page.goto("/calendar");
-    const hold = page.locator("[data-slot=permit-hold]");
-    expect(await hold.evaluate((e) => getComputedStyle(e).backgroundColor)).not.toBe("rgb(0, 0, 0)");
-    await expect(hold.locator("[data-slot=contour-field]")).toHaveCount(0);
-    const backdrop = hold.locator("[data-slot=permit-hold-backdrop]");
-    await expect(backdrop).toHaveAttribute("inert", "");
-    await expect(backdrop).toHaveAttribute("aria-hidden", "true");
-    expect(await backdrop.locator("a, button, input, [tabindex]").count()).toBe(0);
-    expect(await backdrop.evaluate((e) => getComputedStyle(e).pointerEvents)).toBe("none");
-    await expect(backdrop).toContainText("Hills on repeat");
-    await expect(backdrop.getByText(/weekly|forecast|\d{1,2}:\d{2}/i)).toHaveCount(0);
-    // No dismiss control: the only buttons in the section are none.
-    await expect(hold.getByRole("button")).toHaveCount(0);
-    const panel = hold.locator("[data-slot=permit-hold-panel]");
-    const s = await panel.evaluate((e) => {
-      const c = getComputedStyle(e);
-      return { bg: c.backgroundColor, blur: c.backdropFilter || (c as unknown as Record<string, string>).webkitBackdropFilter, w: e.getBoundingClientRect().width };
-    });
-    expect(s.blur).toMatch(/blur/);
-    const alpha = Number(s.bg.match(/[,/]\s*([\d.]+)\s*\)$/)?.[1] ?? 1);
-    expect(alpha).toBeGreaterThanOrEqual(0.6);
-    expect(alpha).toBeLessThan(0.95);
-    // Dark text on the light glass.
-    expect(await page.locator("#permit-hold-heading").evaluate((e) => getComputedStyle(e).color)).toBe("rgb(0, 0, 0)");
-    // Wider than before (880px max) on desktop; never past the viewport.
+    await page.evaluate(() => document.fonts.ready);
+    const section = page.locator("[data-slot=hills-on-pause]");
+    expect(await section.evaluate((e) => getComputedStyle(e).backgroundColor)).toBe("rgb(0, 0, 0)");
     const vw = page.viewportSize()!.width;
-    if (vw >= 1400) expect(s.w).toBeGreaterThan(900);
-    expect(s.w).toBeLessThanOrEqual(vw);
+    for (const loc of [section.getByRole("heading", { level: 2 }), section.locator("[data-slot=pause-body]")]) {
+      const box = (await loc.boundingBox())!;
+      expect(Math.abs(box.x + box.width / 2 - vw / 2), "horizontal centre").toBeLessThanOrEqual(2);
+    }
+    expect(await section.locator("[data-slot=pause-body]").evaluate((e) => getComputedStyle(e).textAlign)).toBe("center");
+    // Same heading size as the "See you on the hill." section it replaces (impact H2: 48 / 54 / 96).
+    const fs = await section.getByRole("heading", { level: 2 }).evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
+    if (vw >= 1400) expect(fs).toBeGreaterThanOrEqual(90);
+    if (vw <= 400) expect(fs).toBeLessThanOrEqual(52);
   });
 
-  test("is accessible, readable and does not scroll sideways", async ({ page }) => {
+  test("is accessible and does not scroll sideways", async ({ page }) => {
     await page.goto("/calendar");
     await page.evaluate(() => document.fonts.ready);
     expect(await axe(page)).toEqual([]);
     expect(await noHScroll(page)).toBe(true);
-    await expect(page.locator("main [role=alert]")).toHaveCount(0);
   });
 
-  test("the notice keyboard path reaches Explore the hills then Join the club", async ({ page }) => {
+  test("sends no weather request while held", async ({ page }) => {
+    const hosts: string[] = [];
+    page.on("request", (r) => hosts.push(new URL(r.url()).host));
     await page.goto("/calendar");
-    await page.locator("[data-slot=permit-hold]").getByRole("link", { name: "Explore the hills" }).focus();
-    await expect(page.locator(":focus")).toHaveAccessibleName("Explore the hills");
-    await page.keyboard.press("Tab");
-    await expect(page.locator(":focus")).toHaveAccessibleName("Join the club");
-  });
-
-  test("has no translucency fallback problem: the panel text stays high contrast with reduced transparency", async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/calendar");
-    expect(await axe(page)).toEqual([]);
+    await page.waitForLoadState("networkidle");
+    expect(hosts.filter((h) => /weather\.gov|open-meteo/.test(h))).toEqual([]);
   });
 });
 
 test.describe("no route around the hold", () => {
   for (const slug of ["cricket-mtn-repeats", "horner-hell-repeats", "example-hill-repeats", "not-a-run"]) {
-    test(`/calendar/${slug} lands on the notice, not run details`, async ({ page }) => {
+    test(`/calendar/${slug} lands on the pause page, not run details`, async ({ page }) => {
       await page.goto(`/calendar/${slug}`);
       await expect(page).toHaveURL(/\/calendar$/);
-      await expect(page.getByRole("heading", { level: 1 })).toHaveText("THE HILLS AREN'T GOING ANYWHERE.");
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hills on repeat.");
+      await expect(page.getByRole("heading", { level: 2 })).toHaveText("Hills on pause.");
     });
   }
 
@@ -133,7 +115,7 @@ test.describe("no route around the hold", () => {
     }
   });
 
-  test("header and footer 'Find a Run' lead to the notice", async ({ page }) => {
+  test("header and footer 'Find a Run' lead to the pause page", async ({ page }) => {
     await page.goto("/");
     const links = page.getByRole("link", { name: "Find a Run" });
     const hrefs = await links.evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).getAttribute("href")));

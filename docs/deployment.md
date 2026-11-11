@@ -20,8 +20,10 @@ redirects are **Vercel domain-level redirects** (project → Settings → Domain
 or the API's `redirect` and `redirectStatusCode: 308` on a project domain), the
 same mechanism `whitaker.design` and `methods.club` use for `www`. Vercel
 preserves the path and the query string. Nothing in the application handles the
-non-canonical hosts, so there is no redirect code to maintain and no chain
-(each secondary host goes straight to `www.chicagomountainrunners.com`).
+non-canonical hosts, so there is no redirect code to maintain. An HTTPS request
+to a secondary host takes one hop, straight to `https://www.chicagomountainrunners.com`.
+A plain `http://` request takes two: Vercel first upgrades the same host to
+HTTPS, then redirects it (the same as `www.whitaker.design`).
 
 ## DNS (Cloudflare)
 
@@ -42,7 +44,12 @@ project-specific; it is not the one `whitaker-design-site` or `methods-club`
 use. The generic fallbacks `76.76.21.21` and `cname.vercel-dns.com` also work.
 Neither zone had any other record (no mail) when these were added.
 
-No Cloudflare Pages, Workers, redirect rules or proxying are used.
+No Cloudflare Pages, Workers, redirect rules or proxying are used. **Keep every record
+DNS only.** A proxied (orange cloud) record puts Cloudflare in front of Vercel: it
+answers with its own certificate, and Cloudflare's managed `robots.txt` (AI
+content-signal comments) is served in place of, or in front of, the site's own.
+Check `dig +short A www.chicagomountainrunners.com`: it should return Vercel
+addresses (`216.198.79.65`, `64.29.17.65`), not Cloudflare's (`104.21.x`, `172.67.x`).
 
 ## Canonical URLs, metadata and sitemap
 
@@ -66,6 +73,15 @@ No Cloudflare Pages, Workers, redirect rules or proxying are used.
 - **Open Graph.** `og:site_name`, `og:type` and `og:locale` are set. There is no
   social share image yet, so link previews fall back to the title and
   description.
+
+## Official runs on hold
+
+`OFFICIAL_RUNS_ON_HOLD` in `src/lib/permit-hold.ts` is the single switch for scheduled-run
+content. While it is `true`, `/calendar` shows the hero and a centred "Hills on pause."
+section, whose "send us your questions" link opens the Questions form in a modal dialog,
+and the calendar, run pages, `.ics` downloads and run references elsewhere are not
+rendered. Set it to `false` to restore the full calendar exactly as built. The sitemap
+follows the flag (no run pages while held).
 
 ## Releasing a change
 

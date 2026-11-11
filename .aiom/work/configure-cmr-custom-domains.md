@@ -16,15 +16,15 @@ bundle_references:
   - software-engineering
   - external-action-integration
 authority_requirement: owner-authorization-required
-validation_state: not-started
+validation_state: in-progress
 blocker_state: awaiting-owner-review
 current_responsibility: owner
 created_at: '2026-11-11T00:00:00.000Z'
-updated_at: '2026-11-11T00:00:00.000Z'
+updated_at: '2026-11-11T16:00:00.000Z'
 ---
 ## Status
 
-**Active, waiting on the Owner.** The Vercel side and the code are done; the Owner adds the Cloudflare DNS records, then post-DNS verification runs, then the Owner approves the merge. Not merged, not live on the custom domains.
+**Active, waiting on the Owner's merge approval.** The Owner added the Cloudflare records (2026-11-11) and approved resuming verification; the Hills on Repeat gate and Questions dialog were added to this PR on the Owner's direction. PR #27 is not merged: the custom domains currently serve the previous production build (no canonicals, calendar visible, no sitemap).
 
 ## Authorization
 
@@ -63,6 +63,25 @@ Code (branch `feat/cmr-custom-domains`): `src/lib/site.ts` (origin constant); `m
 
 `implement-cmr-final-site-polish.md` (2026-11-09) lifted the permit hold because CMR was in private development and recorded that the Chicago Park District permit requirements, liability insurance and any formal authorization for recurring events "must be resolved before the domain is connected, members are invited or runs are advertised", and that the hold should be re-applied with the one flag (`OFFICIAL_RUNS_ON_HOLD = true`) if the Owner goes public before then. The current instruction connects the domain. This work item does not change the flag and does not decide that risk. **Owner to confirm one of:** (a) those items are resolved or accepted and the site goes public with runs shown; (b) set `OFFICIAL_RUNS_ON_HOLD = true` in this PR first. Related release dependencies recorded earlier: records marked `verified`, photograph rights (`public/home/README.md`), and the Formspree allowed-domains setting (add `www.chicagomountainrunners.com`; an Owner account setting, not changed here).
 
+## Owner direction, 2026-11-11 (second instruction)
+
+DNS records added; resume verification. Refine the Hills on Repeat gate before merge: while `OFFICIAL_RUNS_ON_HOLD = true`, `/calendar` keeps its hero and replaces the second section with a centred "Hills on pause." section ("Weekly hill repeat sessions will be posted shortly. Check back later or send us your questions."), the calendar and all scheduled-run content are not rendered (not CSS-hidden), the whole calendar implementation is preserved behind the flag, and "send us your questions" opens the existing Questions form as a centred modal dialog (shared form, translucent white backdrop, close/Escape/outside click, focus trap and restore, scroll lock). No legal, permit or insurance wording in the public message. Do not merge without explicit approval.
+
+## Implemented in PR #27 (second commit)
+
+- `src/components/calendar/HillsOnPause.tsx`; `/calendar` composes `FindHero held` + `HillsOnPause` when held, and the unchanged calendar (`FindHero`, `UpcomingList`, `RunCalendar`, `WeatherGuidance`, `FirstTimer`) when not. The old glass `PermitHold` notice component was removed (it had no other use); `PAUSE_COPY` in `src/lib/permit-hold.ts` holds the Owner's wording; the page description while held is the same sentence. The homepage, hill pages and Join keep their existing hold copy, unchanged.
+- `QuestionsPanel` (shared form: fields, validation, Formspree `mwlljgld`, sending, success, errors) extracted from `QuestionsWidget`, which is now a shell around it with its behavior and markup unchanged; `QuestionsDialog` (native `<dialog>` + `showModal()`, explicit Tab wrap) is the second container.
+- **`OFFICIAL_RUNS_ON_HOLD` set to `true` in this PR.** This is the launch-risk choice (b) above, inferred from the Owner's instruction to design the gate "while `OFFICIAL_RUNS_ON_HOLD = true`"; it was not stated outright. One line to reverse. It changes the homepage, hill pages and Join to their existing held wording as well as `/calendar`.
+- Existing tests that encoded the lifted state (`final-refinements`, `visual-consistency`) are now flag-aware.
+
+## Domain verification (2026-11-11, ~14:25-16:00 UTC)
+
+- **DNS (authoritative `vern.ns.cloudflare.com`, plus 1.1.1.1 and 8.8.8.8):** `chicagomountainrunners.com` A 216.198.79.1 + 64.29.17.1 (Vercel); `hillsonhills.com` the same; `www.hillsonhills.com` CNAME `02928dbe640ba2eb.vercel-dns-017.com`. **`www.chicagomountainrunners.com` answers 104.21.26.33 + 172.67.135.85, which are Cloudflare edge addresses (CLOUDFLARENET): that record is proxied (orange cloud), not DNS only.** Nameservers unchanged.
+- **Vercel:** all four attached, `verified: true`; `configuredBy` A / A / CNAME / `http` (the `www` host is reached over HTTP through Cloudflare). Certificates issued by Vercel (Let's Encrypt, to 2027-02-09) for all four hostnames; before that the proxied `www` returned Cloudflare 525.
+- **HTTPS and redirects:** `https://{chicagomountainrunners.com, hillsonhills.com, www.hillsonhills.com}/hills/cricket-hill?utm_source=x&a=b%20c` each answer one `308` to `https://www.chicagomountainrunners.com/hills/cricket-hill?utm_source=x&a=b%20c` (path and query intact, HSTS set, valid certificate). Plain `http://` takes two hops (same-host HTTPS upgrade, then the 308), the same behavior as `www.whitaker.design`. No loops.
+- **Canonical host `https://www.chicagomountainrunners.com`:** HTTP 200 on every route checked, served by Vercel through Cloudflare (`server: cloudflare`, `x-vercel-id` present, Cloudflare's wildcard certificate). It serves the **previous production build** (main `6bc23e9`), not PR #27: no canonicals, calendar visible, `/sitemap.xml` 404. `/robots.txt` returns **Cloudflare's managed content-signals file**, not the site's (Vercel's origin returns 404 for it): a side effect of the proxy.
+- This Mac's system resolver negatively cached `www` for a while (curl "could not resolve" while `dig` against any server resolved), so `www` was checked with `--resolve` to its Cloudflare addresses. Local only.
+
 ## Remaining
 
-1. Owner adds the Cloudflare records. 2. Verify DNS, certificates, HTTPS, redirects (all four hosts, path and query), canonical, robots, sitemap and key routes on the live hosts. 3. Owner decision on the risk above. 4. PR checks green, Owner merge approval, merge, production deployment verified. 5. Close this Work Item; remove the branch and worktree.
+1. **Owner: set `www` (CNAME) in Cloudflare to DNS only** (grey cloud) in the `chicagomountainrunners.com` zone, then recheck that it resolves to Vercel addresses and Vercel reports it correctly. 2. Owner confirms the launch-risk choice (the flag is `true` in this PR) and the Formspree allowed domain. 3. PR #27 CI and Vercel preview green; Owner explicit merge approval. 4. Merge, then verify production on all four hosts (canonicals, robots.txt that is the site's own, sitemap, `/calendar` pause page, Questions dialog). 5. Close this Work Item; remove the branch and worktree.
