@@ -20,11 +20,11 @@ validation_state: in-progress
 blocker_state: awaiting-owner-review
 current_responsibility: owner
 created_at: '2026-11-11T00:00:00.000Z'
-updated_at: '2026-11-11T16:00:00.000Z'
+updated_at: '2026-11-11T17:00:00.000Z'
 ---
 ## Status
 
-**Active, waiting on the Owner's merge approval.** The Owner added the Cloudflare records (2026-11-11) and approved resuming verification; the Hills on Repeat gate and Questions dialog were added to this PR on the Owner's direction. PR #27 is not merged: the custom domains currently serve the previous production build (no canonicals, calendar visible, no sitemap).
+**Approved to merge (2026-11-11); production verification and closeout follow.** The Owner added the Cloudflare records, approved resuming verification, directed the Hills on Repeat gate and Questions dialog into this PR, then approved the merge with a one-time CI exception (below). Until the merge deploys, the custom domains serve the previous production build (no canonicals, calendar visible, no sitemap).
 
 ## Authorization
 
@@ -82,6 +82,28 @@ DNS records added; resume verification. Refine the Hills on Repeat gate before m
 - **Canonical host `https://www.chicagomountainrunners.com`:** HTTP 200 on every route checked, served by Vercel through Cloudflare (`server: cloudflare`, `x-vercel-id` present, Cloudflare's wildcard certificate). It serves the **previous production build** (main `6bc23e9`), not PR #27: no canonicals, calendar visible, `/sitemap.xml` 404. `/robots.txt` returns **Cloudflare's managed content-signals file**, not the site's (Vercel's origin returns 404 for it): a side effect of the proxy.
 - This Mac's system resolver negatively cached `www` for a while (curl "could not resolve" while `dig` against any server resolved), so `www` was checked with `--resolve` to its Cloudflare addresses. Local only.
 
+## Owner approvals (2026-11-11, final instruction)
+
+1. **Formspree:** the Owner checked the Chicago Mountain Runners project: "Restrict Submissions to Domain" is blank (unrestricted). No change needed for `mwlljgld` (Questions) or `xrppvnln` (Join).
+2. **One-time CI exception for PR #27's `browser` job** (below).
+3. `OFFICIAL_RUNS_ON_HOLD` stays `true`; "Hills on pause." with the calendar preserved behind the flag.
+4. Cloudflare records correct, all four domains verified, `www.chicagomountainrunners.com` canonical.
+5. After the canonical domain is verified in production, permanently redirect `cmr-site-xi.vercel.app` to it (paths and queries preserved, previews unaffected).
+6. Merge PR #27 by the repository-supported method (merge commit) if the final review passes; do not bypass protections or proceed on a new substantive failure.
+
+## CI exception: `browser` job, PR #27 (Owner-approved, one time)
+
+**What failed.** The `browser` job failed on all six runs on this PR (heads `ccbd43d` twice, `8b8d910` three times, `23b31d9`, `be7af39`) in the step `npx playwright install --with-deps chromium`, which exits with code 100 after about 6.5 minutes, **before any Playwright test starts**. The runner could not resolve `azure.archive.ubuntu.com` or `security.ubuntu.com`, so apt could not fetch the browser's system fonts and libraries. npm, GitHub and Vercel traffic in the same job worked.
+
+**Why it is environmental, not the code.**
+- The last successful `main` run (`42946348690`, 02:30 UTC the same day) used the same `ubuntu-26.04` image and installed fine; the failures began after about 14:40 UTC with no workflow change. githubstatus.com listed no incident.
+- A narrowly scoped pin of the `browser` job to `ubuntu-24.04` (`23b31d9`, within the Owner's authorization) failed identically, so it is not specific to the 26.04 image. The pin was reverted (`be7af39`); **the workflow has zero net difference from `main`** (`git diff origin/main -- .github` is empty). No other workflow change was made; `--with-deps` was kept.
+- `validate` passed on every run (lint, tokens check, 497 unit tests, build). The branch ruleset "Protect default branch" requires only `validate` and the merge-commit method, so merging is within protections; no branch protection was modified and no check was disabled or weakened.
+
+**Evidence that stands in for the missing CI run.** The complete Playwright suite (393 / 768 / 1440) passed locally on the application code being merged: 554 passed, 0 failed with `OFFICIAL_RUNS_ON_HOLD = true` (as committed), and 546 passed, 0 failed with it temporarily `false`; 497 / 495 unit tests; lint, tokens check and build clean. Everything under `src/` and `tests/` at the merge head `be7af39` is byte-identical to the commit those runs validated (`8b8d910`); the only later commits touch `.github/workflows/ci.yml` (pin, then revert, net zero). The Vercel preview built and was Ready, and an authenticated fetch showed the "Hills on pause" page with its canonical tag.
+
+**Scope.** This exception covers PR #27 only. It is not a standing waiver; the `browser` job remains part of the project's gate and the next PR should run it normally.
+
 ## Remaining
 
-1. **Owner: set `www` (CNAME) in Cloudflare to DNS only** (grey cloud) in the `chicagomountainrunners.com` zone, then recheck that it resolves to Vercel addresses and Vercel reports it correctly. 2. Owner confirms the launch-risk choice (the flag is `true` in this PR) and the Formspree allowed domain. 3. PR #27 CI and Vercel preview green; Owner explicit merge approval. 4. Merge, then verify production on all four hosts (canonicals, robots.txt that is the site's own, sitemap, `/calendar` pause page, Questions dialog). 5. Close this Work Item; remove the branch and worktree.
+1. Merge PR #27 (merge commit); verify the production deployment is Ready. 2. Verify production on all four hosts (HTTPS, redirects with path and query, canonicals, robots.txt, sitemap, `/calendar` pause page, Questions dialog, footer pill, other pages, console and network). 3. Then, and only then, redirect `cmr-site-xi.vercel.app` to the canonical domain (Vercel domain-level 308) and verify previews are unaffected. 4. Closeout PR: reconcile this Work Item with the production results; remove the worktree and branch; sync `main`.
