@@ -382,7 +382,7 @@ test.describe("navigation and interaction", () => {
     await expect(page).toHaveURL(/\/join$/);
   });
 
-  test("keyboard order follows reading order through the homepage", async ({ page }, info) => {
+  test("keyboard order follows reading order through the homepage", async ({ page }) => {
     const order: string[] = [];
     await page.locator("body").focus();
     for (let i = 0; i < 40; i++) {
@@ -398,8 +398,6 @@ test.describe("navigation and interaction", () => {
     const expected = [
       ...(OFFICIAL_RUNS_ON_HOLD ? ["Explore the hills", "Join the club"] : ["See the full schedule"]),
       "Explore all hills",
-      // phones: the touch preview buttons sit between the profile and the list
-      ...(info.project.name === "mobile" ? hillNames : []),
       ...hillNames,
       "Find a Run",
       "Join the club",
@@ -446,7 +444,8 @@ test.describe("navigation and interaction", () => {
 
   test("hover states exist (not drawn in Figma; reviewed choices)", async ({ page }, info) => {
     test.skip(info.project.name !== "desktop", "pointer hover");
-    const row = hills(page).locator("li").first();
+    // The first row (Cricket Hill) is the shown one by default, so it is already grey: hover the second.
+    const row = hills(page).locator("li").nth(1);
     const before = await css(row, "background-color");
     await row.hover();
     await expect.poll(() => css(row, "background-color")).not.toBe(before);
@@ -740,7 +739,7 @@ test.describe("Round 2 interactions", () => {
 
   test("hill rows preview their profile on hover and focus, without moving the layout", async ({ page }, info) => {
     const shown = () => hills(page).locator("[data-slot=hill-profiles] > [data-active]");
-    await expect(shown()).toHaveAttribute("data-hill", "mt-trashmore");
+    await expect(shown()).toHaveAttribute("data-hill", "cricket-hill");
     // Section height and the list's offset inside it, read in one pass so a
     // settling sticky header can't skew them.
     const layout = () =>
@@ -759,28 +758,27 @@ test.describe("Round 2 interactions", () => {
       await expect(shown()).toHaveAttribute("data-hill", "horner-hill");
       await expect(hills(page).locator("li").nth(2)).toHaveAttribute("data-active");
     }
-    await hills(page).getByRole("link", { name: "Cricket Hill" }).focus();
-    await expect(shown()).toHaveAttribute("data-hill", "cricket-hill");
+    await hills(page).getByRole("link", { name: "Warren Hill" }).focus();
+    await expect(shown()).toHaveAttribute("data-hill", "warren-hill");
     const after = await layout();
     expect(Math.abs(after.height - before.height)).toBeLessThanOrEqual(1);
     expect(Math.abs(after.listOffset - before.listOffset)).toBeLessThanOrEqual(1);
   });
 
-  test("touch-sized screens get explicit preview buttons; rows still navigate", async ({ page }, info) => {
+  test("phones show no hill filter tags and no gap where they were; rows carry no numbers and still navigate", async ({ page }, info) => {
     const group = hills(page).getByRole("group", { name: "Preview a hill profile" });
-    if (info.project.name !== "mobile") {
+    if (info.project.name === "mobile") {
       await expect(group).toBeHidden();
-      return;
+      const fig = await hills(page).locator("[data-slot=hill-profiles]").boundingBox();
+      const list = await hills(page).locator("ol").boundingBox();
+      // profile, then the list's own top margin (34px): nothing else in between
+      expect(list!.y - (fig!.y + fig!.height)).toBeLessThan(40);
     }
-    await expect(group).toBeVisible();
-    const warren = group.getByRole("button", { name: "Warren Hill" });
-    await warren.click();
-    await expect(warren).toHaveAttribute("aria-pressed", "true");
-    await expect(hills(page).locator("[data-slot=hill-profiles] > [data-active]")).toHaveAttribute("data-hill", "warren-hill");
-    // Interpretive profile: no figures, and it says so.
-    const fig = hills(page).locator("[data-hill=warren-hill] figure");
-    await expect(fig).toContainText("Not measured yet");
-    await expect(fig).not.toContainText("≈");
+    await expect(hills(page).locator("li").first()).toHaveText(/^Cricket Hill/);
+    await expect(hills(page).getByRole("link", { name: "Explore all hills" }).locator("svg")).toBeVisible();
+    // the arrow stays inside the viewport at every size
+    const arrow = await hills(page).getByRole("link", { name: "Explore all hills" }).locator("svg").boundingBox();
+    expect(arrow!.x + arrow!.width).toBeLessThanOrEqual(page.viewportSize()!.width);
   });
 
   test("the topography moves on its own in grey; the pointer and the statement don't move it (refinement pass)", async ({ page }) => {

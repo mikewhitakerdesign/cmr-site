@@ -135,7 +135,7 @@ test.describe("what stays open", () => {
     expect(await axe(page)).toEqual([]);
     await page.goto("/hills/cricket-hill");
     await expect(page.locator("[data-slot=hill-runs-on-hold]")).toBeVisible();
-    await expect(page.getByText("Group runs are on hold.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Hills on pause." })).toBeVisible();
     expect(await axe(page)).toEqual([]);
     expect(await noHScroll(page)).toBe(true);
   });

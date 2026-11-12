@@ -7,6 +7,7 @@ import { HillRuns } from "@/components/hills/HillRuns";
 import { HillAbout, HillRepeats } from "@/components/hills/HillTerrain";
 import { MoreHills } from "@/components/hills/MoreHills";
 import { getHill, otherHills, type HillWithPage } from "@/lib/hills";
+import { PAUSE_COPY } from "@/lib/permit-hold";
 import { getRunsAtHill } from "@/lib/runs";
 import { axeViolations } from "../../axe";
 
@@ -43,7 +44,7 @@ describe("hill detail page (refinement pass, PR #4)", () => {
       "How tall is it? How tall you need it?",
       "Run it with us",
       "Find what you've been looking for.",
-      "More hills on repeat.",
+      "More hills worth while.",
     ]);
   });
 
@@ -114,6 +115,25 @@ describe("hill detail page (refinement pass, PR #4)", () => {
     expect(screen.getByText("Every Saturday · 5:30 AM · Cricket Hill · Montrose Beach")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "View run: Cricket Mtn Repeats" })).toHaveAttribute("href", "/calendar/cricket-mtn-repeats");
     expect(screen.getByRole("link", { name: "Find a Run" })).toHaveAttribute("href", "/calendar");
+  });
+
+  it("while runs are on hold, uses the approved \"Hills on pause.\" message (as the homepage and /calendar)", () => {
+    render(<HillRuns held hill={hill("cricket-hill")} runs={[]} />);
+    expect(screen.getByRole("heading", { level: 3, name: "Hills on pause." })).toBeInTheDocument();
+    expect(screen.getByText(PAUSE_COPY.bodyShort)).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/Group runs are on hold|park-use requirements/);
+    expect(screen.getByRole("link", { name: "Join the club" })).toHaveAttribute("href", "/join");
+    expect(screen.getByRole("link", { name: "More hills" })).toHaveAttribute("href", "/hills");
+  });
+
+  it("gives the more-hills rows the homepage hover (grey row, 150ms, underline, ↗ nudge; no slide)", () => {
+    const { container } = render(<MoreHills hills={otherHills("cricket-hill")} />);
+    const row = container.querySelector("li")!;
+    expect(row.className).toContain("hover:bg-border");
+    expect(row.className).toContain("motion-safe:duration-150");
+    expect(row.innerHTML).toContain("group-hover/hill:underline");
+    expect(row.innerHTML).toContain("motion-safe:group-hover/hill:-translate-y-0.5");
+    expect(row.innerHTML).not.toContain("translate-x-3");
   });
 
   it("says so when no CMR run uses the hill", () => {

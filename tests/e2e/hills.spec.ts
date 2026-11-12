@@ -477,7 +477,7 @@ test.describe("hill detail pages", () => {
   test("breadcrumb and More hills lead back into the directory", async ({ page }) => {
     await page.goto("/hills/horner-hill");
     const more = page.locator("section[aria-labelledby=more-heading]");
-    await expect(more.getByRole("heading", { level: 2 })).toHaveText("More hills on repeat.");
+    await expect(more.getByRole("heading", { level: 2 })).toHaveText("More hills worth while.");
     await expect(more.locator("ul > li")).toHaveCount(4);
     await expect(more.locator("[data-hill-profile], dl")).toHaveCount(0); // names only: no drawings or columns
     await expect(more.locator("ul > li").first().getByRole("link")).toHaveAttribute("href", "/hills/schiller-hill");

@@ -18,17 +18,19 @@ import { cn } from "@/lib/utils";
  * Responsive classification (Owner decision D4):
  *   - "Explore all hills" appears only in the desktop frame. It is the
  *     section's only path to /hills, so it is treated as incomplete design and
- *     kept at every size (without the arrow below desktop, matching how those
- *     frames treat "See the full schedule"). Its place below the copy uses the
- *     space Figma leaves before the illustration and list.
+ *     kept at every size, arrow included (Owner direction, 2026-11-11). Its
+ *     place below the copy uses the space Figma leaves before the illustration
+ *     and list.
  *   - Row ↗ arrows: desktop only (intentional adaptation, as drawn).
+ *   - Rows carry no leading numbers (Owner direction, 2026-11-11).
  *   - The grey row (#ececec = `border` token; Mt. Trashmore in Figma) marks
  *     the hill whose profile is shown.
  *
  * Round 2 (Owner direction, 2026-11-08): the single Figma raster became an
  * interactive family of five vector terrain profiles with pastel annotations
- * (HillsExplorer, HillProfile). Mt. Trashmore shows by default; hovering or
+ * (HillsExplorer, HillProfile). Cricket Hill shows by default (was Mt. Trashmore); hovering or
  * focusing a row previews that hill; rows navigate to the hill's page.
+ * Cricket Hill shows by default (Owner direction, 2026-11-11).
  */
 export function ChicagoHills({ hills }: { hills: Hill[] }) {
   const layout = fluidVars({
@@ -55,11 +57,7 @@ export function ChicagoHills({ hills }: { hills: Hill[] }) {
         You don&apos;t need mountains to train for mountains. These are the hills, sledding slopes and
         questionable pieces of landfill elevation we run repeatedly around Chicago.
       </p>
-      <ArrowLink
-        href="/hills"
-        className="mt-(--hills-link-mt-a) text-p md:mt-(--hills-link-mt-b)"
-        arrowClassName="hidden lg:block"
-      >
+      <ArrowLink href="/hills" className="mt-(--hills-link-mt-a) text-p md:mt-(--hills-link-mt-b)">
         Explore all hills
       </ArrowLink>
     </div>

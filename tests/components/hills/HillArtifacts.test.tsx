@@ -68,7 +68,7 @@ describe("hill page refinements", () => {
       unmount();
     }
     const { container } = render(<MoreHills hills={hillsWithPages().slice(1)} />);
-    expect(screen.getByRole("heading", { level: 2, name: "More hills on repeat." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "More hills worth while." })).toBeInTheDocument();
     expect(container.querySelector("[class*=tie-dye-text]")).toBeNull();
   });
 

@@ -5,7 +5,7 @@ import { JOIN_TOOLTIP } from "@/lib/navigation";
 import { EYEBROW, SECTION_HEADING, sectionHeading } from "@/components/hills/styles";
 import { FLUID_TYPE } from "@/lib/fluid";
 import type { HillWithPage } from "@/lib/hills";
-import { OFFICIAL_RUNS_ON_HOLD, PERMIT_HOLD_COPY } from "@/lib/permit-hold";
+import { OFFICIAL_RUNS_ON_HOLD, PAUSE_COPY } from "@/lib/permit-hold";
 import { workoutLabel, type RunOccurrence } from "@/lib/runs";
 import { describeSchedule } from "@/lib/schedule";
 import { onDarkSurface } from "@/lib/surfaces";
@@ -104,7 +104,10 @@ export function HillRuns({
   );
 }
 
-/** Permit-pending variant of "Run it with us": same band, no run, no schedule, no link into run details. */
+/**
+ * Permit-pending variant of "Run it with us": the approved "Hills on pause." message (as the homepage
+ * and /calendar), same band, no run, no schedule, no link into run details.
+ */
 function HillRunsOnHold() {
   return (
     <section
@@ -119,10 +122,10 @@ function HillRunsOnHold() {
         <div className="flex flex-col gap-8 pt-8 md:flex-row md:items-end md:justify-between">
           <div className="max-w-[860px] min-w-0 md:flex-1">
             <h3 style={sectionHeading()} className={cn(FLUID_TYPE, SECTION_HEADING)}>
-              {PERMIT_HOLD_COPY.sectionHeading}
+              Hills on pause<span className="ss08">.</span>
             </h3>
             <p className="pt-4 text-[18px] leading-[27px] text-primary-foreground/80">
-              {PERMIT_HOLD_COPY.body} {PERMIT_HOLD_COPY.supporting}
+              {PAUSE_COPY.bodyShort}
             </p>
           </div>
           <div className="flex flex-wrap gap-3 md:shrink-0 md:flex-nowrap">
