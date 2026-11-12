@@ -273,7 +273,7 @@ export const hills: Hill[] = [
 for (const hill of hills) hill.profile ??= hillProfiles[hill.slug];
 
 /** The hill the homepage shows first (Owner direction, Round 2). */
-export const DEFAULT_PROFILE_SLUG = "mt-trashmore";
+export const DEFAULT_PROFILE_SLUG = "cricket-hill";
 
 export function getHill(slug: string): Hill | undefined {
   return hills.find((hill) => hill.slug === slug);

@@ -12,13 +12,13 @@ import { cn } from "@/lib/utils";
  * The interactive half of "Get high in the city." (homepage Round 2): the
  * hill list and the terrain profile it drives.
  *
- *   default      Mt. Trashmore's profile (Owner direction)
+ *   default      Cricket Hill's profile (Owner direction, 2026-11-11)
  *   hover        a row (mouse or pen) previews that hill's profile
  *   focus        keyboard focus on a row's link previews it the same way
  *   click / tap  a row navigates to the hill's page (whole-row link)
  *   touch        hover doesn't exist, so a row of "preview" toggle buttons sits
- *                under the profile on phones and on any coarse pointer; rows
- *                still navigate on tap
+ *                under the profile on coarse-pointer tablets (not on phones,
+ *                where the rows alone carry the list); rows still navigate on tap
  *
  * The previewed hill stays until another is chosen (no flicker as the pointer
  * crosses the gaps between rows). All five drawings are rendered stacked in one
@@ -72,7 +72,7 @@ export function HillsExplorer({
               <div
                 role="group"
                 aria-label="Preview a hill profile"
-                className="mt-4 hidden flex-wrap gap-2 max-md:flex pointer-coarse:flex"
+                className="mt-4 hidden flex-wrap gap-2 md:pointer-coarse:flex"
               >
                 {withProfile.map((h) => (
                   <button
@@ -97,11 +97,10 @@ export function HillsExplorer({
 
       {hills.length > 0 && (
         <ol className="mt-(--hills-list-mt-a) border-b border-foreground md:mt-(--hills-list-mt-b)">
-          {hills.map((hill, i) => (
+          {hills.map((hill) => (
             <HillRow
               key={hill.slug}
               hill={hill}
-              index={i + 1}
               active={hill.slug === active}
               onPreview={hill.profile ? () => setActive(hill.slug) : undefined}
             />
@@ -114,12 +113,10 @@ export function HillsExplorer({
 
 function HillRow({
   hill,
-  index,
   active,
   onPreview,
 }: {
   hill: Hill;
-  index: number;
   active: boolean;
   onPreview?: () => void;
 }) {
@@ -134,17 +131,14 @@ function HillRow({
       className={cn(
         "group/hill relative border-t border-foreground",
         "motion-safe:transition-colors motion-safe:duration-150 hover:bg-border data-active:bg-border",
-        // mobile: index gutter (text at 8px) + name/place stacked; 100 tall incl. the 1px rule
-        "grid grid-cols-[32px_minmax(0,1fr)] gap-x-2 pt-[13px] pb-[22px]",
-        // tablet: index at 0, name at 40; 96 tall incl. the rule
-        "md:grid-cols-[24px_minmax(0,1fr)] md:gap-x-4 md:pb-[18px]",
+        // mobile: name/place stacked; 100 tall incl. the 1px rule
+        "pt-[13px] pb-[22px]",
+        // tablet: 96 tall incl. the rule
+        "md:pb-[18px]",
         // desktop: one line, place right, ↗
         "lg:flex lg:items-center lg:gap-8 lg:py-6",
       )}
     >
-      <span className="row-span-2 pt-2 pl-2 font-mono text-[13px] leading-5 md:pl-0 lg:pt-0 lg:text-p lg:leading-6">
-        {String(index).padStart(2, "0")}
-      </span>
       <h3 style={name} className={cn(FLUID_TYPE, "min-w-0 font-semibold tracking-[-0.03em] lg:flex-1")}>
         <Link
           href={`/hills/${hill.slug}`}
@@ -158,7 +152,7 @@ function HillRow({
           {hill.name}
         </Link>
       </h3>
-      <p className="col-start-2 mt-2 text-[13px] leading-5 lg:mt-0 lg:shrink-0 lg:text-p lg:leading-6">{hill.neighborhood}</p>
+      <p className="mt-2 text-[13px] leading-5 lg:mt-0 lg:shrink-0 lg:text-p lg:leading-6">{hill.neighborhood}</p>
       <ArrowUpRightIcon
         className={cn(
           "hidden size-5 shrink-0 lg:block",

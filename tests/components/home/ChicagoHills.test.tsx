@@ -17,15 +17,15 @@ describe("ChicagoHills", () => {
     expect(screen.getByRole("link", { name: "Explore all hills" })).toHaveAttribute("href", "/hills");
   });
 
-  it("numbers the five Figma hills in order and links each to its detail route", () => {
+  it("lists the five Figma hills in order, without row numbers, and links each to its detail route", () => {
     render(<ChicagoHills hills={homeHills} />);
     const rows = within(rowsList()).getAllByRole("listitem");
     expect(rows.map((r) => r.textContent)).toEqual([
-      "01Cricket HillMontrose Beach · Uptown",
-      "02Warren HillWarren Park · West Ridge",
-      "03Horner HillHorner Park · Irving Park",
-      "04Schiller HillSchiller Woods",
-      "05Mt. TrashmoreRobert E. James Park · Evanston",
+      "Cricket HillMontrose Beach · Uptown",
+      "Warren HillWarren Park · West Ridge",
+      "Horner HillHorner Park · Irving Park",
+      "Schiller HillSchiller Woods",
+      "Mt. TrashmoreRobert E. James Park · Evanston",
     ]);
     for (const [name, slug] of [
       ["Cricket Hill", "cricket-hill"],
@@ -38,9 +38,9 @@ describe("ChicagoHills", () => {
     }
   });
 
-  it("shows Mt. Trashmore's profile by default, and only that one to assistive tech", () => {
+  it("shows Cricket Hill's profile by default, and only that one to assistive tech", () => {
     render(<ChicagoHills hills={homeHills} />);
-    expect(shownProfile()).toHaveAttribute("data-hill", "mt-trashmore");
+    expect(shownProfile()).toHaveAttribute("data-hill", "cricket-hill");
     const all = document.querySelectorAll("[data-slot=hill-profiles] > [data-hill]");
     expect(all).toHaveLength(5);
     for (const el of all) {
@@ -51,11 +51,22 @@ describe("ChicagoHills", () => {
     expect(within(rowsList()).getAllByRole("listitem").filter((li) => li.hasAttribute("data-active"))).toHaveLength(1);
   });
 
+  it("keeps the Explore all hills arrow at every size and hides the phone preview buttons", () => {
+    render(<ChicagoHills hills={homeHills} />);
+    const link = screen.getByRole("link", { name: "Explore all hills" });
+    expect(link.querySelector("svg")?.getAttribute("class")).not.toMatch(/hidden/);
+    // Phones show no filter tags; only coarse-pointer tablets and up can have them.
+    const group = screen.getByRole("group", { name: "Preview a hill profile" });
+    expect(group.className).toContain("hidden");
+    expect(group.className).toContain("md:pointer-coarse:flex");
+    expect(group.className).not.toMatch(/max-md:flex/);
+  });
+
   it("previews a hill on mouse hover, but not on touch", () => {
     render(<ChicagoHills hills={homeHills} />);
     const horner = within(rowsList()).getAllByRole("listitem")[2];
     fireEvent.pointerEnter(horner, { pointerType: "touch" });
-    expect(shownProfile()).toHaveAttribute("data-hill", "mt-trashmore");
+    expect(shownProfile()).toHaveAttribute("data-hill", "cricket-hill");
     fireEvent.pointerEnter(horner, { pointerType: "mouse" });
     expect(shownProfile()).toHaveAttribute("data-hill", "horner-hill");
     expect(horner).toHaveAttribute("data-active");
@@ -64,10 +75,10 @@ describe("ChicagoHills", () => {
   it("previews a hill when its row receives keyboard focus", async () => {
     const user = userEvent.setup();
     render(<ChicagoHills hills={homeHills} />);
-    act(() => within(rowsList()).getByRole("link", { name: "Cricket Hill" }).focus());
-    expect(shownProfile()).toHaveAttribute("data-hill", "cricket-hill");
-    await user.tab();
+    act(() => within(rowsList()).getByRole("link", { name: "Warren Hill" }).focus());
     expect(shownProfile()).toHaveAttribute("data-hill", "warren-hill");
+    await user.tab();
+    expect(shownProfile()).toHaveAttribute("data-hill", "horner-hill");
   });
 
   it("offers touch users explicit preview buttons", async () => {
@@ -83,7 +94,7 @@ describe("ChicagoHills", () => {
 
   it("annotates measured profiles with approximate figures and the rise legend", () => {
     render(<ChicagoHills hills={homeHills} />);
-    const fig = within(shownProfile() as HTMLElement);
+    const fig = within(document.querySelector("[data-hill=mt-trashmore]") as HTMLElement);
     const p = hills.find((h) => h.slug === "mt-trashmore")!.profile!;
     expect(p.figures).not.toBeNull();
     expect(fig.getByText("Total rise")).toBeInTheDocument();
