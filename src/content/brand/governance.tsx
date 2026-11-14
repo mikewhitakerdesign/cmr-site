@@ -151,10 +151,10 @@ export const governance: BrandChapter = {
       ),
     },
     {
-      id: "open",
-      title: "Decided, and still open.",
-      nav: "Decided and open",
-      lede: "What this edition settles, and the short list of things that still need a proof, a file or a decision before they can be specified.",
+      id: "decisions",
+      title: "Decided, and before you make things.",
+      nav: "Decisions",
+      lede: "What this edition settles, and what to check before anything is printed, stitched or made, because those details depend on the material and the vendor.",
       render: () => (
         <div className={cn("grid gap-x-12 gap-y-10 lg:grid-cols-12", PRINT_GROW)}>
           <div className="lg:col-span-7">
@@ -164,7 +164,7 @@ export const governance: BrandChapter = {
               <Item n={2}>The vector badge is the production master.</Item>
               <Item n={3}>The site icon is the badge&apos;s outline alone, with no letters.</Item>
               <Item n={4}>Primary colors are pure #000000 and #FFFFFF; the neutral scale is unchanged.</Item>
-              <Item n={5}>The badge is never shown narrower than 96 px on screen (provisional).</Item>
+              <Item n={5}>The badge is never shown narrower than 96 px on screen.</Item>
               <Item n={6}>No Pantone, CMYK or thread colors are specified until they are proofed.</Item>
               <Item n={7}>Image rights are respected as recorded, and unknown rights are not assumed.</Item>
               <Item n={8}>The expressions may be pursued as trademarks; the manual makes no legal claims.</Item>
@@ -173,15 +173,13 @@ export const governance: BrandChapter = {
             </ol>
           </div>
           <div className="lg:col-span-5">
-            <h3 className={cn(LABEL, "mb-2 text-foreground/65")}>Still open</h3>
+            <h3 className={cn(LABEL, "mb-2 text-foreground/65")}>Before you make things</h3>
             <ol className="border-t border-foreground">
-              <Item n={1}>Smallest sizes in print, embroidery and other materials: set with a vendor, from a proof.</Item>
-              <Item n={2}>Print colors: matched with a printer, on the real material.</Item>
-              <Item n={3}>Print artwork for tie-dye and the gradient.</Item>
-              <Item n={4}>A vector of the hill silhouette, for any use beyond the website.</Item>
-              <Item n={5}>Rights for the tree-line photograph.</Item>
-              <Item n={6}>The homepage headline&apos;s contrast (see Photography).</Item>
-              <Item n={7}>A social sharing image.</Item>
+              <Item n={1}>Agree the smallest size of each mark with the vendor, and approve a physical proof.</Item>
+              <Item n={2}>Match colors on the real paper or fabric. No print or thread values are given in advance.</Item>
+              <Item n={3}>Tie-dye and the gradient are made as print artwork for the job, then proofed.</Item>
+              <Item n={4}>The hill silhouette is redrawn as vector before any use beyond the website.</Item>
+              <Item n={5}>Check that a photograph&apos;s permission covers the new use.</Item>
             </ol>
           </div>
         </div>

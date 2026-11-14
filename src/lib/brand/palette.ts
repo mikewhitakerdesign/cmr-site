@@ -66,7 +66,7 @@ export const tints: { name: TintName; label: string; note: string; wash: BrandCo
   };
 });
 
-/** Working colors: named for their job in the interface. Pending the MWDS integration, they stay as they are. */
+/** Working colors: named for their job in the interface. Until the MWDS integration, they stay as they are. */
 export const functional: BrandColor[] = [
   c("accent", "Accent", "accent", MWDS, "Success messages and the Questions button. The same value as the mint dye."),
   c("muted", "Muted surface", "muted", MWDS, "The footer."),

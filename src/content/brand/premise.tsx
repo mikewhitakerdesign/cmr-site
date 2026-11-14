@@ -3,7 +3,7 @@ import { BrandBadge } from "@/components/brand/BrandBadge";
 import { Frame, Rule, SpecTable } from "@/components/brand/kit";
 import { LABEL, PRINT_BOTTOM, PRINT_GROW, PRINT_ONLY, WEB_ONLY } from "@/components/brand/styles";
 import { HillHeroBackground, seedFor } from "@/components/hills/HillHero";
-import { TopoPattern } from "@/components/home/TopoPattern";
+import { SparseContours } from "@/components/brand/SparseContours";
 import type { BrandChapter } from "@/lib/brand/manual";
 import { onDarkSurface } from "@/lib/surfaces";
 import { tintVars } from "@/lib/tints";
@@ -79,7 +79,7 @@ export const premise: BrandChapter = {
             <div aria-hidden className={cn("absolute inset-0 -z-10", WEB_ONLY)}>
               <HillHeroBackground seed={seedFor("brand-premise-idea")} />
             </div>
-            <TopoPattern className={cn("-z-10 text-(--cmr-contour-on-dark)", PRINT_ONLY)} />
+            <SparseContours className={cn("-z-10", PRINT_ONLY)} strokeWidth={1.25} />
             <p className="text-[clamp(52px,7.4vw,104px)] leading-[0.9] font-black tracking-[-0.045em] [.brand-print_&]:text-[92px]">
               MAKE YOUR
               <br />

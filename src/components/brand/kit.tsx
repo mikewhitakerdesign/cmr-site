@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Container } from "@/components/Container";
 import { EYEBROW } from "@/components/hills/styles";
 import { BODY, LABEL, SMALL } from "@/components/brand/styles";
-import { MANUAL_ADDRESS, STATUS, type BrandPlate, type PlateTone, type Status } from "@/lib/brand/manual";
+import { MANUAL_ADDRESS, type BrandPlate, type PlateTone } from "@/lib/brand/manual";
 import { FLUID_TYPE } from "@/lib/fluid";
 import { DISPLAY_HEADING, standardH2 } from "@/lib/headings";
 import { cn } from "@/lib/utils";
@@ -26,33 +26,12 @@ const TONE: Record<PlateTone, string> = {
   muted: "bg-muted [--focus-offset:var(--muted)]",
 };
 
-/** The two "not finished" levels, as a tag. Outlined = in use for now; dashed = not specified yet. Untagged means settled. */
-export function StatusTag({ status, className }: { status: Status; className?: string }) {
-  return (
-    <span
-      data-status={status}
-      title={STATUS[status].meaning}
-      className={cn(
-        "inline-flex items-center rounded-xs border px-1.5 py-0.5 font-mono text-[11px] leading-4 tracking-[0.08em] whitespace-nowrap uppercase",
-        status === "provisional" && "border-foreground text-foreground",
-        status === "pending" && "border-dashed border-foreground text-foreground",
-        className,
-      )}
-    >
-      {STATUS[status].label}
-    </span>
-  );
-}
-
 /** The heading block shared by the web plate and the print page. */
 function PlateHeading({ plate, number }: { plate: BrandPlate; number: string }) {
   return (
     <header className="grid gap-x-12 gap-y-6 lg:grid-cols-12 [.brand-print_&]:gap-y-0">
       <div className="lg:col-span-7">
-        <p className={cn(EYEBROW, "flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-foreground/70 [.brand-print_&]:text-[11px]")}>
-          <span>{number}</span>
-          {plate.status && <StatusTag status={plate.status} />}
-        </p>
+        <p className={cn(EYEBROW, "text-[13px] text-foreground/70 [.brand-print_&]:text-[11px]")}>{number}</p>
         <h2
           id={`${plate.id}-heading`}
           style={standardH2()}
@@ -344,18 +323,5 @@ export function Usage({
         <span className="text-foreground/75">{caption}</span>
       </figcaption>
     </figure>
-  );
-}
-
-/** A note that something is not finished, with what would settle it. */
-export function Pending({ status = "pending", title, children, className }: { status?: Status; title: ReactNode; children: ReactNode; className?: string }) {
-  return (
-    <aside data-slot="brand-pending" className={cn("rounded-lg border border-dashed border-foreground/50 p-5 [.brand-print_&]:p-4", className)}>
-      <p className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <StatusTag status={status} />
-        <span className="text-p-sm font-semibold [.brand-print_&]:text-[13px]">{title}</span>
-      </p>
-      <p className={cn(SMALL, "mt-2")}>{children}</p>
-    </aside>
   );
 }

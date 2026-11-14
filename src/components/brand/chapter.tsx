@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Container } from "@/components/Container";
 import { ArrowRightIcon } from "@/components/icons";
-import { PrintPage, StatusTag } from "@/components/brand/kit";
+import { PrintPage } from "@/components/brand/kit";
 import { LABEL } from "@/components/brand/styles";
 import { HillHeroBackground, seedFor } from "@/components/hills/HillHero";
 import { TopoPattern } from "@/components/home/TopoPattern";
@@ -124,7 +124,6 @@ export function PrintChapterOpener({ chapter, page, firstPlatePage }: { chapter:
               <li key={p.id} className="flex items-baseline gap-4 border-b border-foreground/40 py-[9px] text-[15px] leading-5 font-medium">
                 <span className="w-10 shrink-0 font-mono text-[12px] text-foreground/70">{plateNumber(chapter, i)}</span>
                 <span className="flex-1">{p.title}</span>
-                {p.status && <StatusTag status={p.status} className="text-[10px]" />}
                 <span className="font-mono text-[12px] text-foreground/70">{String(firstPlatePage + i).padStart(2, "0")}</span>
               </li>
             ))}
@@ -132,7 +131,7 @@ export function PrintChapterOpener({ chapter, page, firstPlatePage }: { chapter:
         </div>
         <p className={cn(LABEL, "flex justify-between text-[11px] text-foreground/60")}>
           <span>
-            Version {MANUAL.version} · {MANUAL.status}
+            Version {MANUAL.version}
           </span>
           <span data-slot="brand-folio">{String(page).padStart(2, "0")}</span>
         </p>

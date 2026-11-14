@@ -4,7 +4,6 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { BrandNav } from "@/components/brand/BrandNav";
 import { DownloadIcon } from "@/components/brand/icons";
-import { StatusTag } from "@/components/brand/kit";
 import { LABEL } from "@/components/brand/styles";
 import { CmrLogo } from "@/components/CmrLogo";
 import { Container } from "@/components/Container";
@@ -14,7 +13,7 @@ import { HillHeroBackground, seedFor } from "@/components/hills/HillHero";
 import { EYEBROW } from "@/components/hills/styles";
 import { ArrowRightIcon, ArrowUpRightIcon } from "@/components/icons";
 import { chapters } from "@/content/brand";
-import { LOGO_DOWNLOADS, MANUAL, STATUS, chapterPath, outlineOf, type Status } from "@/lib/brand/manual";
+import { LOGO_DOWNLOADS, MANUAL, READING, chapterPath, outlineOf } from "@/lib/brand/manual";
 import { FLUID_TYPE } from "@/lib/fluid";
 import { DISPLAY_HEADING, displayLarge, impactH2, standardH2 } from "@/lib/headings";
 import { HERO_TOP, heroTopVars } from "@/lib/hero-spacing";
@@ -67,7 +66,7 @@ export default function BrandLandingPage() {
         />
         <Container style={heroTopVars()} className={cn(HERO_TOP, "pb-16 md:pb-20 lg:pb-24")}>
           <p className={cn(EYEBROW, "text-primary-foreground/75")}>
-            Version {MANUAL.version} · {MANUAL.status} · {longDate}
+            Version {MANUAL.version}
           </p>
           <h1 id="brand-heading" style={displayLarge()} className={cn(FLUID_TYPE, "mt-5 font-black tracking-[-0.045em]")}>
             <span className="block">Brand</span> <span className="block">standards.</span>
@@ -158,20 +157,18 @@ export default function BrandLandingPage() {
                 How to read it.
               </h2>
               <p className="mt-6 max-w-[48ch] text-[18px] leading-[28px] text-foreground/75">
-                Everything in the manual is the standard. CMR marks its hill measurements &ldquo;≈&rdquo; because they are approximate, and the manual is
-                honest in the same way: the few things that are not finished yet carry one of two tags.
+                Everything in the manual is the standard. Where something depends on a material or a vendor, like the smallest size of the badge on
+                a shirt, the manual says so in plain words and tells you how to settle it.
               </p>
               <p className="mt-4 max-w-[48ch] text-[18px] leading-[28px] text-foreground/75">
                 The pixel values describe the website. On paper, fabric or anything else, keep the relationships and let the sizes follow the format.
               </p>
             </div>
             <dl className="border-t border-foreground lg:col-span-7">
-              {(Object.keys(STATUS) as Status[]).map((s) => (
-                <div key={s} className="grid gap-x-8 gap-y-2 border-b border-foreground/20 py-5 sm:grid-cols-[9rem_1fr] sm:items-baseline">
-                  <dt>
-                    <StatusTag status={s} />
-                  </dt>
-                  <dd className="text-[18px] leading-[27px] text-foreground/80">{STATUS[s].meaning}</dd>
+              {READING.map(([k, v]) => (
+                <div key={k} className="grid gap-x-8 gap-y-2 border-b border-foreground/20 py-5 sm:grid-cols-[9rem_1fr] sm:items-baseline">
+                  <dt className={cn(LABEL, "text-foreground/65")}>{k}</dt>
+                  <dd className="text-[18px] leading-[27px] text-foreground/80">{v}</dd>
                 </div>
               ))}
             </dl>
@@ -202,7 +199,7 @@ export default function BrandLandingPage() {
                 <ArrowRightIcon className="size-4 motion-safe:transition-transform motion-safe:group-hover/lf:translate-x-0.5" />
               </a>
               <p className={cn(LABEL, "text-foreground/65")}>
-                Version {MANUAL.version} · {MANUAL.status} · {longDate}
+                Version {MANUAL.version} · {longDate}
               </p>
             </div>
           </Container>

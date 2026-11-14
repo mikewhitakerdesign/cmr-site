@@ -1,9 +1,9 @@
 import { BrandBadge } from "@/components/brand/BrandBadge";
 import { BrandWordmark } from "@/components/brand/BrandWordmark";
-import { PrintPage, SpecList, StatusTag } from "@/components/brand/kit";
+import { PrintPage, SpecList } from "@/components/brand/kit";
 import { LABEL } from "@/components/brand/styles";
-import { TopoPattern } from "@/components/home/TopoPattern";
-import { LOGO_DOWNLOADS, MANUAL, MANUAL_ADDRESS, SITE_HOST, STATUS, pdfPageMap, type BrandChapter, type Status } from "@/lib/brand/manual";
+import { SparseContours } from "@/components/brand/SparseContours";
+import { LOGO_DOWNLOADS, MANUAL, MANUAL_ADDRESS, READING, SITE_HOST, pdfPageMap, type BrandChapter } from "@/lib/brand/manual";
 import { tintVars } from "@/lib/tints";
 import { cn } from "@/lib/utils";
 
@@ -18,14 +18,12 @@ const longDate = (iso: string) => new Date(`${iso}T12:00:00Z`).toLocaleDateStrin
 export function PrintCover() {
   return (
     <PrintPage bleed tone="dark" page={1} label="Cover">
-      <TopoPattern className="text-(--cmr-contour-on-dark)" />
+      <SparseContours strokeWidth={1.25} />
       <div className="relative flex h-full flex-col justify-between p-16">
         <div className="flex items-start justify-between">
           <BrandBadge ink="white" className="w-[188px]" />
           <p className={cn(LABEL, "text-right text-[11px] leading-5 text-foreground/75")}>
             Version {MANUAL.version}
-            <br />
-            {MANUAL.status}
             <br />
             {longDate(MANUAL.date)}
           </p>
@@ -67,12 +65,11 @@ export function PrintContents({ chapters, map }: { chapters: readonly BrandChapt
           </div>
           <div>
             <h3 className={cn(LABEL, "mb-3 text-foreground/65")}>How to read it</h3>
-            <p className="mb-3 max-w-[40ch] text-[13px] leading-[19px] text-foreground/75">Everything here is the standard. The few things not finished yet carry one of two tags.</p>
             <ul className="border-t border-foreground/20">
-              {(Object.keys(STATUS) as Status[]).map((s) => (
-                <li key={s} className="flex items-baseline gap-3 border-b border-foreground/20 py-2">
-                  <StatusTag status={s} className="w-[100px] shrink-0 justify-center" />
-                  <span className="text-[13px] leading-[18px] text-foreground/75">{STATUS[s].meaning}</span>
+              {READING.map(([k, v]) => (
+                <li key={k} className="flex items-baseline gap-3 border-b border-foreground/20 py-2">
+                  <span className={cn(LABEL, "w-[92px] shrink-0 text-[11px] text-foreground/65")}>{k}</span>
+                  <span className="text-[13px] leading-[18px] text-foreground/75">{v}</span>
                 </li>
               ))}
             </ul>
@@ -122,8 +119,7 @@ export function PrintColophon({ page }: { page: number }) {
           <SpecList
             rows={[
               ["Document", MANUAL.title],
-              ["Version", `${MANUAL.version}, ${MANUAL.status.toLowerCase()}`],
-              ["Status", "Awaiting the Owner's approval"],
+              ["Version", MANUAL.version],
               ["Edition date", longDate(MANUAL.date)],
               ["Owner", "Michael Whitaker, Founder & Director"],
               ["Live version", MANUAL_ADDRESS],
@@ -138,7 +134,7 @@ export function PrintColophon({ page }: { page: number }) {
           />
           <p className="mt-6 text-[12px] leading-[18px] text-foreground/65">
             © {MANUAL.date.slice(0, 4)} Chicago Mountain Runners. The marks and artwork shown are the property of Chicago Mountain Runners and may be
-            used only as these standards describe. This edition is a release candidate: it becomes version {MANUAL.version} when the Owner approves it.
+            used only as these standards describe.
           </p>
         </div>
       </div>

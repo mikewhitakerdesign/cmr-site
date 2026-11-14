@@ -1,7 +1,7 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { GradientLab } from "@/components/brand/demos/GradientLab";
-import { Figure, Pending, Rule, SpecList, SpecTable } from "@/components/brand/kit";
+import { Figure, Rule, SpecList, SpecTable } from "@/components/brand/kit";
 import { LABEL, PRINT_BOTTOM, PRINT_FILL, PRINT_FILL_COL, PRINT_GROW, PRINT_ONLY, PRINT_ROWS_1, WEB_ONLY } from "@/components/brand/styles";
 import type { BrandChapter } from "@/lib/brand/manual";
 import { MESH_OPACITY } from "@/lib/brand/spec";
@@ -226,11 +226,9 @@ export const photography: BrandChapter = {
               <Rule title="Buttons do not depend on the photo.">Every button on a photograph is a solid black or white fill with the opposite label: 21:1 whatever is behind it.</Rule>
               <Rule title="“Just show up.” meets AA.">A 38% shade and full-white copy: at least 4.8:1 for the copy and 4.4:1 for the heading, at every screen width measured.</Rule>
             </div>
-            <div className={cn("grid gap-4", PRINT_BOTTOM)}>
-              <Pending title="The homepage headline is below AA.">
-                White over the palest sky measures 1.4 to 1.9:1 at its worst point, against 3:1 for large text. The Owner has accepted this; it is not WCAG conformant. Options that pass: a black headline (7 to 9:1), or a shaded band behind it (3.2:1 or better).
-              </Pending>
-            </div>
+            <Rule title="One exception: the homepage headline." className={PRINT_BOTTOM}>
+              White over the palest sky falls below the 3:1 AA minimum for large text (1.4 to 1.9:1 at its worst point). The Owner has accepted it for the homepage hero; it is not claimed to conform, and new work does not repeat it.
+            </Rule>
           </div>
         </div>
       ),
@@ -273,9 +271,9 @@ export const photography: BrandChapter = {
               ]}
             />
             <Rule title="No generated photographs.">Nothing presents generated imagery as a photograph.</Rule>
-            <Pending title="The tree line." className={PRINT_BOTTOM}>
-              Its rights are not on record yet. It stays on the website, where it is now, until they are.
-            </Pending>
+            <Rule title="The tree line stays where it is." className={PRINT_BOTTOM}>
+              The photographer&apos;s permission for the “Just show up.” photograph is not on record, so it is used only where it is now, on the website.
+            </Rule>
           </div>
         </div>
       ),

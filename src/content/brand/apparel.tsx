@@ -2,7 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { BrandBadge } from "@/components/brand/BrandBadge";
 import { BrandWordmark } from "@/components/brand/BrandWordmark";
 import { PlacementLab } from "@/components/brand/demos/PlacementLab";
-import { Pending, Rule, SpecTable, StatusTag } from "@/components/brand/kit";
+import { Rule, SpecTable } from "@/components/brand/kit";
 import { LABEL, PRINT_BOTTOM, PRINT_GROW, PRINT_ONLY, PRINT_ROWS_2, WEB_ONLY } from "@/components/brand/styles";
 import { Tee } from "@/components/brand/Tee";
 import { HillContourArt } from "@/components/hills/HillContourArt";
@@ -42,7 +42,6 @@ export const apparel: BrandChapter = {
       id: "status",
       title: "Nothing is approved yet.",
       nav: "Status",
-      status: "pending",
       lede: "CMR has no production merchandise, no vendor and no approved garment artwork. This chapter is here so the first run starts from the brand and not from a blank template. Read every page of it as a proposal.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
@@ -72,9 +71,9 @@ export const apparel: BrandChapter = {
                 </li>
               ))}
             </ul>
-            <Pending status="provisional" title="How a vendor should read this chapter." className={cn("mt-8", PRINT_BOTTOM)}>
+            <Rule title="How a vendor should read this chapter." className={cn("mt-8", PRINT_BOTTOM)}>
               Nothing shown is artwork to print from. Production files, sizes and colors are issued separately by the Owner, per item, after a proof.
-            </Pending>
+            </Rule>
           </div>
         </div>
       ),
@@ -83,7 +82,6 @@ export const apparel: BrandChapter = {
       id: "artwork",
       title: "Artwork readiness.",
       nav: "Artwork",
-      status: "provisional",
       lede: "Whether a piece of CMR artwork can go to a vendor today depends on its master file and on the process. This is a planning table, not a vendor's verdict: confirm each cell with whoever is making the item.",
       render: () => (
         <>
@@ -113,7 +111,6 @@ export const apparel: BrandChapter = {
       id: "placement",
       title: "Placement.",
       nav: "Placement",
-      status: "provisional",
       lede: "Three zones cover almost every shirt the club is likely to make: a small mark on the chest, the name across the upper back, and one large graphic below it. The diagrams use the real marks on a generic outline.",
       render: () => (
         <>
@@ -138,11 +135,11 @@ export const apparel: BrandChapter = {
               />
             </div>
             <div className="flex flex-col gap-4 lg:col-span-5">
-              <Pending status="pending" title="No dimensions are specified.">
+              <Rule title="No dimensions are specified.">
                 Print sizes, distances from seams and maximum areas vary by garment, size run and vendor. Set them at proof and record them per item.
-              </Pending>
+              </Rule>
               <p className="flex items-start gap-3 text-p-sm text-foreground/75">
-                <StatusTag status="provisional" className="mt-0.5" />
+                <span className="mt-0.5 font-mono text-[11px] tracking-[0.08em] uppercase">Concept</span>
                 The shirt outline is a diagram. It is not a product, a mockup or a size specification.
               </p>
             </div>
@@ -154,7 +151,6 @@ export const apparel: BrandChapter = {
       id: "methods",
       title: "Methods.",
       nav: "Methods",
-      status: "provisional",
       lede: "What each way of putting artwork on an object tends to ask of that artwork. These are the questions to bring to a vendor, written from general practice. The vendor's answers replace them.",
       render: () => (
         <>
@@ -182,7 +178,6 @@ export const apparel: BrandChapter = {
       id: "objects",
       title: "Objects.",
       nav: "Objects",
-      status: "provisional",
       lede: "Six sketches of how existing CMR artwork could sit on the things in the Owner's list. Each panel is flat artwork made from the real marks, patterns and type. None is a product design.",
       render: () => (
         <div className={cn("grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-3", PRINT_GROW, PRINT_ROWS_2)}>
@@ -230,7 +225,6 @@ export const apparel: BrandChapter = {
       id: "proof",
       title: "Before anything ships.",
       nav: "Proofing",
-      status: "provisional",
       lede: "A short list to run for every item, every time. It exists because the first physical object will set expectations for all the ones after it.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
@@ -260,9 +254,9 @@ export const apparel: BrandChapter = {
             <Rule title="Concept, proof, production.">Three separate states. A concept in this manual is not a proof, and a proof is not permission to run.</Rule>
             <Rule title="Keep the first of everything.">One sample from each run is the reference for the next. It is the only color standard the club will have for a while.</Rule>
             <Rule title="When in doubt, simpler.">One mark, one color, plenty of room. The brand reads best when the object is quiet and the idea is not.</Rule>
-            <Pending status="pending" title="No vendor specifications are recorded." className={PRINT_BOTTOM}>
+            <Rule title="No vendor specifications are recorded." className={PRINT_BOTTOM}>
               No vendor has been selected or consulted. Tolerances, minimums, pricing and durability results will be added here only once they are real.
-            </Pending>
+            </Rule>
           </div>
         </div>
       ),

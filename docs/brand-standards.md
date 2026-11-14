@@ -5,10 +5,10 @@ The CMR Brand Standards are a nine-chapter manual that lives on the website at
 Marks › Files. All three are made from the same sources, so they cannot
 disagree. This file is for the people who maintain it.
 
-**Status: version 1.0, release candidate** (Review 01 refinements, 2026-11-14).
-Not merged, not deployed; it becomes 1.0 when the Owner approves it. The manual
-tags only what is unfinished: *Provisional* (in use, confirm before production)
-and *Pending* (not specified yet). Everything untagged is the standard.
+**Status: version 1.0, approved by the Owner (2026-11-14).** The manual has no
+status tags: everything in it is the standard. Where a detail depends on a
+material or a vendor (smallest sizes in print, print colors), it says so in
+plain words and says how to settle it.
 
 **Apparel is deferred.** `src/content/brand/apparel.tsx` (and `Tee.tsx`,
 `demos/PlacementLab.tsx`) are kept for a later edition but are not in
@@ -20,7 +20,7 @@ To publish it, add it back to both lists, give it a number, and rebuild the PDF.
 | Path | What it is |
 |---|---|
 | `src/content/brand/*.tsx` | The chapters (Apparel kept but unpublished). Each is one `BrandChapter`: a slug, a title, and plates (one plate is one section on the web and one page in the PDF). `index.ts` is the reading order. |
-| `src/lib/brand/manual.ts` | Version, chapter and plate types, the two status tags, page arithmetic for the PDF, public paths. |
+| `src/lib/brand/manual.ts` | Version, chapter and plate types, the "how to read it" notes, page arithmetic for the PDF, public paths. |
 | `src/lib/brand/spec.ts` | Specifications that are **not** design tokens: measurements of the approved artwork, and mirrors of component values. |
 | `src/lib/brand/palette.ts`, `tokens.ts` | The palette. Values are read from the site's stylesheets at build time. No color is typed into a chapter. |
 | `src/lib/brand/color.ts`, `voice.ts` | Pure functions: WCAG contrast, HSL, CMYK arithmetic; the headline checks. |
@@ -31,6 +31,7 @@ To publish it, add it back to both lists, give it a number, and rebuild the PDF.
 | `public/brand/logos/` | The logo files: `cmr-badge-black.svg` and `cmr-wordmark-black.svg` are the **vector masters**; the white SVGs, the 3000 px PNGs and `cmr-logos.zip` are derived. |
 | `scripts/assets/trace-badge.mjs` | Traces the approved badge raster into the badge master (one-off; needs potrace). |
 | `scripts/assets/outline-wordmark.mjs` | Outlines the wordmark master from Geist Black (one-off; needs fontkit and wawoff2). |
+| `scripts/assets/build-sparse-contours.mjs` | Traces a still frame of the animated contour field into `public/home/topo-sparse.svg` and `src/components/brand/sparse-contours.ts` (drawn by `SparseContours`): the sparse contours of the PDF cover and the Graphic language examples. The site's own fallbacks and the PDF chapter openers keep the denser `public/home/topo.svg`. |
 | `scripts/brand/build-logo-assets.mjs` | `npm run brand:logos` (`:check`): derives every other logo file and the site icons (`src/app/icon.svg`, `favicon.ico`, `apple-icon.png`) from the two masters. Deterministic. |
 | `public/downloads/cmr-brand-standards.pdf` | The PDF the Download button serves. A static file. |
 
@@ -155,8 +156,8 @@ Proposed approach, for a later authorized task:
 2. **One Figma page per chapter, one frame per plate**, at the PDF's 1320 × 1020
    size. This repository already gives the exact hierarchy: chapter slug, plate
    id, number and title (`src/content/brand/*.tsx`).
-3. **Build the repeating blocks as components**: plate header, status tag, spec
-   table, spec list, rule, usage example (do and don't), pending note.
+3. **Build the repeating blocks as components**: plate header, spec table, spec
+   list, rule, usage example (do and don't).
    These mirror `src/components/brand/kit.tsx` one to one.
 4. **Take content from the chapters**, not from screenshots: every spec table is
    structured data in the chapter files and can be exported as JSON.

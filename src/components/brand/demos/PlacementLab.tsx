@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Tee, type TeeArt, type TeeGround, type TeeView } from "@/components/brand/Tee";
 import { Segmented } from "@/components/brand/demos/controls";
-import { StatusTag } from "@/components/brand/kit";
 
 const ART: Record<TeeView, { value: TeeArt; label: string }[]> = {
   front: [
@@ -37,7 +36,7 @@ export function PlacementLab() {
       <div className="@container rounded-xl bg-muted p-6 md:p-10">
         <Tee view={view} ground={ground} art={art} />
         <p className="mt-6 flex justify-center">
-          <StatusTag status="provisional" />
+          <span data-slot="concept-label" className="inline-flex items-center rounded-xs border border-foreground px-1.5 py-0.5 font-mono text-[11px] leading-4 tracking-[0.08em] uppercase">Concept</span>
         </p>
       </div>
       <div className="flex flex-col gap-6">

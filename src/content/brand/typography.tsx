@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { TypeTester } from "@/components/brand/demos/TypeTester";
-import { Frame, Pending, Rule, SpecList, SpecTable } from "@/components/brand/kit";
+import { Frame, Rule, SpecList, SpecTable } from "@/components/brand/kit";
 import { LABEL, PRINT_BOTTOM, PRINT_GROW, WEB_ONLY } from "@/components/brand/styles";
 import { EYEBROW } from "@/components/hills/styles";
 import { ArrowRightIcon } from "@/components/icons";
@@ -314,9 +314,7 @@ export const typography: BrandChapter = {
             <Rule title="No faux styles.">No artificial bold, no squeezed or stretched type, no outlined letters. If Geist Black is unavailable, stop and get it.</Rule>
             <Rule title="No substitutes.">Do not swap in Helvetica, Inter or a system font for a deliverable. The fallback stack exists for the half-second before the web font loads.</Rule>
             <Rule title="Getting the fonts.">Geist is open source under the SIL Open Font License. Designers and vendors download it from the publisher, with the license; CMR does not pass font files around.</Rule>
-            <Pending title="Smallest type on fabric.">
-              Screen printing, heat transfer and embroidery each have a smallest reliable stroke. Agree it with the vendor and proof it.
-            </Pending>
+            <Rule title="Smallest type on fabric: proof it.">Screen printing, heat transfer and embroidery each have a smallest reliable stroke. Agree it with the vendor and approve a proof.</Rule>
           </div>
         </div>
       ),

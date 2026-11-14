@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { ArrowLink } from "@/components/ArrowLink";
-import { Figure, Frame, Pending, Rule, SpecList, SpecTable } from "@/components/brand/kit";
+import { Figure, Frame, Rule, SpecList, SpecTable } from "@/components/brand/kit";
 import { LABEL, PRINT_BOTTOM, PRINT_FILL, PRINT_FILL_COL, PRINT_GROW, PRINT_ROWS_1, WEB_ONLY } from "@/components/brand/styles";
 import { ctaLinkVariants } from "@/components/CtaLink";
 import { MotionToggle } from "@/components/MotionToggle";
@@ -306,9 +306,7 @@ export const digital: BrandChapter = {
             />
           </div>
           <div className="flex flex-col gap-4 lg:col-span-5">
-            <Pending title="One known exception.">
-              The homepage hero headline sits on a pale sky below AA contrast. The Owner has accepted it, and it is not claimed to conform; the measurements and the options are in Photography.
-            </Pending>
+            <Rule title="One known exception.">The homepage hero headline sits on a pale sky below AA contrast. The Owner has accepted it, and it is not claimed to conform; see Photography.</Rule>
             <Rule title="Expression and function are separate.">Contour lines and tie-dye may be faint, because they carry no information. The moment something carries information, it meets the standard.</Rule>
             <Rule title="New work is tested the same way.">A page is not finished until it passes axe at all three widths and can be used start to finish from the keyboard.</Rule>
             <Rule title="An exception is a decision.">Falling short is allowed only when the Owner accepts it in writing, with the measured figure and the alternative on file.</Rule>

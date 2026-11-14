@@ -34,7 +34,7 @@ export const BADGE = {
   letters: { x: 113.9, y: 181.9, w: 1096, h: 301 },
   /** Widths in production (src/components/Header.tsx), CSS px, including the header's own frame around the badge. */
   production: { mobile: 100, tablet: 128, tabletCompact: 96, desktop: 188, desktopCompact: 112 },
-  /** Provisional smallest screen width (Owner, Review 01): the smallest the site already shows it. */
+  /** Smallest screen width (Owner, Review 01): the smallest the site already shows it. */
   minScreenPx: 96,
 } as const;
 
@@ -137,13 +137,14 @@ export const MOTION = [
 /** ContourField settings in production. */
 export const CONTOUR = {
   lineWidthPx: 1,
-  staticLineWidthPx: 1.5,
+  staticLineWidthPx: 1,
   settings: [
     { name: "Hill and Science heroes", scale: 940, levels: 4.5, ground: "Black", line: "--cmr-quiet-edge", source: "src/components/hills/HillHero.tsx" },
     { name: "Flat is a state of mind", scale: 460, levels: 10, ground: "White", line: "--cmr-contour-on-light", source: "src/components/home/FlatStateOfMind.tsx" },
   ],
   defaults: { scale: 520, levels: 9, speed: 0.036 },
-  staticPattern: { file: "public/home/topo.svg", paths: 141, viewBox: 1024 },
+  /** The still artwork used in the manual and the PDF (scripts/assets/build-sparse-contours.mjs). The site's own fallbacks keep public/home/topo.svg. */
+  staticPattern: { file: "public/home/topo-sparse.svg", paths: 26, viewBox: 1600 },
 } as const;
 
 /**

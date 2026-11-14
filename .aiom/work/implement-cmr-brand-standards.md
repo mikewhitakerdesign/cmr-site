@@ -25,10 +25,9 @@ review_round: review-01
 ---
 ## Status
 
-**Version 1.0 release candidate, ready for final Owner review (2026-11-14).**
-Branch `feat/brand-standards`: the original build (`0175cd5`) plus the Review 01
-refinement commit. Local only: not merged, not deployed, no pull request.
-Merge and release require the Owner's explicit authorization after review.
+**Version 1.0, approved by the Owner; merge authorized (2026-11-14).** Final
+edits after the Owner's review, then merged to `main` through the normal PR
+workflow. See "Final Owner review" below.
 
 ## Authorization
 
@@ -91,6 +90,28 @@ and release. Still open, none blocking: physical minimum sizes and print colors
 (from vendor proofs); print artwork for tie-dye and the gradient; a vector of
 the hill silhouette; rights for the tree-line photograph; the homepage
 headline's contrast (accepted exception, options recorded); a social image.
+
+## Final Owner review (2026-11-14)
+
+Owner direction: three last edits, then merge and clean up.
+
+- Landing hero eyebrow: "Release candidate · November 14, 2026" removed; it
+  reads "Version 1.0". With the edition approved, "release candidate" is gone
+  everywhere (cover, chapter openers, colophon) and the PDF downloads as
+  `CMR-Brand-Standards-v1.0.pdf`.
+- Provisional and Pending removed from the published manual: the `Status` type,
+  `StatusTag`, `Pending`, the landing legend and the PDF contents legend are
+  gone. Each remaining callout is plain guidance (a `Rule`): 96 px on screen;
+  print and fabric sizes and colors by vendor proof; tie-dye, gradient and
+  silhouette remade for print; the tree-line photograph used only where it is;
+  the homepage headline's accepted contrast exception. Governance's "still
+  open" list became "Before you make things". "How to read it" (landing and PDF
+  contents) is three plain notes.
+- Contours: the dense pattern replaced by sparse contours (a still frame of the
+  animated field, scripts/assets/build-sparse-contours.mjs, scale 940, 5 levels)
+  on the PDF cover, the Graphic language "Contour lines" tile and plate, and both
+  "How contours behave" grounds; also the premise frame's PDF stand-in. The
+  Marks "busy pattern" don't-example keeps the dense pattern on purpose.
 
 ## Review 01 (Owner creative review, 2026-11-14)
 

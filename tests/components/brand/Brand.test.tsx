@@ -11,9 +11,9 @@ import { LogoStage } from "@/components/brand/demos/LogoStage";
 import { PlacementLab } from "@/components/brand/demos/PlacementLab";
 import { Swatch } from "@/components/brand/demos/Swatch";
 import { TypeTester } from "@/components/brand/demos/TypeTester";
-import { StatusTag, WebPlate } from "@/components/brand/kit";
+import { WebPlate } from "@/components/brand/kit";
 import { chapters } from "@/content/brand";
-import { LANDING_SECTIONS, MANUAL, STATUS, outlineOf, pdfPageMap, plateNumber, type Status } from "@/lib/brand/manual";
+import { LANDING_SECTIONS, MANUAL, READING, outlineOf, pdfPageMap, plateNumber } from "@/lib/brand/manual";
 import { HEADING_ROLES } from "@/lib/brand/spec";
 import { axeViolations } from "../../axe";
 import { pathname } from "../../pathname";
@@ -140,9 +140,8 @@ describe("chapter pages", () => {
         expect(section.id).toBe(p.id);
         expect(within(section as HTMLElement).getByRole("heading", { level: 2, name: p.title })).toHaveAttribute("id", `${p.id}-heading`);
         expect(section).toHaveTextContent(plateNumber(chapter, i));
-        // A tag only where something is unfinished.
-        if (p.status) expect(section.querySelector(`[data-status=${p.status}]`)).not.toBeNull();
-        else expect(section.querySelector("header [data-status]")).toBeNull();
+        // v1.0: no status tags anywhere in the manual.
+        expect(section.querySelector("[data-status]")).toBeNull();
       });
       // Anchor ids are unique across the whole page (plates, their headings, anything inside them).
       const ids = [...container.querySelectorAll("[id]")].map((e) => e.id);
@@ -151,7 +150,8 @@ describe("chapter pages", () => {
       // No implementation commentary: no source lines, repository paths or Figma node ids (Review 01).
       expect(container.querySelector("[data-slot=brand-source]")).toBeNull();
       expect(container.textContent).not.toMatch(/\bsrc\/|\.tsx?\b|scripts\/|\.aiom|Figma node|\b\d{2,}:\d{3}\b/);
-      expect(container.textContent).not.toMatch(/\b(Established|Inferred|Unresolved)\b/);
+      expect(container.textContent).not.toMatch(/\b(Established|Inferred|Unresolved|Provisional|Pending|Proposed)\b/);
+      expect(container.textContent).not.toMatch(/release candidate/i);
       expect(await axeViolations(container)).toEqual([]);
     });
   }
@@ -185,10 +185,13 @@ describe("landing page", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("explains both status tags", () => {
+  it("explains how to read the manual, with no status tags and no release-candidate label", () => {
     pathname.current = "/brand";
-    render(<BrandLandingPage />);
-    for (const s of Object.keys(STATUS) as Status[]) expect(screen.getAllByText(STATUS[s].meaning).length).toBeGreaterThan(0);
+    const { container } = render(<BrandLandingPage />);
+    for (const [, v] of READING) expect(screen.getByText(v)).toBeInTheDocument();
+    expect(container.querySelector("[data-status]")).toBeNull();
+    expect(container.querySelector("[data-slot=brand-hero] p")).toHaveTextContent(new RegExp(`^Version ${MANUAL.version}$`));
+    expect(container.textContent).not.toMatch(/release candidate|Provisional|Pending/i);
   });
 });
 
@@ -223,17 +226,6 @@ describe("print route (the PDF's source)", () => {
     expect(container.querySelector('[aria-label="Colophon"]')).toHaveTextContent(MANUAL.title);
     // The sticky bar is not part of the PDF.
     expect(container.querySelector("[data-slot=brand-nav]")).toBeNull();
-  });
-});
-
-describe("StatusTag", () => {
-  it("names each evidence level and carries it as data", () => {
-    for (const s of Object.keys(STATUS) as Status[]) {
-      const { unmount } = render(<StatusTag status={s} />);
-      const tag = screen.getByText(STATUS[s].label);
-      expect(tag).toHaveAttribute("data-status", s);
-      unmount();
-    }
   });
 });
 
@@ -330,7 +322,7 @@ describe("interactive demonstrations", () => {
     expect(container.querySelector("[data-slot=brand-tee]")).toHaveAttribute("data-view", "back");
     expect(screen.queryByRole("button", { name: "Badge, left chest" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Wordmark" })).toHaveAttribute("aria-pressed", "true");
-    expect(container.querySelector("[data-status=provisional]")).not.toBeNull();
+    expect(container.querySelector("[data-slot=concept-label]")).toHaveTextContent("Concept");
     expect(await axeViolations(container)).toEqual([]);
   });
 });

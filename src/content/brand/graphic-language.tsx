@@ -1,11 +1,11 @@
 import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 import { ContourLab } from "@/components/brand/demos/ContourLab";
-import { Figure, Frame, Pending, Rule, SpecList, SpecTable } from "@/components/brand/kit";
+import { Figure, Frame, Rule, SpecList, SpecTable } from "@/components/brand/kit";
 import { LABEL, PRINT_BOTTOM, PRINT_FILL, PRINT_FILL_COL, PRINT_GROW, PRINT_ONLY, PRINT_ROWS_1, WEB_ONLY } from "@/components/brand/styles";
 import { HillContourArt } from "@/components/hills/HillContourArt";
 import { HillProfile } from "@/components/HillProfile";
-import { TopoPattern } from "@/components/home/TopoPattern";
+import { SparseContours } from "@/components/brand/SparseContours";
 import {
   ActivityIcon,
   ArrowRightIcon,
@@ -111,7 +111,8 @@ export const graphicLanguage: BrandChapter = {
           <h3 className={cn(LABEL, "mb-3 text-foreground/65")}>Signature: use freely</h3>
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
             <Element name="Contour lines" where="Hill heroes, The Science, the homepage close." className="bg-primary">
-              <TopoPattern className="text-(--cmr-contour-on-dark)" />
+              {/* A third of the field: at tile size, the same spacing as the large examples. */}
+              <SparseContours area="560 380 640 480" />
             </Element>
             <Element name="Black and white bands" where="Every page alternates full-width sections." className="border border-foreground/15">
               <div className="absolute inset-0 grid grid-rows-3">
@@ -172,10 +173,10 @@ export const graphicLanguage: BrandChapter = {
           </div>
           <div className={cn("grid-cols-2 gap-4", PRINT_ONLY, "[.brand-print_&]:grid", PRINT_GROW)}>
             <Frame ground="black" label="On black" className="h-full">
-              <TopoPattern className="text-(--cmr-contour-on-dark)" />
+              <SparseContours strokeWidth={1.25} />
             </Frame>
             <Frame label="On white" className="h-full">
-              <TopoPattern />
+              <SparseContours strokeWidth={1.25} position="xMaxYMax" className="text-(--cmr-contour-on-light)" />
             </Frame>
           </div>
           <div className="mt-8 grid gap-8 lg:grid-cols-12">
@@ -187,8 +188,8 @@ export const graphicLanguage: BrandChapter = {
               className="lg:col-span-5"
               rows={[
                 ["Line, animated", `${CONTOUR.lineWidthPx} px, constant at any size`],
-                ["Line, still pattern", `${CONTOUR.staticLineWidthPx} px`],
-                ["Still pattern", `${CONTOUR.staticPattern.paths} vector paths, no repeating tile`],
+                ["Line, still", `${CONTOUR.staticLineWidthPx} px, constant at any size`],
+                ["Still artwork", `A frame of the same field, as ${CONTOUR.staticPattern.paths} vector lines`],
                 ["Color", "Neutral 300 on white; neutral 500 to 600 on black"],
               ]}
             />
@@ -206,7 +207,7 @@ export const graphicLanguage: BrandChapter = {
           <div className={cn("grid gap-4 md:grid-cols-3", PRINT_GROW, PRINT_ROWS_1)}>
             <Figure className={PRINT_FILL_COL} caption="Full-bleed: behind a headline, running off all four edges.">
               <Frame ground="black" className={cn("flex aspect-[4/3] items-end p-5", PRINT_FILL)}>
-                <TopoPattern className="-z-10 text-(--cmr-contour-on-dark)" />
+                <SparseContours className="-z-10" position="xMinYMax" />
                 <p className="text-[40px] leading-[0.9] font-black tracking-[-0.045em]">
                   HORNER
                   <br />
@@ -216,7 +217,7 @@ export const graphicLanguage: BrandChapter = {
             </Figure>
             <Figure className={PRINT_FILL_COL} caption="Full-bleed on white, in light gray. Black type crossing a line still measures 15:1.">
               <Frame className={cn("flex aspect-[4/3] items-center justify-center p-5", PRINT_FILL)}>
-                <TopoPattern className="-z-10 text-(--cmr-contour-on-light)" />
+                <SparseContours className="-z-10 text-(--cmr-contour-on-light)" position="xMaxYMin" />
                 <p className="text-center text-[34px] leading-[0.9] font-black tracking-[-0.045em]">
                   FLAT IS
                   <br />A STATE
@@ -307,9 +308,9 @@ export const graphicLanguage: BrandChapter = {
               <Rule title="Black, and never alone.">It needs the statement beside it to mean anything. It is not an avatar, an icon, a pattern or a substitute for the badge.</Rule>
               <Rule title="Scaled with the text.">On the homepage it is as tall as the statement beside it, from about 130 px on a phone to 385 px on a desktop.</Rule>
             </div>
-            <Pending title="Web artwork only." className={cn("mt-6", PRINT_BOTTOM)}>
-              The silhouette exists as a {SILHOUETTE.raster.w} × {SILHOUETTE.raster.h} px image, enough for the website. Large or printed use needs a vector made from the original artwork first.
-            </Pending>
+            <Rule title="Made for the web." className={cn("mt-6", PRINT_BOTTOM)}>
+              The silhouette is a {SILHOUETTE.raster.w} × {SILHOUETTE.raster.h} px image, sized for the website. For print or large use, it is redrawn as vector from the original artwork first.
+            </Rule>
           </div>
         </div>
       ),
@@ -385,9 +386,9 @@ export const graphicLanguage: BrandChapter = {
               </Rule>
             </div>
             <div className="lg:col-span-4">
-              <Pending title="No print master yet.">
-                On the website the effect is drawn live, from gradients and a blur. For fabric or paper it needs to be made as high-resolution artwork and proofed.
-              </Pending>
+              <Rule title="On paper and fabric, rebuild it.">
+                On the website the effect is drawn live, from gradients and a blur. For print it is made as high-resolution artwork and proofed on the material.
+              </Rule>
             </div>
           </div>
         </>

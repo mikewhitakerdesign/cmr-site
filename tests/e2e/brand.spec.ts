@@ -59,19 +59,21 @@ async function settle(page: Page) {
 }
 
 test.describe("routes", () => {
-  test("the landing page has its title, version, no hero buttons, six essentials, nine chapters and the two status tags", async ({ page }) => {
+  test("the landing page has its title, version, no hero buttons, six essentials, nine chapters and no status tags", async ({ page }) => {
     const res = await page.goto("/brand");
     expect(res?.status()).toBe(200);
     await expect(page).toHaveTitle("Brand Standards | Chicago Mountain Runners");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Brand\s*standards\./);
     await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
-    await expect(page.locator("[data-slot=brand-hero]")).toContainText(/Version 1\.0 · Release candidate/);
+    await expect(page.locator("[data-slot=brand-hero]")).toContainText("Version 1.0");
+    await expect(page.locator("[data-slot=brand-hero]")).not.toContainText(/release candidate|November/i);
     await expect(page.locator("[data-slot=brand-hero] a, [data-slot=brand-hero] button")).toHaveCount(0);
     await expect(page.locator("#essentials li")).toHaveCount(6);
     const rows = page.locator("#chapters ol > li a");
     await expect(rows).toHaveCount(9);
     expect(await rows.evaluateAll((els) => els.map((e) => e.getAttribute("href")))).toEqual(CHAPTERS.map(([slug]) => `/brand/${slug}`));
-    for (const s of ["provisional", "pending"]) await expect(page.locator(`#how-to-read [data-status=${s}]`)).toHaveCount(1);
+    await expect(page.locator("[data-status]")).toHaveCount(0);
+    await expect(page.locator("main")).not.toContainText(/Provisional|Pending/);
   });
 
   for (const [slug, title] of CHAPTERS) {
@@ -266,7 +268,7 @@ test.describe("Download PDF", () => {
       await expect(link).toHaveAttribute("href", PDF);
       await expect(link).toHaveAccessibleName(/Download PDF, the complete manual, version \d+\.\d+/);
       const [download] = await Promise.all([page.waitForEvent("download"), link.click()]);
-      expect(download.suggestedFilename()).toBe("CMR-Brand-Standards-v1.0-RC.pdf");
+      expect(download.suggestedFilename()).toBe("CMR-Brand-Standards-v1.0.pdf");
       expect(await download.failure()).toBeNull();
     }
   });

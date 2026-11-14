@@ -4,7 +4,7 @@ import { BrandBadge } from "@/components/brand/BrandBadge";
 import { BrandWordmark } from "@/components/brand/BrandWordmark";
 import { LogoStage } from "@/components/brand/demos/LogoStage";
 import { DownloadIcon } from "@/components/brand/icons";
-import { Frame, Pending, Rule, SpecList, SpecTable, Usage } from "@/components/brand/kit";
+import { Frame, Rule, SpecList, SpecTable, Usage } from "@/components/brand/kit";
 import { LABEL, PRINT_BOTTOM, PRINT_GROW, PRINT_ONLY, PRINT_ROWS_1, PRINT_ROWS_2, WEB_ONLY } from "@/components/brand/styles";
 import { TopoPattern } from "@/components/home/TopoPattern";
 import { LOGO_DOWNLOADS, SITE_HOST, type BrandChapter } from "@/lib/brand/manual";
@@ -157,13 +157,13 @@ export const marks: BrandChapter = {
                 ]}
               />
             </div>
-            <div className="flex flex-col gap-4 lg:col-span-5">
-              <Pending status="provisional" title={`Smallest on screen: ${BADGE.minScreenPx} px wide.`}>
+            <div className="flex flex-col gap-6 lg:col-span-5">
+              <Rule title={`Smallest on screen: ${BADGE.minScreenPx} px wide.`}>
                 Below this the ™ stops resolving. Where something smaller is needed, use the site icon (see Files), not a shrunken badge.
-              </Pending>
-              <Pending title="Smallest in print, embroidery and on other materials.">
-                Depends on the method and the material. Agree it with the vendor and approve a physical proof. Screen sizes do not carry over.
-              </Pending>
+              </Rule>
+              <Rule title="In print and on fabric, proof it.">
+                The smallest size depends on the method and the material, so screen sizes do not carry over. Agree it with the vendor and approve a physical proof.
+              </Rule>
             </div>
           </div>
         </div>

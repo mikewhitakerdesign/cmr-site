@@ -7,9 +7,10 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { chapters, getChapter } from "@/content/brand";
 import { contrast, formatCmykUnproofed, formatHsl, formatRatio, formatRgb, mixSrgb, overlay, wcagGrade } from "@/lib/brand/color";
-import { CHAPTER_SLUGS, LANDING_SECTIONS, LOGO_DOWNLOADS, MANUAL, MANUAL_ADDRESS, STATUS, brandPaths, chapterPath, outlineOf, pdfPageMap, plateNumber } from "@/lib/brand/manual";
+import { CHAPTER_SLUGS, LANDING_SECTIONS, LOGO_DOWNLOADS, MANUAL, MANUAL_ADDRESS, READING, brandPaths, chapterPath, outlineOf, pdfPageMap, plateNumber } from "@/lib/brand/manual";
 import { allColors, colorById, functional, neutrals, primary, tints } from "@/lib/brand/palette";
-import { BADGE, BADGE_RATIO, HEADING_ROLES, MESH_GRADIENT, MESH_OPACITY, WORDMARK, meshHex, type HeadingRoleKey } from "@/lib/brand/spec";
+import { BADGE, BADGE_RATIO, CONTOUR, HEADING_ROLES, MESH_GRADIENT, MESH_OPACITY, WORDMARK, meshHex, type HeadingRoleKey } from "@/lib/brand/spec";
+import { SPARSE_CONTOURS, SPARSE_CONTOURS_VIEWBOX } from "@/components/brand/sparse-contours";
 import { cssVar, parseDeclarations, resolveValue } from "@/lib/brand/tokens";
 import { AVOID_WORDS, checkHeadline, headlinePasses } from "@/lib/brand/voice";
 import { WORDMARK_PATH, WORDMARK_VIEWBOX } from "@/components/brand/wordmark-path";
@@ -301,15 +302,21 @@ describe("chapters", () => {
     }
   });
 
-  it("tag a plate only when something in it is unfinished, with one of the two tags", () => {
-    for (const c of chapters) for (const p of c.plates) if (p.status) expect(Object.keys(STATUS), `${c.slug}/${p.id}`).toContain(p.status);
-    expect(Object.keys(STATUS)).toEqual(["provisional", "pending"]);
+  it("is version 1.0, approved: no release-candidate status, no status tags, three reading notes", () => {
+    expect(MANUAL.version).toBe("1.0");
+    expect(MANUAL).not.toHaveProperty("status");
+    expect(MANUAL.pdfDownloadName).toBe("CMR-Brand-Standards-v1.0.pdf");
+    for (const c of chapters) for (const p of c.plates) expect(p, `${c.slug}/${p.id}`).not.toHaveProperty("status");
+    expect(READING.map(([k]) => k)).toEqual(["Rules", "Examples", "Values"]);
   });
 
-  it("is a release candidate of version 1.0, and says so", () => {
-    expect(MANUAL.version).toBe("1.0");
-    expect(MANUAL.status).toMatch(/release candidate/i);
-    expect(MANUAL.pdfDownloadName).toBe("CMR-Brand-Standards-v1.0-RC.pdf");
+  it("the sparse contour artwork: the SVG and the inline paths are the same lines, and the manual counts them right", () => {
+    const svg = read("public/home/topo-sparse.svg");
+    expect(svg).toContain(`viewBox="${SPARSE_CONTOURS_VIEWBOX}"`);
+    expect([...svg.matchAll(/<path d="([^"]+)"/g)].map((m) => m[1])).toEqual([...SPARSE_CONTOURS]);
+    expect(CONTOUR.staticPattern.paths).toBe(SPARSE_CONTOURS.length);
+    // Sparse: a few dozen lines, against the 141 of the dense pattern it replaces in the manual.
+    expect(SPARSE_CONTOURS.length).toBeLessThan(60);
   });
 
   it("build paths, numbers and outlines", () => {

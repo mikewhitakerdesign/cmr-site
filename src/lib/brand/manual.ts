@@ -10,29 +10,15 @@ import { SITE_ORIGIN } from "@/lib/site";
 export const MANUAL = {
   title: "Chicago Mountain Runners Brand Standards",
   shortTitle: "Brand Standards",
-  /** Bump with every Owner-approved change to a standard (see /brand/governance). */
+  /** Bump with every Owner-approved change to a standard (see /brand/governance). 1.0 approved by the Owner, 2026-11-14. */
   version: "1.0",
-  /** Until the Owner approves this edition, it is a release candidate, and says so wherever the version is printed. */
-  status: "Release candidate",
   /** Date of this edition (YYYY-MM-DD). */
   date: "2026-11-14",
   /** The pre-built PDF, a static file (public/downloads). Rebuild with `npm run brand:pdf`. */
   pdfHref: "/downloads/cmr-brand-standards.pdf",
   pdfFile: "public/downloads/cmr-brand-standards.pdf",
-  pdfDownloadName: "CMR-Brand-Standards-v1.0-RC.pdf",
+  pdfDownloadName: "CMR-Brand-Standards-v1.0.pdf",
 } as const;
-
-/**
- * Everything in the manual is the standard unless it carries one of these two
- * tags. They mark the few things that are genuinely not finished, so a tag
- * always means something is still to be done.
- */
-export type Status = "provisional" | "pending";
-
-export const STATUS: Record<Status, { label: string; meaning: string }> = {
-  provisional: { label: "Provisional", meaning: "In use for now. Confirm it with a proof or a test before relying on it for production." },
-  pending: { label: "Pending", meaning: "Not specified yet. Needs a proof, a source file or a decision." },
-};
 
 export type PlateTone = "light" | "dark" | "muted";
 
@@ -44,7 +30,6 @@ export type BrandPlate = {
   /** Short label for the sticky section bar. */
   nav: string;
   lede?: ReactNode;
-  status?: Status;
   tone?: PlateTone;
   render: () => ReactNode;
 };
@@ -115,6 +100,13 @@ export function pdfPageMap(chapters: readonly Pick<BrandChapter, "slug" | "plate
   });
   return { chapters: starts, colophon: page + 1, total: page + 1 };
 }
+
+/** How to read the manual: three notes, on the landing page and the PDF's contents page. */
+export const READING = [
+  ["Rules", "The bold line is the standard; the sentence under it says why."],
+  ["Examples", "Struck through means don't. Everything else shows the standard in use."],
+  ["Values", "Colors and sizes are read from the website itself, so the two agree."],
+] as const;
 
 /** The landing page's own sections (the sticky bar shows these on /brand). */
 export const LANDING_SECTIONS = [
