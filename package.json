@@ -10,6 +10,10 @@
     "tokens:build": "node scripts/tokens/build.mjs",
     "tokens:check": "node scripts/tokens/build.mjs --check",
     "tokens:import": "node scripts/tokens/import-export.mjs",
+    "brand:pdf": "node scripts/brand/build-pdf.mjs",
+    "brand:pdf:check": "node scripts/brand/build-pdf.mjs --check",
+    "brand:logos": "node scripts/brand/build-logo-assets.mjs",
+    "brand:logos:check": "node scripts/brand/build-logo-assets.mjs --check",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:visual": "PW_VISUAL=1 playwright test --grep @visual"

@@ -41,7 +41,11 @@ describe("Footer", () => {
       ["Terms", "/terms"],
       ["Participation Waiver", "/participant-waiver"],
       ["Participation Guidelines", "/participation-guidelines"],
+      // Brand Standards: the last link in the secondary row (Brand Standards Review 01).
+      ["Brand Standards", "/brand"],
     ]);
+    // Not duplicated in the main footer navigation.
+    expect(within(screen.getByRole("navigation", { name: "Footer" })).queryByRole("link", { name: "Brand Standards" })).not.toBeInTheDocument();
   });
 
   it("renders legal links once they have an href, and only those", () => {

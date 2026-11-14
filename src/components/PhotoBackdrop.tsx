@@ -23,8 +23,12 @@ export function PhotoBackdrop({
 }: {
   /** The photo, absolutely filling the backdrop (next/image `fill`). */
   image: ReactNode;
-  /** Layer opacity from Figma: 20% on the hero, 50% on Just show up. */
-  gradientOpacity: "20" | "50";
+  /**
+   * Layer opacity: 25% on the homepage hero and 50% on Just show up (Brand
+   * Standards Review 01; Figma had 20% on the hero). 20% remains for the Join
+   * hero, where the wash sits over contour lines rather than a photograph.
+   */
+  gradientOpacity: "20" | "25" | "50";
   className?: string;
   /** Optional extra layers above the gradient (e.g. a legibility shade). */
   children?: ReactNode;
@@ -36,7 +40,7 @@ export function PhotoBackdrop({
         data-slot="mesh-gradient"
         className={cn(
           "absolute inset-0 bg-[url(/home/mesh-gradient.png)] bg-[length:100%_100%] bg-no-repeat",
-          gradientOpacity === "20" ? "opacity-20" : "opacity-50",
+          { "20": "opacity-20", "25": "opacity-25", "50": "opacity-50" }[gradientOpacity],
         )}
       />
       {children}

@@ -64,16 +64,20 @@ export function buildFooterNav(social: SocialLinks): NavItem[] {
 export const footerNav: NavItem[] = buildFooterNav(socialLinks);
 
 /**
- * Footer legal links. A link appears only once its document is published
+ * The footer's secondary row, below the divider: the legal documents, then
+ * Brand Standards. A legal link appears only once its document is published
  * (src/content/legal.ts); until then the footer hides it. "Participation
  * Guidelines" replaces the earlier "Participation waiver" label: the Guidelines
- * are not a waiver (Owner decision, CMR-JOIN-001).
+ * are not a waiver (Owner decision, CMR-JOIN-001). Brand Standards (the manual
+ * at /brand) is the last link in the row (Owner, Brand Standards Review 01);
+ * it is not in the header.
  */
 export const legalLinks: LegalLink[] = [
   { label: "Privacy", href: privacyPolicy ? "/privacy" : undefined },
   { label: "Terms", href: websiteTerms ? "/terms" : undefined },
   { label: "Participation Waiver", href: WAIVER_ENABLED && participantWaiver ? "/participant-waiver" : undefined },
   { label: "Participation Guidelines", href: participationGuidelines ? "/participation-guidelines" : undefined },
+  { label: "Brand Standards", href: "/brand" },
 ];
 
 export const riskNotice =

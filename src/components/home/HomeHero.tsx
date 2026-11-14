@@ -80,7 +80,8 @@ export function HomeHero({ next, now, held }: { next: RunOccurrence | null; now:
       )}
     >
       <PhotoBackdrop
-        gradientOpacity="20"
+        // 25% (Brand Standards Review 01, Owner decision 2026-11-14); Figma's 20% before that.
+        gradientOpacity="25"
         image={
           // One source, three crops (object-position), all at the photograph's real
           // proportions. The crest is ~74% down the file (row ~1410 of 1900) with the

@@ -12,8 +12,8 @@ import { cn } from "@/lib/utils";
  * pair with two solid buttons; Round 2.1 made hover flip each button to its
  * opposite; the final refinement removed the borders from the filled buttons:
  *
- *   primary    black fill, white label   hover → white fill, black label  · active neutral 100 grey
- *   secondary  white fill, black label   hover → black fill, white label  · active neutral 800
+ *   primary    black fill, white label   hover → white fill, black label, 1px black outline  · active neutral 200, outline kept
+ *   secondary  white fill, black label   hover → black fill, white label, 1px white outline  · active neutral 800, outline kept
  *   outline    transparent, 1px black    hover → black fill, white label  · active neutral 800
  *              (the header's "Join the club"; for light surfaces)
  *   outlineOnDark  transparent, 1px white  hover → white fill, black label  · active neutral 100
@@ -22,10 +22,14 @@ import { cn } from "@/lib/utils";
  *   disabled   `aria-disabled` → 50% opacity, not clickable (links cannot be `disabled`)
  *   press      1px nudge down (motion-safe)
  *
- * Only the outlines have a border (1px, matching the header bar's bottom rule); the
- * filled variants have none, at rest or on hover. Every state is solid-on-solid
- * (21:1), independent of the photo behind it. Geometry (height, padding, type
- * size) is set by the caller. Radius 6 = `rounded-md`.
+ * Only the outlines have a border (1px, matching the header bar's bottom rule).
+ * The filled variants have none at rest; when hover or press inverts them, they
+ * keep a 1px inset outline in their resting fill color (Brand Standards Review
+ * 01), so a black button turning white on a white page, or a white one turning
+ * black on a black band, never loses its edge. The outline is an inset ring:
+ * no layout shift, and it sits inside the focus ring rather than replacing it.
+ * Every state is solid-on-solid (21:1), independent of the photo behind it.
+ * Geometry (height, padding, type size) is set by the caller. Radius 6 = `rounded-md`.
  */
 export const ctaLinkVariants = cva(
   [
@@ -37,9 +41,10 @@ export const ctaLinkVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary active:bg-border active:text-primary",
+        primary:
+          "bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary hover:inset-ring hover:inset-ring-primary active:bg-border active:text-primary active:inset-ring active:inset-ring-primary",
         secondary:
-          "bg-primary-foreground text-primary hover:bg-primary hover:text-primary-foreground active:bg-primary-hover active:text-primary-foreground",
+          "bg-primary-foreground text-primary hover:bg-primary hover:text-primary-foreground hover:inset-ring hover:inset-ring-primary-foreground active:bg-primary-hover active:text-primary-foreground active:inset-ring active:inset-ring-primary-foreground",
         outline:
           "border border-primary bg-transparent text-primary hover:bg-primary hover:text-primary-foreground active:bg-primary-hover active:text-primary-foreground",
         // Chicago Hills: the outline's mirror for black surfaces (Hill Details "Run it with us").

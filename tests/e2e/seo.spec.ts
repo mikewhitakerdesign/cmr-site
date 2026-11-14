@@ -21,6 +21,8 @@ const CANONICAL: Array<[string, string]> = [
   ["/the-science", `${ORIGIN}/the-science`],
   ["/join", `${ORIGIN}/join`],
   ["/faq", `${ORIGIN}/faq`],
+  ["/brand", `${ORIGIN}/brand`],
+  ["/brand/color", `${ORIGIN}/brand/color`],
   ["/privacy", `${ORIGIN}/privacy`],
   ["/terms", `${ORIGIN}/terms`],
   ["/participation-guidelines", `${ORIGIN}/participation-guidelines`],
