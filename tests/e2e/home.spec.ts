@@ -502,25 +502,23 @@ test.describe("accessibility", () => {
     ["hero Find a Run", (p) => hero(p).locator("[data-slot=cta-link]").nth(0), 4.5],
     ["hero Join the club", (p) => hero(p).locator("[data-slot=cta-link]").nth(1), 4.5],
     ["Just show up heading", (p) => p.locator("#just-show-up-heading"), 3],
+    // Asserted since Brand Standards Review 01 (38% shade, full-white copy); an accepted exception before that.
+    ["Just show up copy", (p) => p.locator("#just-show-up-heading + p"), 4.5],
     ["Just show up Find a Run", (p) => jsu(p).locator("[data-slot=cta-link]").nth(0), 4.5],
     ["Just show up Join the club", (p) => jsu(p).locator("[data-slot=cta-link]").nth(1), 4.5],
   ];
 
   /**
-   * ACCEPTED ACCESSIBILITY EXCEPTIONS (Owner decision on PR #3, 2026-11-08).
+   * ACCEPTED ACCESSIBILITY EXCEPTION (Owner decision on PR #3, 2026-11-08).
    * The hero headline is solid white with no halo (final refinement, matching the
-   * "JUST SHOW UP." heading) over the pale sky, and Just show up keeps its original
-   * treatment (30% shade, 90% white copy). The Owner accepted their known contrast
-   * shortfall for this iteration. They do NOT meet
-   * WCAG AA 1.4.3 in their worst region and are not claimed to. They are measured
-   * and recorded on every run, but deliberately not asserted against a threshold
-   * (thresholds are not weakened; the two elements are simply outside the gate).
-   * Every other photo-text target above stays asserted. See the Work Item.
+   * "JUST SHOW UP." heading) over the pale sky. The Owner accepted its known
+   * contrast shortfall. It does NOT meet WCAG AA 1.4.3 in its worst region and is
+   * not claimed to. It is measured and recorded on every run, but deliberately
+   * not asserted against a threshold (thresholds are not weakened; the element is
+   * simply outside the gate). Every other photo-text target above stays asserted,
+   * including the Just show up copy since Brand Standards Review 01. See the Work Item.
    */
-  const ACCEPTED_EXCEPTIONS: [string, (p: Page) => Locator, number][] = [
-    ["hero headline", (p) => p.locator("#hero-heading"), 3],
-    ["Just show up copy", (p) => p.locator("#just-show-up-heading + p"), 4.5],
-  ];
+  const ACCEPTED_EXCEPTIONS: [string, (p: Page) => Locator, number][] = [["hero headline", (p) => p.locator("#hero-heading"), 3]];
 
   test("accepted exceptions are still measured and recorded (not asserted)", async ({ page }, info) => {
     await loadAll(page);

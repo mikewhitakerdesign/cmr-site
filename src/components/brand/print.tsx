@@ -3,7 +3,7 @@ import { BrandWordmark } from "@/components/brand/BrandWordmark";
 import { PrintPage, SpecList, StatusTag } from "@/components/brand/kit";
 import { LABEL } from "@/components/brand/styles";
 import { TopoPattern } from "@/components/home/TopoPattern";
-import { MANUAL, MANUAL_ADDRESS, STATUS, pdfPageMap, type BrandChapter, type Status } from "@/lib/brand/manual";
+import { LOGO_DOWNLOADS, MANUAL, MANUAL_ADDRESS, SITE_HOST, STATUS, pdfPageMap, type BrandChapter, type Status } from "@/lib/brand/manual";
 import { tintVars } from "@/lib/tints";
 import { cn } from "@/lib/utils";
 
@@ -66,12 +66,13 @@ export function PrintContents({ chapters, map }: { chapters: readonly BrandChapt
             </p>
           </div>
           <div>
-            <h3 className={cn(LABEL, "mb-3 text-[11px] text-foreground/65")}>How firm is each standard</h3>
+            <h3 className={cn(LABEL, "mb-3 text-foreground/65")}>How to read it</h3>
+            <p className="mb-3 max-w-[40ch] text-[13px] leading-[19px] text-foreground/75">Everything here is the standard. The few things not finished yet carry one of two tags.</p>
             <ul className="border-t border-foreground/20">
               {(Object.keys(STATUS) as Status[]).map((s) => (
                 <li key={s} className="flex items-baseline gap-3 border-b border-foreground/20 py-2">
-                  <StatusTag status={s} className="w-[92px] shrink-0 justify-center text-[9.5px]" />
-                  <span className="text-[12px] leading-4 text-foreground/75">{STATUS[s].meaning}</span>
+                  <StatusTag status={s} className="w-[100px] shrink-0 justify-center" />
+                  <span className="text-[13px] leading-[18px] text-foreground/75">{STATUS[s].meaning}</span>
                 </li>
               ))}
             </ul>
@@ -82,14 +83,14 @@ export function PrintContents({ chapters, map }: { chapters: readonly BrandChapt
             <li key={c.slug} className="flex flex-1 items-center gap-6 border-b border-foreground/25">
               <span className="w-8 shrink-0 font-mono text-[13px] text-foreground/65">{c.number}</span>
               <span className="w-[250px] shrink-0 text-[30px] leading-8 font-black tracking-[-0.03em]">{c.name}</span>
-              <span className="flex-1 text-[12.5px] leading-[17px] text-foreground/70">{c.summary}</span>
+              <span className="flex-1 text-[13px] leading-[18px] text-foreground/70">{c.summary}</span>
               <span className="w-8 shrink-0 text-right font-mono text-[13px]">{pad(map.chapters[i].opener)}</span>
             </li>
           ))}
           <li className="flex flex-1 items-center gap-6">
             <span className="w-8 shrink-0 font-mono text-[13px] text-foreground/65">—</span>
             <span className="w-[250px] shrink-0 text-[30px] leading-8 font-black tracking-[-0.03em]">Colophon</span>
-            <span className="flex-1 text-[12.5px] leading-[17px] text-foreground/70">About this document, and how it is made.</span>
+            <span className="flex-1 text-[13px] leading-[18px] text-foreground/70">About this document, and how it is made.</span>
             <span className="w-8 shrink-0 text-right font-mono text-[13px]">{pad(map.colophon)}</span>
           </li>
         </ol>
@@ -110,8 +111,9 @@ export function PrintColophon({ page }: { page: number }) {
               disagree. When they are rebuilt, both change.
             </p>
             <p className="mt-4 max-w-[40ch] text-[15px] leading-[23px] text-foreground/75">
-              Questions about using the brand go through the Questions form on any page of the site. Changes to a standard need the Owner&apos;s
-              approval; see Governance.
+              The logo files are downloaded from the website, at {SITE_HOST}
+              {LOGO_DOWNLOADS.section}. Questions about using the brand go through the Questions form on any page of the site. Changes to a standard
+              need the Owner&apos;s approval; see Governance.
             </p>
           </div>
           <BrandWordmark className="w-[340px] text-(--cmr-quiet-ink)" />
@@ -121,6 +123,7 @@ export function PrintColophon({ page }: { page: number }) {
             rows={[
               ["Document", MANUAL.title],
               ["Version", `${MANUAL.version}, ${MANUAL.status.toLowerCase()}`],
+              ["Status", "Awaiting the Owner's approval"],
               ["Edition date", longDate(MANUAL.date)],
               ["Owner", "Michael Whitaker, Founder & Director"],
               ["Live version", MANUAL_ADDRESS],
@@ -128,13 +131,14 @@ export function PrintColophon({ page }: { page: number }) {
               ["Page", "US Letter landscape, 11 × 8.5 in"],
               ["Color", "sRGB. Not a press-ready CMYK file."],
               ["Values", "Read from the site's design tokens at build time"],
+              ["Logo files", `${SITE_HOST}${LOGO_DOWNLOADS.section}`],
               ["Photography", "Homepage hero photograph: the Owner's. Other image rights are noted in Photography."],
               ["Trademarks", "™ appears as in the supplied artwork. This document makes no statement about registration."],
             ]}
           />
           <p className="mt-6 text-[12px] leading-[18px] text-foreground/65">
             © {MANUAL.date.slice(0, 4)} Chicago Mountain Runners. The marks and artwork shown are the property of Chicago Mountain Runners and may be
-            used only as these standards describe. Anything tagged Proposed or Unresolved is not an approved standard.
+            used only as these standards describe. This edition is a release candidate: it becomes version {MANUAL.version} when the Owner approves it.
           </p>
         </div>
       </div>

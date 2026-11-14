@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 import { TypeTester } from "@/components/brand/demos/TypeTester";
-import { Frame, Pending, Rule, Source, SpecList, SpecTable } from "@/components/brand/kit";
+import { Frame, Pending, Rule, SpecList, SpecTable } from "@/components/brand/kit";
 import { LABEL, PRINT_BOTTOM, PRINT_GROW, WEB_ONLY } from "@/components/brand/styles";
 import { EYEBROW } from "@/components/hills/styles";
 import { ArrowRightIcon } from "@/components/icons";
 import type { BrandChapter } from "@/lib/brand/manual";
-import { DISPLAY, HEADING_ROLES, LAYOUT, TEXT_ROLES, TYPE_SOURCES, type HeadingRoleKey } from "@/lib/brand/spec";
+import { DISPLAY, HEADING_ROLES, LAYOUT, TEXT_ROLES, type HeadingRoleKey } from "@/lib/brand/spec";
 import { cn } from "@/lib/utils";
 
 const ROLE_KEYS = Object.keys(HEADING_ROLES) as HeadingRoleKey[];
@@ -17,7 +17,7 @@ function Note({ n, title, children }: { n: number; title: string; children: Reac
       <span className="flex size-6 items-center justify-center rounded-full bg-foreground font-mono text-[12px] text-background">{n}</span>
       <span>
         <span className="block text-p-sm font-semibold">{title}</span>
-        <span className="block text-[13px] leading-[19px] text-foreground/70">{children}</span>
+        <span className="block text-[14px] leading-5 text-foreground/70">{children}</span>
       </span>
     </li>
   );
@@ -40,7 +40,6 @@ export const typography: BrandChapter = {
       id: "family",
       title: "Geist. Only Geist.",
       nav: "The family",
-      status: "established",
       lede: "CMR uses one type family for everything: Geist for words and Geist Mono for facts. There is no serif, no script and no second sans. The range comes from weight and size, not from more typefaces.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
@@ -66,24 +65,23 @@ export const typography: BrandChapter = {
                 <div key={name} className="border-t border-foreground pt-3">
                   <p className={cn("text-[40px] leading-none tracking-[-0.03em]", cls)}>Hill</p>
                   <p className="mt-2 text-p-sm font-semibold">{name}</p>
-                  <p className="text-[13px] leading-[18px] text-foreground/65">{use}</p>
+                  <p className="text-[14px] leading-5 text-foreground/65">{use}</p>
                 </div>
               ))}
             </div>
             <div className="mt-6 border-t border-foreground pt-3">
               <p className="font-mono text-[28px] leading-none">WED · 5:30 AM</p>
               <p className="mt-2 text-p-sm font-semibold">Geist Mono 400</p>
-              <p className="text-[13px] leading-[18px] text-foreground/65">Labels, times, measurements, sources</p>
+              <p className="text-[14px] leading-5 text-foreground/65">Labels, times, measurements, sources</p>
             </div>
             <SpecList
               className={cn("mt-6", PRINT_BOTTOM)}
               rows={[
                 ["License", "SIL Open Font License 1.1"],
-                ["Delivery", "Self-hosted by the site at build"],
-                ["Fallback", "ui-sans-serif, system-ui / ui-monospace"],
+                ["On the website", "Served by the site itself"],
+                ["Fallback", "The system sans and mono, only while Geist loads"],
               ]}
             />
-            <Source className="mt-4">{TYPE_SOURCES.fonts}; tokens: typography/font definitions.</Source>
           </div>
         </div>
       ),
@@ -92,12 +90,11 @@ export const typography: BrandChapter = {
       id: "display",
       title: "Five display roles.",
       nav: "Display roles",
-      status: "established",
-      lede: "Every large line on the site is one of five roles. A role fixes the size at three widths, and the browser draws a straight line between them, so type never jumps between a phone and a desktop.",
+      lede: "Every large line on the website is one of five roles. A role fixes the size at three screen widths, and the browser draws a straight line between them, so type never jumps between a phone and a desktop.",
       render: () => (
         <>
           <SpecTable
-            caption="Display type roles: font size over line height in pixels at the three design widths"
+            caption="Display type roles on the website: font size over line height in pixels at the three design widths"
             head={["Role", `Phone ${LAYOUT.anchors.mobile}`, `Tablet ${LAYOUT.anchors.tablet}`, `Desktop ${LAYOUT.anchors.desktop}`, "Use"]}
             mono={[1, 2, 3]}
             rows={ROLE_KEYS.map((k) => {
@@ -123,9 +120,6 @@ export const typography: BrandChapter = {
             <p className="mt-2 mb-6 max-w-[60ch] text-p-sm text-foreground/70">Pick a role, type a headline, and drag the viewport. The numbers are the ones a browser would compute.</p>
             <TypeTester />
           </div>
-          <Source className="mt-6">
-            {TYPE_SOURCES.roles}; {TYPE_SOURCES.fluid}.
-          </Source>
         </>
       ),
     },
@@ -133,8 +127,7 @@ export const typography: BrandChapter = {
       id: "details",
       title: "Heavy, tight, and it ends.",
       nav: "Details",
-      status: "established",
-      lede: "Four habits make a line of Geist Black read as CMR: the weight, the tracking, the leading, and the period at the end.",
+      lede: "Four habits make a line of Geist Black read as CMR in any medium: the weight, the tracking, the leading, and the period at the end.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
           <Frame className="relative flex min-h-[340px] items-center p-8 md:p-12 lg:col-span-7 [.brand-print_&]:min-h-0">
@@ -153,14 +146,14 @@ export const typography: BrandChapter = {
               <Note n={1} title={`Weight ${DISPLAY.weight}.`}>
                 Geist Black for every headline. Never bold, never semibold, at display size.
               </Note>
-              <Note n={2} title={`Tracking ${DISPLAY.tracking.headings}.`}>
-                Tight enough that words lock together. All-caps statements go to {DISPLAY.tracking.statements}. If letters collide, loosen until they stop.
+              <Note n={2} title={`Tracking about ${DISPLAY.tracking.headings}.`}>
+                Tight enough that words lock together; all-caps statements a little tighter ({DISPLAY.tracking.statements}). If letters collide at a size, loosen until they stop.
               </Note>
               <Note n={3} title="Leading at or under 1.">
-                Line height is 0.9 to 1.0 of the size. Lines of a headline should nearly touch.
+                Line height about 0.9 to 1.0 of the size. Lines of a headline should nearly touch.
               </Note>
-              <Note n={4} title={`The period, in ${DISPLAY.stylisticSet}.`}>
-                Headlines end. The site turns on Geist&apos;s stylistic set 08 for display headings, and in some headlines for the period alone.
+              <Note n={4} title="The period.">
+                Headlines end. Geist&apos;s stylistic set 08 gives the display period its square shape; the site turns it on for display headings.
               </Note>
             </ol>
             <div className={cn("mt-6 grid gap-6", PRINT_BOTTOM)}>
@@ -175,18 +168,17 @@ export const typography: BrandChapter = {
       id: "text",
       title: "Text roles.",
       nav: "Text roles",
-      status: "established",
-      lede: "Under the display line, sizes come from the MWDS scale and stay fixed. Body copy is softened with opacity, so it sits back from a headline without a second gray.",
+      lede: "Under the display line, the website's sizes come from the MWDS scale and stay fixed. Body copy is softened with opacity, so it sits back from a headline without a second gray.",
       render: () => (
         <>
           <SpecTable
-            caption="Text roles: typeface, weight, size and use"
-            head={["Role", "Typeface", "Weight", "Size / leading, px", "Use", "Source"]}
-            mono={[3, 5]}
-            rows={TEXT_ROLES.map((r) => [r.name, r.font, String(r.weight), r.size, r.detail, r.source])}
+            caption="Text roles on the website: typeface, weight, size and use"
+            head={["Role", "Typeface", "Weight", "Size / leading, px", "Use"]}
+            mono={[3]}
+            rows={TEXT_ROLES.map((r) => [r.name, r.font, String(r.weight), r.size, r.detail])}
           />
           <div className={cn("mt-10 grid gap-x-8 gap-y-6 md:grid-cols-3", PRINT_BOTTOM)}>
-            <Rule title="18 px is the reading size.">Section copy is 18 over 27, at a measure of 560 to 680 px. Long-form reading (The Science) opens the leading to 30.</Rule>
+            <Rule title="A comfortable reading size.">On the website, section copy is 18 over 27 at a measure of 560 to 680 px; long-form reading (The Science) opens the leading to 30. Elsewhere, set it for the reading distance.</Rule>
             <Rule title="Soften with opacity.">70% black on white, 90% white on black. One ink per surface, dimmed, instead of a palette of grays.</Rule>
             <Rule title="Left-aligned, ragged right.">Body copy is never justified or centered. Headlines may be balanced; paragraphs are left alone.</Rule>
           </div>
@@ -197,7 +189,6 @@ export const typography: BrandChapter = {
       id: "mono",
       title: "Mono is for facts.",
       nav: "Mono",
-      status: "established",
       lede: "Geist Mono marks anything that is a record: a time, a number, an index, a label, a source. If a line is in mono, a reader can assume someone measured it or filed it.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
@@ -224,7 +215,6 @@ export const typography: BrandChapter = {
               </div>
               <p className="mt-4 font-mono text-[13px] leading-5 text-foreground/70">Shape and figures from USGS 3DEP elevation data, approximate.</p>
             </Frame>
-            <Source className="mt-4">Hill names, places and rise figures: src/lib/hills.ts and src/lib/hill-profiles.generated.ts.</Source>
           </div>
           <div className="flex flex-col lg:col-span-5">
             <SpecTable
@@ -241,7 +231,7 @@ export const typography: BrandChapter = {
               ]}
             />
             <div className={cn("mt-6 grid gap-6", PRINT_BOTTOM)}>
-              <Rule title="Uppercase and tracked, when it is a label.">14 over 21, +0.107 em. Values and captions stay in sentence case at normal spacing.</Rule>
+              <Rule title="Uppercase and tracked, when it is a label.">About +0.1 em of tracking (14 over 21 on the website). Values and captions stay in sentence case at normal spacing.</Rule>
               <Rule title="Never for sentences with feelings.">Mono does not tell jokes. Voice lives in Geist; mono is the footnote under it.</Rule>
             </div>
           </div>
@@ -252,7 +242,6 @@ export const typography: BrandChapter = {
       id: "hierarchy",
       title: "Hierarchy in one view.",
       nav: "Hierarchy",
-      status: "established",
       lede: "A typical CMR section, with every level present. Four steps down from the headline to the caption, each one obviously smaller than the last.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
@@ -305,32 +294,28 @@ export const typography: BrandChapter = {
       id: "print",
       title: "Off the screen.",
       nav: "Print and apparel",
-      status: "proposed",
-      lede: "The pixel sizes above belong to the website. On paper and fabric, keep the relationships and let the sizes follow the format. These are starting points for a designer, not tested specifications.",
+      lede: "The pixel sizes above belong to the website. On paper and fabric, keep the relationships and let the sizes follow the format.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
           <div className="lg:col-span-7">
             <SpecTable
-              caption="Proposed typographic relationships for print and apparel"
+              caption="Typographic relationships for print and apparel"
               head={["Element", "Keep", "Let go of"]}
               rows={[
                 ["Display", `Geist Black. Tracking ${DISPLAY.tracking.headings}. Leading 0.9 to 1.0. Final period.`, "Any pixel size. Scale to the format; the headline should be the largest thing by a wide margin."],
-                ["Body", "Geist Regular, left-aligned, about 1.5 leading, at a tint of the ink.", "18 px. Set by reading distance: this PDF's body is about 9.6 pt."],
-                ["Labels", "Geist Mono, uppercase, tracked about +10%.", "Fixed sizes. Keep them legible first: this PDF's smallest mono is about 6 pt."],
+                ["Body", "Geist Regular, left-aligned, about 1.5 leading, at a tint of the ink.", "18 px. Set it by reading distance: this PDF's body is about 9.6 pt."],
+                ["Labels", "Geist Mono, uppercase, tracked about +10%.", "Fixed sizes. Keep them legible first: in this PDF, about 7 pt and up."],
                 ["Slogans on apparel", "Geist Black, all caps or sentence case with its period. One line or a tight stack.", "Fluid sizing. Convert to outlines before sending to a vendor."],
-                ["The wordmark", "Its artwork, as supplied.", "Retyping it. Never rebuild the wordmark from the font."],
+                ["The wordmark", "Its master file, as supplied.", "Retyping it. Never rebuild the wordmark from the font."],
               ]}
             />
-            <Source className="mt-4">Sizes for this PDF: src/styles/brand.css (1320 × 1020 px page, printed at 80%).</Source>
           </div>
           <div className="flex flex-col gap-4 lg:col-span-5">
             <Rule title="No faux styles.">No artificial bold, no squeezed or stretched type, no outlined letters. If Geist Black is unavailable, stop and get it.</Rule>
             <Rule title="No substitutes.">Do not swap in Helvetica, Inter or a system font for a deliverable. The fallback stack exists for the half-second before the web font loads.</Rule>
-            <Pending status="unresolved" title="Minimum sizes on fabric.">
-              Screen printing, heat transfer and embroidery each have a smallest reliable stroke. None has been tested with CMR artwork. Ask the vendor; proof it.
-            </Pending>
-            <Pending status="established" title="Sharing the fonts.">
-              Geist is open source under the SIL Open Font License. CMR does not redistribute font files: designers and vendors download them from the publisher, with the license.
+            <Rule title="Getting the fonts.">Geist is open source under the SIL Open Font License. Designers and vendors download it from the publisher, with the license; CMR does not pass font files around.</Rule>
+            <Pending title="Smallest type on fabric.">
+              Screen printing, heat transfer and embroidery each have a smallest reliable stroke. Agree it with the vendor and proof it.
             </Pending>
           </div>
         </div>

@@ -1,9 +1,11 @@
 import type { CSSProperties, ReactNode } from "react";
 import { BrandBadge } from "@/components/brand/BrandBadge";
-import { Frame, Pending, Rule, Source, SpecTable, StatusTag } from "@/components/brand/kit";
-import { LABEL, PRINT_BOTTOM, PRINT_GROW } from "@/components/brand/styles";
+import { Frame, Rule, SpecTable } from "@/components/brand/kit";
+import { LABEL, PRINT_BOTTOM, PRINT_GROW, PRINT_ONLY, WEB_ONLY } from "@/components/brand/styles";
+import { HillHeroBackground, seedFor } from "@/components/hills/HillHero";
 import { TopoPattern } from "@/components/home/TopoPattern";
-import type { BrandChapter, Status } from "@/lib/brand/manual";
+import type { BrandChapter } from "@/lib/brand/manual";
+import { onDarkSurface } from "@/lib/surfaces";
 import { tintVars } from "@/lib/tints";
 import { cn } from "@/lib/utils";
 
@@ -22,17 +24,14 @@ function Tension({ a, b, children }: { a: string; b: string; children: ReactNode
   );
 }
 
-/** A statement with its evidence level. */
-function Statement({ label, status, children, note }: { label: string; status: Status; children: ReactNode; note: string }) {
+/** One line of the brand's own description of itself. */
+function Statement({ label, children, note }: { label: string; children: ReactNode; note: string }) {
   return (
     <div className="grid gap-x-8 gap-y-2 border-t border-foreground py-5 md:grid-cols-[9rem_1fr] [.brand-print_&]:py-4">
+      <p className={cn(LABEL, "pt-1.5 text-foreground/65")}>{label}</p>
       <div>
-        <p className={cn(LABEL, "text-foreground/65")}>{label}</p>
-        <StatusTag status={status} className="mt-2" />
-      </div>
-      <div>
-        <p className="text-[22px] leading-[28px] font-black tracking-[-0.02em] text-balance [.brand-print_&]:text-[20px] [.brand-print_&]:leading-[25px]">{children}</p>
-        <p className="mt-1.5 text-[13px] leading-[19px] text-foreground/65">{note}</p>
+        <p className="text-[24px] leading-[30px] font-black tracking-[-0.02em] text-balance [.brand-print_&]:text-[22px] [.brand-print_&]:leading-[27px]">{children}</p>
+        <p className="mt-1.5 text-[14px] leading-5 text-foreground/65">{note}</p>
       </div>
     </div>
   );
@@ -71,12 +70,16 @@ export const premise: BrandChapter = {
       id: "idea",
       title: "Flat is a state of mind.",
       nav: "The idea",
-      status: "established",
       lede: "Chicago is flat. People here train for mountain races anyway, on sledding hills and old landfills, one repeat at a time. CMR is the club for that, and the gap between the name and the terrain is the whole brand.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
-          <Frame ground="black" className="flex min-h-[340px] items-end p-8 lg:col-span-6 [.brand-print_&]:min-h-0">
-            <TopoPattern className="-z-10 text-(--cmr-contour-on-dark)" />
+          {/* A plain black surface (not the token-inverting black frame), as the site's own heroes are, so the contour field keeps its black. */}
+          <Frame ground="none" className={cn("flex min-h-[340px] items-end bg-primary p-8 text-primary-foreground lg:col-span-6 [.brand-print_&]:min-h-0", onDarkSurface)}>
+            {/* The site's own hero background: the slow contour field (still under reduced motion or Pause motion). A still frame in the PDF. */}
+            <div aria-hidden className={cn("absolute inset-0 -z-10", WEB_ONLY)}>
+              <HillHeroBackground seed={seedFor("brand-premise-idea")} />
+            </div>
+            <TopoPattern className={cn("-z-10 text-(--cmr-contour-on-dark)", PRINT_ONLY)} />
             <p className="text-[clamp(52px,7.4vw,104px)] leading-[0.9] font-black tracking-[-0.045em] [.brand-print_&]:text-[92px]">
               MAKE YOUR
               <br />
@@ -84,21 +87,18 @@ export const premise: BrandChapter = {
             </p>
           </Frame>
           <div className="flex flex-col justify-between lg:col-span-6">
-            <div>
-              <Tension a="Urban" b="Alpine">
-                Real Chicago places, described in the language of mountains. Cricket Hill gets a summit elevation.
-              </Tension>
-              <Tension a="Technical" b="Playful">
-                The exercise science is sourced and the elevation data is real. The headline above it is a joke.
-              </Tension>
-              <Tension a="Disciplined" b="Expressive">
-                Black, white and one typeface, then a tie-dye circle. The restraint is what makes the color land.
-              </Tension>
-              <Tension a="Community" b="Individual">
-                Everyone climbs the same hill together, each at their own pace and for their own count.
-              </Tension>
-            </div>
-            <Source className="mt-4">Homepage hero and closing statement; .aiom/profile.md (Owner&apos;s brand intent, 2026-08-20).</Source>
+            <Tension a="Urban" b="Alpine">
+              Real Chicago places, described in the language of mountains. Cricket Hill gets a summit elevation.
+            </Tension>
+            <Tension a="Technical" b="Playful">
+              The exercise science is sourced and the elevation data is real. The headline above it is a joke.
+            </Tension>
+            <Tension a="Disciplined" b="Expressive">
+              Black, white and one typeface, then a tie-dye circle. The restraint is what makes the color land.
+            </Tension>
+            <Tension a="Community" b="Individual">
+              Everyone climbs the same hill together, each at their own pace and for their own count.
+            </Tension>
           </div>
         </div>
       ),
@@ -107,42 +107,34 @@ export const premise: BrandChapter = {
       id: "today",
       title: "Today, and later.",
       nav: "Today and later",
-      status: "inferred",
-      lede: "CMR is young, and the brand should sound like it knows that. Write about what exists in the present tense and what is planned in the future tense. Never the other way round.",
+      lede: "CMR is young, and the brand should sound like it knows that. Write about what exists in the present tense and what is planned in the future tense.",
       render: () => (
         <div className={cn("grid gap-x-12 gap-y-8 lg:grid-cols-12", PRINT_GROW)}>
           <div className="lg:col-span-7">
-            <Statement label="Purpose" status="proposed" note="Why CMR exists. Drawn from the founder's letter on the About page.">
-              Make climbing possible, and a little funny, in a city with nowhere to climb.
+            <Statement label="Purpose" note="Why CMR exists.">
+              Making elevation gain fun and accessible for Chicago runners through the joys of hill repeats.
             </Statement>
-            <Statement label="Mission" status="proposed" note="What CMR does now. Each verb is something the site already does.">
+            <Statement label="What we do" note="Each verb is something the site already does.">
               Find Chicago&apos;s hills, document them honestly, and run them again and again with whoever shows up.
             </Statement>
-            <Statement label="Vision" status="proposed" note="Where it is going. An aspiration, not a claim.">
-              A Chicago where training for mountains does not mean leaving town.
-            </Statement>
-            <Statement label="Promise" status="established" note="The tooltip on every Join button, word for word.">
+            <Statement label="Promise" note="The line on every Join button. It is about joining and showing up.">
               No fees. No commitments. Lots of elevation.
             </Statement>
           </div>
           <div className="flex flex-col gap-6 lg:col-span-5">
             <div className="rounded-xl bg-muted p-6 [.brand-print_&]:p-5">
-              <h3 className={cn(LABEL, "text-foreground/65")}>True today</h3>
+              <h3 className={cn(LABEL, "text-foreground/65")}>Today</h3>
               <ul className="mt-3 space-y-2 text-p-sm text-foreground/85">
-                <li>An independent, free, informal running community in Chicago, founded and directed by Michael Whitaker.</li>
-                <li>Five hills documented, with terrain drawn from public elevation data.</li>
-                <li>The Science: a sourced, long-form guide to hill repeats.</li>
-                <li>Joining is open to adults 18 and older.</li>
+                <li>An independent running community in Chicago, free to join, founded and directed by Michael Whitaker.</li>
+                <li>Five hills documented, with terrain from public elevation data, and The Science, a sourced guide to hill repeats.</li>
                 <li>Official group runs are on hold while park-use requirements are reviewed.</li>
               </ul>
             </div>
             <div className="rounded-xl border border-dashed border-foreground/50 p-6 [.brand-print_&]:p-5">
-              <h3 className={cn(LABEL, "text-foreground/65")}>Planned, not yet real</h3>
+              <h3 className={cn(LABEL, "text-foreground/65")}>Planned</h3>
               <ul className="mt-3 space-y-2 text-p-sm text-foreground/85">
-                <li>A weekly running calendar and group runs.</li>
-                <li>Apparel and merchandise.</li>
-                <li>Articles, community elevation tracking, member features.</li>
-                <li>CMR-created races.</li>
+                <li>Weekly group runs, once the hold lifts.</li>
+                <li>Apparel, and perhaps a membership kit: optional purchases, never a condition of joining.</li>
               </ul>
             </div>
           </div>
@@ -153,7 +145,6 @@ export const premise: BrandChapter = {
       id: "audience",
       title: "Who it is for.",
       nav: "Audience",
-      status: "established",
       lede: "The founder's letter names three kinds of runner. The fourth circle is everyone who is not a runner at all but still has to understand, permit, print or write about the club.",
       render: () => (
         <>
@@ -172,11 +163,10 @@ export const premise: BrandChapter = {
             </AudienceCircle>
           </ul>
           <div className={cn("mt-10 grid gap-x-8 gap-y-6 md:grid-cols-3", PRINT_BOTTOM)}>
-            <Rule title="First-timers to ultra-marathoners.">One of the four lines on the About page. The range is the point: never write for only one end of it.</Rule>
+            <Rule title="First-timers to ultra-marathoners.">The range is the point: never write for only one end of it.</Rule>
             <Rule title="Adults only.">Membership and organized runs are for people 18 and older. Nothing in the brand is aimed at children.</Rule>
-            <Rule title="Free.">No dues, no minimum mileage, no attendance requirement. If that ever changes for one activity, it is labeled clearly.</Rule>
+            <Rule title="Free to show up.">No dues, no minimum mileage, no attendance requirement. Anything CMR sells, like a shirt, is optional and labeled as such.</Rule>
           </div>
-          <Source className="mt-6">About page, &ldquo;From mountains to molehills.&rdquo;; src/content/faq.ts; Join page essentials.</Source>
         </>
       ),
     },
@@ -184,8 +174,7 @@ export const premise: BrandChapter = {
       id: "personality",
       title: "Serious. Not solemn.",
       nav: "Personality",
-      status: "established",
-      lede: "The Owner's own description: simple, minimalist, matter-of-fact, witty and slightly sarcastic. The humor comes from calling ourselves Mountain Runners in a city without mountains, and it should not be over-explained.",
+      lede: "Simple, minimalist, matter-of-fact, witty and slightly sarcastic. The humor comes from calling ourselves Mountain Runners in a city without mountains, and it should not be over-explained.",
       render: () => (
         <>
           <SpecTable
@@ -205,7 +194,7 @@ export const premise: BrandChapter = {
             <Rule title="Any pace.">Run, jog, hike, or mix it up.</Rule>
             <Rule title="Count honestly.">Approximate means approximate.</Rule>
             <Rule title="Respect the park.">These are shared public places.</Rule>
-            <Rule title="Keep it free.">No fee to join the club.</Rule>
+            <Rule title="Free to join.">Joining and showing up cost nothing.</Rule>
           </div>
         </>
       ),
@@ -214,14 +203,13 @@ export const premise: BrandChapter = {
       id: "architecture",
       title: "One brand. Three expressions.",
       nav: "Architecture",
-      status: "established",
-      lede: "Chicago Mountain Runners is the only brand. Hills on Repeat, Hills on Hills and Get High in the City are things CMR says, not things CMR owns separately. None has its own logo, and none carries a ™.",
+      lede: "Chicago Mountain Runners is the brand. Hills on Repeat, Hills on Hills and Get High in the City are things CMR says: expressions of the same identity, with no logos of their own.",
       render: () => (
         <>
           <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,260px)_1fr]">
             <div className="flex flex-col items-center justify-center rounded-xl bg-primary p-6 text-primary-foreground">
               <BrandBadge ink="white" className="w-[150px]" />
-              <p className={cn(LABEL, "mt-4 text-center text-[11px] text-primary-foreground/80")}>The master brand</p>
+              <p className={cn(LABEL, "mt-4 text-center text-[11px] text-primary-foreground/80")}>The core brand</p>
             </div>
             <div className="grid gap-4 md:grid-cols-3">
               <Expression role="The practice" name="Hills on Repeat">
@@ -237,22 +225,17 @@ export const premise: BrandChapter = {
           </div>
           <SpecTable
             className="mt-8 [.brand-print_&]:mt-6"
-            caption="Usage boundaries for the three CMR expressions"
-            head={["Expression", "In use today", "May become", "Never"]}
+            caption="How the three CMR expressions are used"
+            head={["Expression", "In use today", "Where it can go"]}
             rows={[
-              ["Hills on Repeat", "Navigation, page title and hero of /calendar.", "A run series name; a line on apparel.", "A separate logo, club or account."],
-              ["Hills on Hills", "Navigation and title of /hills; a headline on About; a forwarding domain.", "A map, a zine, a merchandise capsule.", "A second brand competing with the CMR name."],
-              ["Get High in the City", "One homepage headline.", "A campaign line; an apparel slogan.", "Navigation, or anywhere near safety, legal or park-facing communication."],
+              ["Hills on Repeat", "Navigation, page title and hero of the running calendar.", "A run series name; a line on apparel."],
+              ["Hills on Hills", "Navigation and title of the hills directory; a headline on About; a forwarding domain.", "A map, a zine, a merchandise capsule."],
+              ["Get High in the City", "One homepage headline.", "A campaign line or an apparel slogan. Kept away from safety, legal and park-facing communication."],
             ]}
           />
-          <div className={cn("mt-6 grid gap-4 md:grid-cols-2", PRINT_BOTTOM)}>
-            <Pending status="proposed" title="The “may become” and “never” columns are recommendations.">
-              The architecture itself is the Owner&apos;s decision (2026-11-13). The boundaries around each expression are proposed here for review.
-            </Pending>
-            <Pending status="established" title="The Science, Join and About are sections, not expressions.">
-              They are parts of the website with plain names. They take the full CMR identity and need no rules of their own.
-            </Pending>
-          </div>
+          <p className={cn("mt-6 max-w-[80ch] text-p-sm text-foreground/75", PRINT_BOTTOM)}>
+            The Science, Join and About are sections of the website, not expressions. They take the full CMR identity and need no rules of their own.
+          </p>
         </>
       ),
     },
@@ -260,7 +243,6 @@ export const premise: BrandChapter = {
       id: "messaging",
       title: "What we say first.",
       nav: "Messaging",
-      status: "inferred",
       lede: "The order the homepage already follows, top to bottom. When there is room for one line, use the first that fits. When there is room for more, keep the order.",
       render: () => (
         <div className={cn("grid gap-x-12 gap-y-8 lg:grid-cols-12", PRINT_GROW)}>
@@ -278,7 +260,7 @@ export const premise: BrandChapter = {
                 <div>
                   <p className={cn(LABEL, "text-foreground/65")}>{k}</p>
                   <p className="mt-1 text-[21px] leading-[26px] font-black tracking-[-0.02em] text-balance">{line}</p>
-                  <p className="mt-1 text-[13px] leading-[19px] text-foreground/65">{note}</p>
+                  <p className="mt-1 text-[14px] leading-5 text-foreground/65">{note}</p>
                 </div>
               </li>
             ))}
@@ -295,7 +277,6 @@ export const premise: BrandChapter = {
                 ["Hills, mountains, mtns", "Interchangeably and with a straight face. See Voice."],
               ]}
             />
-            <Source className="mt-4">Terminology: Owner decision, 2026-11-13. Order: src/app/page.tsx.</Source>
           </div>
         </div>
       ),

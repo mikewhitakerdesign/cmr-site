@@ -132,6 +132,15 @@ try {
 
   for (const src of brokenImages) report.problems.push(`Image did not load: ${src}`);
 
+  // A link in the print route becomes a link in the PDF, resolved against this build server
+  // (http://localhost:…), so a reader would get a dead address. The PDF prints addresses as text instead.
+  const serverLinks = await page.evaluate(() =>
+    [...document.querySelectorAll("[data-slot=brand-print] a[href]")]
+      .filter((a) => a.getClientRects().length > 0 && getComputedStyle(a).visibility !== "hidden" && !a.getAttribute("href").startsWith("#"))
+      .map((a) => `${a.getAttribute("href")} ("${(a.textContent ?? "").trim().slice(0, 30)}")`),
+  );
+  for (const l of serverLinks) report.problems.push(`A link would point at the build server in the PDF: ${l}`);
+
   if (report.problems.length) {
     console.error(`Brand Standards PDF: ${report.problems.length} problem(s), nothing written.\n`);
     for (const p of report.problems) console.error(`  - ${p}`);

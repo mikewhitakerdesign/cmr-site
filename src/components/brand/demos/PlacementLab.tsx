@@ -37,7 +37,7 @@ export function PlacementLab() {
       <div className="@container rounded-xl bg-muted p-6 md:p-10">
         <Tee view={view} ground={ground} art={art} />
         <p className="mt-6 flex justify-center">
-          <StatusTag status="proposed" />
+          <StatusTag status="provisional" />
         </p>
       </div>
       <div className="flex flex-col gap-6">

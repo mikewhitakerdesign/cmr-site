@@ -1,9 +1,9 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { GradientLab } from "@/components/brand/demos/GradientLab";
-import { Figure, Pending, Rule, Source, SpecList, SpecTable, StatusTag } from "@/components/brand/kit";
+import { Figure, Pending, Rule, SpecList, SpecTable } from "@/components/brand/kit";
 import { LABEL, PRINT_BOTTOM, PRINT_FILL, PRINT_FILL_COL, PRINT_GROW, PRINT_ONLY, PRINT_ROWS_1, WEB_ONLY } from "@/components/brand/styles";
-import type { BrandChapter, Status } from "@/lib/brand/manual";
+import type { BrandChapter } from "@/lib/brand/manual";
 import { MESH_OPACITY } from "@/lib/brand/spec";
 import { cn } from "@/lib/utils";
 
@@ -20,15 +20,12 @@ function Photo({ src, position = "50% 72%", gradient = 0, shade = 0, className, 
   );
 }
 
-function LibraryCard({ title, status, statusLabel, rows, children }: { title: string; status: Status; statusLabel: string; rows: [string, string][]; children: ReactNode }) {
+function LibraryCard({ title, rights, rows, children }: { title: string; rights: string; rows: [string, string][]; children: ReactNode }) {
   return (
     <div className="flex min-h-0 flex-col">
       <div className={cn("relative aspect-[4/3]", PRINT_FILL)}>{children}</div>
       <p className="mt-4 text-[20px] leading-6 font-black tracking-[-0.02em]">{title}</p>
-      <p className="mt-2 flex items-center gap-2 text-[13px] leading-5 text-foreground/75">
-        <StatusTag status={status} /> {statusLabel}
-      </p>
-      <SpecList className="mt-3" rows={rows} />
+      <SpecList className="mt-3" rows={[...rows, ["Rights", rights]]} />
     </div>
   );
 }
@@ -61,21 +58,19 @@ export const photography: BrandChapter = {
   number: "06",
   title: "Photography.",
   name: "Photography",
-  summary: "Real hills, real weather, one small person. How CMR chooses, crops and treats photographs, and what it must be able to prove about each one.",
+  summary: "Real places, real weather, real people. How CMR chooses, crops and treats photographs, and what it must be able to stand behind in each one.",
   plates: [
     {
       id: "library",
       title: "Three photographs.",
       nav: "The library",
-      status: "established",
       lede: "That is the whole library today. A small set is not a weakness: it is why the site looks like one place and not a stock catalog.",
       render: () => (
         <>
           <div className={cn("grid gap-x-6 gap-y-10 md:grid-cols-3", PRINT_GROW, PRINT_ROWS_1)}>
             <LibraryCard
               title="The crest."
-              status="established"
-              statusLabel="Rights confirmed by the Owner."
+              rights="The Owner's photograph. Cleared."
               rows={[
                 ["Subject", "A lone runner on the crest of Cricket Hill"],
                 ["Used", "Homepage hero"],
@@ -86,8 +81,7 @@ export const photography: BrandChapter = {
             </LibraryCard>
             <LibraryCard
               title="The tree line."
-              status="unresolved"
-              statusLabel="Rights not yet verified."
+              rights="Not yet on record. Website only."
               rows={[
                 ["Subject", "Trees and long shadows on the grass"],
                 ["Used", "“Just show up.” on three pages"],
@@ -98,8 +92,7 @@ export const photography: BrandChapter = {
             </LibraryCard>
             <LibraryCard
               title="The path."
-              status="unresolved"
-              statusLabel="Consent and rights not yet verified."
+              rights="Cleared for its use on About."
               rows={[
                 ["Subject", "Two runners in a frosty field at sunrise, Cricket Hill behind"],
                 ["Used", "About page card, black and white"],
@@ -107,42 +100,40 @@ export const photography: BrandChapter = {
               ]}
             >
               <div className="flex size-full items-center justify-center rounded-xl border border-dashed border-foreground/50 p-6 text-center">
-                <p className="max-w-[26ch] text-p-sm text-foreground/70">
-                  Not reproduced in this manual. It shows identifiable people, and consent for use beyond the About page has not been confirmed.
+                <p className="max-w-[28ch] text-p-sm text-foreground/70">
+                  Not reproduced here. It shows recognizable people and is cleared for the About page; any other use is asked for first.
                 </p>
               </div>
             </LibraryCard>
           </div>
-          <Source className="mt-6">public/home/README.md (provenance of every image); rights status: Owner, 2026-11-13.</Source>
         </>
       ),
     },
     {
       id: "subject",
-      title: "Small runner. Real hill.",
+      title: "Real places, real people.",
       nav: "Subject",
-      status: "inferred",
-      lede: "Three photographs are enough to see the pattern. The place is the subject. People are small in it or caught off guard in it, and nobody is performing athleticism for the camera.",
+      lede: "The library so far is landscapes, but the approach covers whatever comes next: group runs, details, apparel. Photograph what actually happened, where it happened, in the weather it happened in. Nobody performs athleticism for the camera.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
-          <Figure className={cn("lg:col-span-7", PRINT_FILL_COL)} caption="The homepage photograph, with no headline over it. The runner is a speck on the crest.">
+          <Figure className={cn("lg:col-span-7", PRINT_FILL_COL)} caption="The homepage photograph, with no headline over it. The place is the subject; the runner is a speck on the crest.">
             <Photo src={HERO} position="50% 74%" className={cn("aspect-[4/3]", PRINT_FILL)} sizes="(min-width: 1024px) 760px, 100vw" />
           </Figure>
           <div className="flex flex-col lg:col-span-5">
-            <div className="grid gap-6">
-              <Rule title="The hill is the hero.">Wide frames, low horizons, a lot of sky or a lot of grass. The terrain should look bigger than it is, by framing and not by retouching.</Rule>
-              <Rule title="People are small, or candid.">A figure in the distance, or friends mid-laugh after a run. Not a posed start line, not a flexed calf.</Rule>
-              <Rule title="Chicago, recognizably.">Lakefront grass, bare trees, a path worn into a sledding hill. If the picture could be Colorado, it is the wrong picture.</Rule>
-              <Rule title="Whatever the weather is.">Frost, fog, flat gray light and long winter shadows are all on brand. Bad weather, good hills.</Rule>
+            <div className="grid gap-5">
+              <Rule title="Places.">Wide frames and real terrain. A hill should look as big as framing can make it, never bigger than retouching would.</Rule>
+              <Rule title="People.">Group runs, the walk back down, friends mid-laugh after a repeat. Candid over posed; recognizable people only with their agreement.</Rule>
+              <Rule title="Details and things.">Shoes on frost, a watch at the summit, a shirt on a real person on a real hill. Apparel is shown being worn, where it was worn.</Rule>
+              <Rule title="Chicago, in any weather.">Lakefront grass, bare trees, fog, flat gray light, snow. If the picture could be Colorado, it is the wrong picture.</Rule>
             </div>
             <SpecTable
               className={PRINT_BOTTOM}
-              caption="Photography subjects to avoid"
+              caption="Photography to avoid"
               head={["Not CMR", "Why"]}
               rows={[
                 ["Stock mountains and ridgelines", "The joke only works if the hills are ours."],
-                ["Staged group shots", "Official group runs are on hold. Never imply a run that did not happen."],
-                ["Race-finish heroics", "The club is about showing up, not podiums."],
+                ["Staged activity", "Never imply a run, a crowd or an event that did not happen."],
+                ["Podium heroics", "The club is about showing up, not winning."],
               ]}
             />
           </div>
@@ -153,8 +144,7 @@ export const photography: BrandChapter = {
       id: "treatment",
       title: "Grade and wash.",
       nav: "Treatment",
-      status: "established",
-      lede: "A photograph gets three things done to it, in this order: a crop, a light grade toward richer color, and the mesh gradient laid over the top. Nothing is retouched, stretched or generated.",
+      lede: "A landscape gets three things done to it, in this order: a crop, a light grade toward richer color, and the mesh gradient laid over the top. Nothing is retouched, stretched or generated.",
       render: () => (
         <>
           <div className={WEB_ONLY}>
@@ -167,7 +157,7 @@ export const photography: BrandChapter = {
             <Figure className={PRINT_FILL_COL} caption={`Gradient at ${MESH_OPACITY.hero}%: the homepage hero.`}>
               <Photo src={HERO} gradient={MESH_OPACITY.hero} className={PRINT_FILL} />
             </Figure>
-            <Figure className={PRINT_FILL_COL} caption={`Gradient at ${MESH_OPACITY.justShowUp}%: the most it is ever used.`}>
+            <Figure className={PRINT_FILL_COL} caption={`Gradient at ${MESH_OPACITY.justShowUp}%: the stronger treatment, used on “Just show up.”`}>
               <Photo src={HERO} gradient={MESH_OPACITY.justShowUp} className={PRINT_FILL} />
             </Figure>
           </div>
@@ -176,16 +166,15 @@ export const photography: BrandChapter = {
               <SpecList
                 rows={[
                   ["1. Crop", "At the photograph's real proportions. Never stretched."],
-                  ["2. Grade", "Saturation × 1.5, gamma 1.2"],
-                  ["3. Gradient", `${MESH_OPACITY.hero}% (hero) or ${MESH_OPACITY.justShowUp}% (Just show up)`],
-                  ["4. Shade, if type needs it", "30% black, under the gradient's photo"],
+                  ["2. Grade", "A little more saturation and contrast"],
+                  ["3. Gradient", `${MESH_OPACITY.hero}% or ${MESH_OPACITY.justShowUp}%`],
+                  ["4. Shade, if type needs it", "Black, evenly over the whole picture"],
                 ]}
               />
-              <Source className="mt-4">scripts/assets/build-hero.mjs; src/components/PhotoBackdrop.tsx; src/components/home/JustShowUp.tsx.</Source>
             </div>
             <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:col-span-6">
-              <Rule title="Crop, never distort.">The approved design stretched the hill to look steeper. The build refused: the hill is as gentle as it really is.</Rule>
-              <Rule title="People go black and white.">The one photograph of faces is monochrome with no gradient. Color washes are for landscapes.</Rule>
+              <Rule title="Crop, never distort.">An early design stretched the hill to look steeper. The site uses the real proportions: the hill is as gentle as it really is.</Rule>
+              <Rule title="No wash over faces.">The gradient is for landscapes. Photographs of people stay natural, or go black and white, as the About photograph does.</Rule>
             </div>
           </div>
         </>
@@ -195,7 +184,6 @@ export const photography: BrandChapter = {
       id: "crops",
       title: "One photograph, three crops.",
       nav: "Crops",
-      status: "established",
       lede: "The hero is a single file. Each screen size shows a different window onto it, chosen so the crest of the hill, and the runner on it, stay in the lower part of the frame and clear of the headline.",
       render: () => (
         <>
@@ -205,11 +193,10 @@ export const photography: BrandChapter = {
             <Crop label="Desktop" w={1400} h={846} position="50% 77%" note="Shifted down so the crest sits about 72% of the way down." />
           </div>
           <div className={cn("mt-10 grid gap-x-8 gap-y-6 md:grid-cols-3", PRINT_BOTTOM)}>
-            <Rule title="One master, positioned.">No separate art-directed files per device. The crop is a position on the same image, so it can never drift out of sync.</Rule>
-            <Rule title="Keep the subject low.">Headlines sit in the sky. The thing you came to see sits under them, in the bottom third.</Rule>
-            <Rule title="Mind the resolution.">The hero is 1920 px wide: sharp on most screens, about 6.4 in at 300 dpi. It is not a print file.</Rule>
+            <Rule title="Plan for the headline.">Leave calm space (sky, grass, shadow) where type will sit, and keep the subject out of it. Check every screen size, not just the widest.</Rule>
+            <Rule title="Keep the terrain whole.">Crop to the real proportions and never stretch or squeeze. Do not crop away the slope that makes the hill a hill.</Rule>
+            <Rule title="Mind the resolution.">The hero is 1920 px wide: sharp on most screens, about 6.4 in at 300 dpi. For print, start from the original file.</Rule>
           </div>
-          <Source className="mt-6">src/components/home/HomeHero.tsx (object-position per breakpoint); public/home/README.md.</Source>
         </>
       ),
     },
@@ -217,8 +204,7 @@ export const photography: BrandChapter = {
       id: "type",
       title: "Type on photographs.",
       nav: "Type on photos",
-      status: "established",
-      lede: "Display type goes straight onto the picture in solid white, with no shadow, glow or box. That is a deliberate look, and in two places it costs some contrast. Those two exceptions are recorded, not hidden.",
+      lede: "Display type goes straight onto the picture in solid white, with no shadow, glow or box. Where that costs contrast, fix the picture (a different crop, or an even shade over the whole photograph), not the type.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
           <div className={cn("grid gap-4 lg:col-span-7", PRINT_ROWS_1)}>
@@ -236,16 +222,13 @@ export const photography: BrandChapter = {
           </div>
           <div className="flex flex-col lg:col-span-5">
             <div className="grid gap-6">
-              <Rule title="Solid white, nothing added.">No text shadow, no halo, no translucent panel. If a line cannot be read, change the crop or add a shade to the whole photograph.</Rule>
+              <Rule title="Solid white, nothing added.">No text shadow, no halo, no translucent panel. If a line cannot be read, change the crop or shade the whole photograph evenly.</Rule>
               <Rule title="Buttons do not depend on the photo.">Every button on a photograph is a solid black or white fill with the opposite label: 21:1 whatever is behind it.</Rule>
-              <Rule title="Focus rings flip.">On photographs and black, the focus ring is white with a black gap, so one of the two always shows.</Rule>
+              <Rule title="“Just show up.” meets AA.">A 38% shade and full-white copy: at least 4.8:1 for the copy and 4.4:1 for the heading, at every screen width measured.</Rule>
             </div>
             <div className={cn("grid gap-4", PRINT_BOTTOM)}>
-              <Pending status="established" title="Accepted exception: the hero headline.">
-                Over the palest sky it measures under 3:1, below WCAG AA for large text. The Owner accepted this on 2026-11-08. A tested alternative (a 75% band behind the headline) reaches 3.19:1 and is on file.
-              </Pending>
-              <Pending status="established" title="Accepted exception: “Just show up.” body copy.">
-                With a 30% shade it measures about 3.6 to 4.0:1 where lines cross bright foliage, below the 4.5:1 minimum. Accepted the same day. A 42% shade with full-white copy reaches 4.5:1.
+              <Pending title="The homepage headline is below AA.">
+                White over the palest sky measures 1.4 to 1.9:1 at its worst point, against 3:1 for large text. The Owner has accepted this; it is not WCAG conformant. Options that pass: a black headline (7 to 9:1), or a shaded band behind it (3.2:1 or better).
               </Pending>
             </div>
           </div>
@@ -256,18 +239,17 @@ export const photography: BrandChapter = {
       id: "honesty",
       title: "Rights, and honesty.",
       nav: "Rights",
-      status: "proposed",
-      lede: "A photograph is a claim: this place, these people, this happened. CMR's whole manner depends on not overstating things, so every image has to pass the same five questions before it is used.",
+      lede: "A photograph is a claim: this place, these people, this happened. CMR's whole manner depends on not overstating things, so every image answers the same five questions before it is used.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
           <ol className="lg:col-span-7">
             {(
               [
-                ["Who took it, and may CMR use it?", "Record the photographer and the permission. Until both are on file the image is marked unverified, as two of the three are now."],
-                ["Is anyone recognizable?", "If so, they have agreed to this use, in this place. Consent for the About page is not consent for a shirt or an advertisement."],
-                ["Is it where it says it is?", "Captions name the real location. A photograph of a hill is not evidence that CMR ran there, climbed it or counted it."],
+                ["Who took it, and may CMR use it here?", "The photographer's permission, for this use. Being on the website already is not permission for a poster or a shirt."],
+                ["Is anyone recognizable?", "Then they have agreed to this use. Agreement to one use is not agreement to every use."],
+                ["Is it where, and what, it says?", "Captions name the real place. A photograph of a hill is not evidence that CMR ran there, climbed it or counted it."],
                 ["Does it imply something that did not happen?", "No staged group runs, no borrowed race photos, no crowd where there were two people."],
-                ["Is it a photograph?", "Illustrations, maps, diagrams and AI-assisted artwork are labeled as what they are, and are never presented as photography."],
+                ["Is it a photograph, and is it credited?", "Illustrations, maps and diagrams are labeled as what they are. Credit the photographer where it is due."],
               ] as const
             ).map(([q, a], i) => (
               <li key={q} className="grid grid-cols-[2rem_1fr] gap-x-4 border-t border-foreground py-4 [.brand-print_&]:py-3.5">
@@ -290,11 +272,9 @@ export const photography: BrandChapter = {
                 ["Science figures", "Numbered and captioned as figures, with sources in the text."],
               ]}
             />
-            <Pending status="established" title="No AI-generated photography.">
-              Nothing on the site presents generated imagery as a photograph. The one AI-assisted piece, Science Figure 3, is an illustration made under the Owner&apos;s direction and is labeled as a figure.
-            </Pending>
-            <Pending status="unresolved" title="Two images still need paperwork." className={PRINT_BOTTOM}>
-              The tree-line photograph and the About photograph have no rights or consent record yet. Do not reuse either outside the website until they do.
+            <Rule title="No generated photographs.">Nothing presents generated imagery as a photograph.</Rule>
+            <Pending title="The tree line." className={PRINT_BOTTOM}>
+              Its rights are not on record yet. It stays on the website, where it is now, until they are.
             </Pending>
           </div>
         </div>

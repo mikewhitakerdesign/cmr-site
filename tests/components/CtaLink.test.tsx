@@ -30,6 +30,17 @@ describe("CtaLink (Round 2.1)", () => {
     expect(c).toContain(hoverText);
   });
 
+  it("an inverted filled button keeps a 1px outline in its resting color, on hover and press, without a border (Brand Standards Review 01)", () => {
+    render(
+      <>
+        <CtaLink href="/a" variant="primary">black</CtaLink>
+        <CtaLink href="/b" variant="secondary">white</CtaLink>
+      </>,
+    );
+    expect(classes("black")).toEqual(expect.arrayContaining(["hover:inset-ring", "hover:inset-ring-primary", "active:inset-ring", "active:inset-ring-primary"]));
+    expect(classes("white")).toEqual(expect.arrayContaining(["hover:inset-ring", "hover:inset-ring-primary-foreground", "active:inset-ring", "active:inset-ring-primary-foreground"]));
+  });
+
   it("black → white, white → black, outline → black", () => {
     render(
       <>

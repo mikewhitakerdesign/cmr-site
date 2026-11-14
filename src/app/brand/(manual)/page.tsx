@@ -8,13 +8,13 @@ import { StatusTag } from "@/components/brand/kit";
 import { LABEL } from "@/components/brand/styles";
 import { CmrLogo } from "@/components/CmrLogo";
 import { Container } from "@/components/Container";
-import { ctaLinkVariants, CtaLink } from "@/components/CtaLink";
+import { ctaLinkVariants } from "@/components/CtaLink";
 import { HillContourArt } from "@/components/hills/HillContourArt";
 import { HillHeroBackground, seedFor } from "@/components/hills/HillHero";
 import { EYEBROW } from "@/components/hills/styles";
-import { ArrowUpRightIcon } from "@/components/icons";
+import { ArrowRightIcon, ArrowUpRightIcon } from "@/components/icons";
 import { chapters } from "@/content/brand";
-import { MANUAL, STATUS, chapterPath, outlineOf, type Status } from "@/lib/brand/manual";
+import { LOGO_DOWNLOADS, MANUAL, STATUS, chapterPath, outlineOf, type Status } from "@/lib/brand/manual";
 import { FLUID_TYPE } from "@/lib/fluid";
 import { DISPLAY_HEADING, displayLarge, impactH2, standardH2 } from "@/lib/headings";
 import { HERO_TOP, heroTopVars } from "@/lib/hero-spacing";
@@ -24,7 +24,7 @@ import { tintVars } from "@/lib/tints";
 import { cn } from "@/lib/utils";
 
 const DESCRIPTION =
-  "How Chicago Mountain Runners looks, sounds and behaves: the marks, color, typography, graphic language, photography, voice, digital and apparel standards.";
+  "How Chicago Mountain Runners looks, sounds and behaves: the marks, color, typography, graphic language, photography, voice and digital standards, with the logo files.";
 
 export const metadata: Metadata = {
   title: `${MANUAL.shortTitle} | ${SITE_NAME}`,
@@ -50,8 +50,9 @@ function Essential({ href, label, title, children, className }: { href: string; 
 
 /**
  * /brand — the Brand Standards' front door: what the manual is, the six things
- * to know if you read nothing else, the chapters, how to read the status tags,
- * and the PDF. Static.
+ * to know if you read nothing else, the chapters, how to read it, and the
+ * downloads. Static. The hero carries no buttons (Owner, Review 01): the sticky
+ * row below it already holds the chapter menu and Download PDF.
  */
 export default function BrandLandingPage() {
   const href = (slug: string) => (chapters.some((c) => c.slug === slug) ? chapterPath(slug) : "/brand");
@@ -64,7 +65,7 @@ export default function BrandLandingPage() {
           aria-hidden
           className="absolute inset-0 -z-10 bg-linear-to-b from-primary from-30% via-primary/75 via-60% to-primary/25 lg:bg-linear-to-r lg:from-primary lg:from-45% lg:via-primary/85 lg:via-62% lg:to-primary/0 lg:to-95%"
         />
-        <Container style={heroTopVars()} className={cn(HERO_TOP, "pb-20 md:pb-28 lg:pb-36")}>
+        <Container style={heroTopVars()} className={cn(HERO_TOP, "pb-16 md:pb-20 lg:pb-24")}>
           <p className={cn(EYEBROW, "text-primary-foreground/75")}>
             Version {MANUAL.version} · {MANUAL.status} · {longDate}
           </p>
@@ -75,15 +76,6 @@ export default function BrandLandingPage() {
             A running club for a city without mountains needs a fairly clear idea of itself. This is how Chicago Mountain Runners looks, sounds and
             behaves, written down so anyone can get it right.
           </p>
-          <div className="mt-10 flex flex-wrap gap-3 text-[18px] leading-[27px] *:h-14">
-            <CtaLink href={chapters[0] ? chapterPath(chapters[0].slug) : "/brand"} variant="secondary" className="px-7">
-              Start with {chapters[0]?.number ?? "01"}
-            </CtaLink>
-            <a href={MANUAL.pdfHref} download={MANUAL.pdfDownloadName} className={cn(ctaLinkVariants({ variant: "outlineOnDark" }), "gap-2.5 px-7")}>
-              <DownloadIcon className="size-[18px]" />
-              Download PDF
-            </a>
-          </div>
         </Container>
       </section>
 
@@ -104,12 +96,14 @@ export default function BrandLandingPage() {
               <Essential href={href("marks")} label="02 Marks" title="One badge, used small and left alone." className="border border-foreground/15 bg-background">
                 <CmrLogo className="aspect-[188/98] w-[56%]" />
               </Essential>
-              <Essential href={href("color")} label="03 Color" title="Black and white, with a little mint." className="border border-foreground/15">
+              <Essential href={href("color")} label="03 Color" title="Black and white, then six pale colors." className="border border-foreground/15">
                 <div className="absolute inset-0 grid grid-cols-2">
                   <div className="bg-primary" />
                   <div className="bg-background" />
                 </div>
-                <div className="size-[34%] rounded-full bg-accent ring-1 ring-foreground/10" />
+                <span aria-hidden style={tintVars(0)} className="relative isolate block size-[34%] overflow-hidden rounded-full ring-1 ring-foreground/10">
+                  <span className="cmr-tie-dye absolute -z-10" />
+                </span>
               </Essential>
               <Essential href={href("typography")} label="04 Typography" title="Geist Black, set tight, ending in a period." className="bg-primary text-primary-foreground">
                 <p className="text-[clamp(56px,11vw,128px)] leading-none font-black tracking-[-0.05em]">Mtns.</p>
@@ -117,9 +111,9 @@ export default function BrandLandingPage() {
               <Essential href={href("graphic-language")} label="05 Graphic language" title="Contour lines and circles." className="border border-foreground/15 bg-background">
                 <HillContourArt slug="cricket-hill" className="w-[58%]" />
               </Essential>
-              <Essential href={href("photography")} label="06 Photography" title="A small runner on a real hill." className="bg-primary">
+              <Essential href={href("photography")} label="06 Photography" title="Real places, real weather." className="bg-primary">
                 <Image src="/home/hero.jpg" alt="" fill sizes="(min-width: 1024px) 420px, (min-width: 640px) 50vw, 100vw" className="-z-10 object-cover object-[50%_72%]" />
-                <div aria-hidden className="absolute inset-0 -z-10 bg-[url(/home/mesh-gradient.png)] bg-[length:100%_100%] opacity-20" />
+                <div aria-hidden className="absolute inset-0 -z-10 bg-[url(/home/mesh-gradient.png)] bg-[length:100%_100%] opacity-25" />
               </Essential>
               <Essential href={href("voice")} label="07 Voice" title="Deadpan, specific, kind." className="">
                 <span aria-hidden style={tintVars(2)} className="absolute inset-0 -z-10 overflow-hidden">
@@ -161,15 +155,14 @@ export default function BrandLandingPage() {
           <Container className="grid gap-x-12 gap-y-10 lg:grid-cols-12">
             <div className="lg:col-span-5">
               <h2 id="how-heading" style={standardH2()} className={cn(FLUID_TYPE, DISPLAY_HEADING, "text-balance")}>
-                How firm is each standard?
+                How to read it.
               </h2>
               <p className="mt-6 max-w-[48ch] text-[18px] leading-[28px] text-foreground/75">
-                CMR marks its hill measurements &ldquo;≈&rdquo; because they are approximate. The manual is honest in the same way. Every section carries
-                one of four tags, so you always know whether you are reading a rule or a recommendation.
+                Everything in the manual is the standard. CMR marks its hill measurements &ldquo;≈&rdquo; because they are approximate, and the manual is
+                honest in the same way: the few things that are not finished yet carry one of two tags.
               </p>
               <p className="mt-4 max-w-[48ch] text-[18px] leading-[28px] text-foreground/75">
-                The brand is young. The website is settled; the logo masters and the merchandise are not. Where something is still open, the manual says
-                so instead of inventing an answer.
+                The pixel values describe the website. On paper, fabric or anything else, keep the relationships and let the sizes follow the format.
               </p>
             </div>
             <dl className="border-t border-foreground lg:col-span-7">
@@ -192,16 +185,24 @@ export default function BrandLandingPage() {
                 Take it with you.
               </h2>
               <p className="mt-6 max-w-[52ch] text-[18px] leading-[28px] text-foreground/75">
-                The complete manual as one PDF: every chapter, laid out for the page, with the same values as this site. US Letter landscape.
+                The complete manual as one PDF: every chapter, laid out for the page, with the same values as this site. US Letter landscape. The logo
+                files are in Marks.
               </p>
             </div>
-            <div className="lg:col-span-5 lg:justify-self-end">
-              <a href={MANUAL.pdfHref} download={MANUAL.pdfDownloadName} className={cn(ctaLinkVariants({ variant: "primary" }), "h-14 gap-2.5 px-7 text-[18px] leading-[27px] hover:ring-1 hover:ring-foreground hover:ring-inset")}>
+            <div className="flex flex-col items-start gap-4 lg:col-span-5 lg:justify-self-end">
+              <a href={MANUAL.pdfHref} download={MANUAL.pdfDownloadName} className={cn(ctaLinkVariants({ variant: "primary" }), "h-14 gap-2.5 px-7 text-[18px] leading-[27px]")}>
                 <DownloadIcon className="size-[18px]" />
                 Download PDF
               </a>
-              <p className={cn(LABEL, "mt-4 text-foreground/65")}>
-                Version {MANUAL.version} · {longDate}
+              <a
+                href={LOGO_DOWNLOADS.section}
+                className="group/lf inline-flex items-center gap-1.5 rounded-xs text-p font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-(color:--focus-offset)"
+              >
+                Logo files
+                <ArrowRightIcon className="size-4 motion-safe:transition-transform motion-safe:group-hover/lf:translate-x-0.5" />
+              </a>
+              <p className={cn(LABEL, "text-foreground/65")}>
+                Version {MANUAL.version} · {MANUAL.status} · {longDate}
               </p>
             </div>
           </Container>

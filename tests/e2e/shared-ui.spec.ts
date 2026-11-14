@@ -422,7 +422,7 @@ test.describe("social links (none configured in this build)", () => {
     const nav = page.getByRole("navigation", { name: "Footer" });
     await expect(nav.getByText("Navigate", { exact: true })).toBeVisible();
     const links = nav.getByRole("link"); // the visible copy only
-    await expect(links).toHaveText(["Hills on Repeat", "Hills on Hills", "The Science", "About", "FAQ", "Brand Standards", "Join the club"]);
+    await expect(links).toHaveText(["Hills on Repeat", "Hills on Hills", "The Science", "About", "FAQ", "Join the club"]);
     const boxes = [];
     for (let i = 0; i < 5; i++) boxes.push(await box(links.nth(i)));
     for (let i = 1; i < 5; i++) {

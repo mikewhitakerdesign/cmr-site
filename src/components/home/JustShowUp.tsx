@@ -21,14 +21,13 @@ import { cn } from "@/lib/utils";
  * Figma does — anchored ~6% from the top on desktop, centered elsewhere —
  * under the same baked mesh gradient as the hero at 50%.
  *
- * Legibility adjustment (not in Figma): a 30% black shade over the photo and copy
- * at 90% white instead of 75%. The heading clears 3:1 in its worst region.
- *
- * ACCEPTED ACCESSIBILITY EXCEPTION (Owner decision, PR #3, 2026-11-08): the body
- * copy measures about 3.6–4.0:1 in its worst region where lines cross bright
- * foliage, below the 4.5:1 AA minimum. It is NOT WCAG AA compliant and is not
- * claimed to be. A tested alternative (42% shade, full-white copy) reached
- * ≥ 4.5:1 and is recorded in .aiom/work/implement-cmr-homepage.md.
+ * Legibility adjustment (not in Figma): a 38% black shade over the photo, and the
+ * copy in full white (Brand Standards Review 01, 2026-11-14; was 30% and 90%
+ * white, an Owner-accepted exception at 3.5–4.2:1). Measured worst-region
+ * contrast (tests/e2e/contrast.mjs, macOS Chromium, 12 widths 320–1920): copy
+ * 4.82–5.71:1 against the 4.5:1 AA minimum, heading 4.46–5.11:1 against 3:1.
+ * The smallest change that passes at every width: full-white copy alone reached
+ * 3.96–4.35:1, and a 35% shade 4.47:1 at 1920.
  *
  * Tracking is −0.045em at every size (Figma: −6.48px everywhere, which is
  * −0.045em at 144px but makes letters collide at 56px — "JUSTSHOW" in the
@@ -71,9 +70,8 @@ export function JustShowUp() {
           />
         }
       >
-        {/* Legibility shade (not in Figma). Keeps the heading ≥ 3:1; the copy remains an
-            accepted exception below 4.5:1 (see the component comment). */}
-        <div data-slot="legibility-shade" className="absolute inset-0 bg-primary/30" />
+        {/* Legibility shade (not in Figma): the heading ≥ 3:1 and the copy ≥ 4.5:1 (see the component comment). */}
+        <div data-slot="legibility-shade" className="absolute inset-0 bg-primary/38" />
       </PhotoBackdrop>
       <Container>
         <h2
@@ -89,7 +87,7 @@ export function JustShowUp() {
             FLUID_TYPE,
             // Tablet measure 540, not Figma's 550: Figma's text renders ~1% wider and breaks
             // before "ritual."; at 550 the browser fits it, which moves the CTAs up a line.
-            "mt-(--jsu-copy-mt-a) font-normal text-primary-foreground/90 md:mt-(--jsu-copy-mt-b) md:max-w-[540px] lg:max-w-[630px]",
+            "mt-(--jsu-copy-mt-a) font-normal text-primary-foreground md:mt-(--jsu-copy-mt-b) md:max-w-[540px] lg:max-w-[630px]",
           )}
         >
           {JUST_SHOW_UP_COPY}

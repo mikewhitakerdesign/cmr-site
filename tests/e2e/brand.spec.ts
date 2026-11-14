@@ -1,7 +1,7 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 /**
- * Brand Standards (/brand and its ten chapters) at 393 / 768 / 1440: every
+ * Brand Standards (/brand and its nine chapters) at 393 / 768 / 1440: every
  * route loads on its own, the one sticky row sits under the site header and
  * carries the chapter menu, this page's sections and Download PDF; anchors
  * clear the bar; the PDF is a real downloadable file; the print route is not
@@ -27,7 +27,6 @@ const CHAPTERS = [
   ["photography", "Photography."],
   ["voice", "Voice."],
   ["digital", "Digital."],
-  ["apparel", "Apparel and objects."],
   ["governance", "Governance."],
 ] as const;
 const ROUTES = ["/brand", ...CHAPTERS.map(([slug]) => `/brand/${slug}`)];
@@ -60,18 +59,19 @@ async function settle(page: Page) {
 }
 
 test.describe("routes", () => {
-  test("the landing page has its title, version, six essentials, ten chapters and the four status tags", async ({ page }) => {
+  test("the landing page has its title, version, no hero buttons, six essentials, nine chapters and the two status tags", async ({ page }) => {
     const res = await page.goto("/brand");
     expect(res?.status()).toBe(200);
     await expect(page).toHaveTitle("Brand Standards | Chicago Mountain Runners");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Brand\s*standards\./);
     await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
-    await expect(page.locator("[data-slot=brand-hero]")).toContainText(/Version \d+\.\d+ · Owner review draft/);
+    await expect(page.locator("[data-slot=brand-hero]")).toContainText(/Version 1\.0 · Release candidate/);
+    await expect(page.locator("[data-slot=brand-hero] a, [data-slot=brand-hero] button")).toHaveCount(0);
     await expect(page.locator("#essentials li")).toHaveCount(6);
     const rows = page.locator("#chapters ol > li a");
-    await expect(rows).toHaveCount(10);
+    await expect(rows).toHaveCount(9);
     expect(await rows.evaluateAll((els) => els.map((e) => e.getAttribute("href")))).toEqual(CHAPTERS.map(([slug]) => `/brand/${slug}`));
-    for (const s of ["established", "inferred", "proposed", "unresolved"]) await expect(page.locator(`#how-to-read [data-status=${s}]`)).toHaveCount(1);
+    for (const s of ["provisional", "pending"]) await expect(page.locator(`#how-to-read [data-status=${s}]`)).toHaveCount(1);
   });
 
   for (const [slug, title] of CHAPTERS) {
@@ -98,15 +98,21 @@ test.describe("routes", () => {
     });
   }
 
-  test("an unknown chapter is a 404", async ({ page }) => {
-    const res = await page.goto("/brand/not-a-chapter");
-    expect(res?.status()).toBe(404);
+  test("an unknown chapter is a 404, and so is the deferred Apparel chapter", async ({ page }) => {
+    expect((await page.goto("/brand/not-a-chapter"))?.status()).toBe(404);
+    expect((await page.goto("/brand/apparel"))?.status()).toBe(404);
   });
 
-  test("the footer links to Brand Standards on every kind of page", async ({ page }) => {
+  test("the footer's secondary row ends with Brand Standards on every kind of page, and the main row does not repeat it", async ({ page }) => {
     for (const path of ["/", "/the-science", "/brand/color"]) {
       await page.goto(path);
-      await expect(page.getByRole("navigation", { name: "Footer" }).getByRole("link", { name: "Brand Standards" })).toHaveAttribute("href", "/brand");
+      const row = page.getByRole("list", { name: "Legal" }).getByRole("link");
+      await expect(row.last()).toHaveText("Brand Standards");
+      await expect(row.last()).toHaveAttribute("href", "/brand");
+      expect(await row.allTextContents()).toEqual(expect.arrayContaining(["Participation Guidelines", "Brand Standards"]));
+      const texts = await row.allTextContents();
+      expect(texts.indexOf("Brand Standards")).toBe(texts.indexOf("Participation Guidelines") + 1);
+      await expect(page.getByRole("navigation", { name: "Footer" }).getByRole("link", { name: "Brand Standards" })).toHaveCount(0);
     }
   });
 });
@@ -137,7 +143,7 @@ test.describe("the sticky row", () => {
   test("sits directly under the site header while a chapter scrolls, and releases before the footer", async ({ page }) => {
     await page.goto("/brand/color");
     const nav = brandNav(page);
-    await page.locator("#tints").scrollIntoViewIfNeeded();
+    await page.locator("#secondary").scrollIntoViewIfNeeded();
     await page.evaluate(() => window.scrollBy(0, 400));
     await settle(page);
     const b = await box(nav);
@@ -189,7 +195,7 @@ test.describe("the sticky row", () => {
     expect(Math.abs(p.y - (n.y + n.height))).toBeLessThanOrEqual(2);
     expect(p.x).toBeGreaterThanOrEqual(0);
     expect(p.x + p.width).toBeLessThanOrEqual(page.viewportSize()!.width + 1);
-    await expect(panel.getByRole("link")).toHaveCount(11);
+    await expect(panel.getByRole("link")).toHaveCount(10);
     await expect(panel.locator("[aria-current=page]")).toHaveText(/02\s*Marks/);
 
     await page.keyboard.press("Escape");
@@ -253,14 +259,14 @@ test.describe("the sticky row", () => {
 
 test.describe("Download PDF", () => {
   test("is in the sticky row on the landing page and on a chapter, and downloads the complete manual", async ({ page }) => {
-    for (const route of ["/brand", "/brand/apparel"]) {
+    for (const route of ["/brand", "/brand/governance"]) {
       await page.goto(route);
       const link = brandNav(page).locator("[data-slot=brand-pdf-link]");
       await expect(link).toBeVisible();
       await expect(link).toHaveAttribute("href", PDF);
       await expect(link).toHaveAccessibleName(/Download PDF, the complete manual, version \d+\.\d+/);
       const [download] = await Promise.all([page.waitForEvent("download"), link.click()]);
-      expect(download.suggestedFilename()).toMatch(/^CMR-Brand-Standards-v\d+\.\d+\.pdf$/);
+      expect(download.suggestedFilename()).toBe("CMR-Brand-Standards-v1.0-RC.pdf");
       expect(await download.failure()).toBeNull();
     }
   });
@@ -314,7 +320,7 @@ test.describe("interactive demonstrations", () => {
     test.skip(!isDesktop(), "clipboard permissions are granted on the desktop project only");
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
     await page.goto("/brand/color");
-    const swatch = page.locator("#mint [data-slot=brand-swatch][data-hex='#ddffea']").first();
+    const swatch = page.locator("#secondary [data-slot=brand-swatch][data-hex='#ddffea']").first();
     await swatch.scrollIntoViewIfNeeded();
     await swatch.click();
     await expect(swatch.getByRole("status")).toHaveText("Copied #ddffea");
@@ -323,6 +329,7 @@ test.describe("interactive demonstrations", () => {
     expect(await swatch.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe("rgb(221, 255, 234)");
 
     const checker = page.locator("[data-slot=contrast-checker]");
+    await checker.getByLabel("Background").selectOption("accent");
     await expect(checker.locator("[data-slot=contrast-ratio]")).toHaveText("19.56:1");
     await checker.getByLabel("Text").selectOption("white");
     await expect(checker.locator("[data-slot=contrast-ratio]")).toHaveText("1.07:1");
@@ -381,30 +388,57 @@ test.describe("interactive demonstrations", () => {
     await page.goto("/brand/photography#treatment");
     const gradient = page.locator("[data-slot=gradient-lab]");
     await gradient.scrollIntoViewIfNeeded();
-    await expect(gradient).toContainText("Gradient 20% · in production");
+    await expect(gradient).toContainText("Gradient 25% · in production");
     await gradient.getByLabel("Gradient opacity").fill("35");
     await expect(gradient).toContainText("Gradient 35% · not in use");
     await gradient.getByRole("button", { name: /Just show up 50%/ }).click();
     await expect(gradient).toContainText("Gradient 50% · in production");
   });
 
-  test("Voice: the headline checker; Apparel: the placement diagram", async ({ page }) => {
+  test("Voice: the headline checker scores live, and offers no warrior talk as a starter", async ({ page }) => {
     await page.goto("/brand/voice#drafts");
     const check = page.locator("[data-slot=headline-check]");
     await check.scrollIntoViewIfNeeded();
     await expect(check.locator("[data-slot=headline-score]")).toHaveText("5 of 5");
-    await check.getByLabel("Your headline").fill("Unleash Your Inner Mountain Warrior!");
+    await check.getByLabel("Your headline").fill("Join Us For An Epic Journey!");
     await expect(check.locator("[data-slot=headline-score]")).toHaveText("1 of 5");
+    await expect(check).not.toContainText(/warrior/i);
+  });
 
-    await page.goto("/brand/apparel#placement");
-    const lab = page.locator("[data-slot=placement-lab]");
-    await lab.scrollIntoViewIfNeeded();
-    await expect(lab.locator("[data-slot=brand-tee]")).toHaveAttribute("data-view", "front");
-    await lab.getByRole("button", { name: "Back", exact: true }).click();
-    await expect(lab.locator("[data-slot=brand-tee]")).toHaveAttribute("data-view", "back");
-    await lab.getByRole("button", { name: "Tie-dye" }).click();
-    await expect(lab.getByRole("button", { name: "Tie-dye" })).toHaveAttribute("aria-pressed", "true");
-    await expect(lab.locator("[data-status=proposed]")).toBeVisible();
+  test("Marks: every logo file downloads as the real file, and the ZIP is a ZIP", async ({ page, request }) => {
+    test.skip(!isDesktop(), "viewport-independent");
+    await page.goto("/brand/marks#files");
+    const links = page.locator("#files").getByRole("link", { name: /^Download the .* as (SVG|PNG)$/ });
+    await expect(links).toHaveCount(8);
+    for (const link of await links.all()) {
+      const href = (await link.getAttribute("href"))!;
+      const res = await request.get(href);
+      expect(res.status(), href).toBe(200);
+      const body = await res.body();
+      if (href.endsWith(".svg")) {
+        expect(res.headers()["content-type"]).toContain("image/svg+xml");
+        expect(body.toString("utf8")).toMatch(/^<!--[^>]*-->\n<svg [^>]*viewBox="0 0 [\d.]+ [\d.]+"/);
+        expect(body.toString("utf8")).not.toMatch(/<image/i);
+      } else {
+        expect(res.headers()["content-type"]).toContain("image/png");
+        expect(body.subarray(1, 4).toString("latin1")).toBe("PNG");
+      }
+    }
+    // A real browser download, with the file's own name.
+    const [download] = await Promise.all([page.waitForEvent("download"), links.first().click()]);
+    expect(download.suggestedFilename()).toBe("cmr-badge-black.svg");
+    const zipLink = page.getByRole("link", { name: "Download all logo files (ZIP)" });
+    const zip = await request.get((await zipLink.getAttribute("href"))!);
+    expect(zip.headers()["content-type"]).toContain("zip");
+    expect((await zip.body()).readUInt32LE(0)).toBe(0x04034b50);
+  });
+
+  test("the site icon is served in every format the head declares", async ({ page, request }) => {
+    test.skip(!isDesktop(), "viewport-independent");
+    await page.goto("/");
+    const hrefs = await page.locator('head link[rel="icon"], head link[rel="apple-touch-icon"]').evaluateAll((els) => els.map((e) => e.getAttribute("href")!));
+    expect(hrefs.map((h) => h.split("?")[0]).sort()).toEqual(["/apple-icon.png", "/favicon.ico", "/icon.svg"]);
+    for (const h of hrefs) expect((await request.get(h)).status(), h).toBe(200);
   });
 
   test("Digital: the motion control is the site's own and pauses decorative motion", async ({ page }) => {
@@ -420,17 +454,20 @@ test.describe("interactive demonstrations", () => {
 });
 
 test.describe("honesty", () => {
-  test("nothing in Apparel is presented as established, and concepts are labeled", async ({ page }) => {
+  test("Apparel is deferred: not in the chapter list, the chapter menu, the sitemap or the PDF's source", async ({ page, request }) => {
     test.skip(!isDesktop(), "viewport-independent");
-    await page.goto("/brand/apparel");
-    await expect(page.locator("section[data-slot=brand-plate] > div > header [data-status=established]")).toHaveCount(0);
-    await expect(page.locator("#objects figure").filter({ hasText: "Concept" })).toHaveCount(6);
+    await page.goto("/brand");
+    await expect(page.locator("#chapters")).not.toContainText("Apparel");
+    expect(await (await request.get("/sitemap.xml")).text()).not.toContain("brand/apparel");
+    await page.goto("/brand/print");
+    await expect(page.locator('[data-slot=brand-page][aria-label^="Chapter"]')).toHaveCount(9);
+    await expect(page.locator('[data-slot=brand-page][aria-label*="Apparel"]')).toHaveCount(0);
   });
 
   test("the unreproduced photograph is not on the Photography page", async ({ page }) => {
     test.skip(!isDesktop(), "viewport-independent");
     await page.goto("/brand/photography");
     expect(await page.locator("img").evaluateAll((els) => els.map((e) => (e as HTMLImageElement).currentSrc + (e as HTMLImageElement).src).filter((s) => /hardik/i.test(s)))).toEqual([]);
-    await expect(page.locator("#library")).toContainText("Not reproduced in this manual");
+    await expect(page.locator("#library")).toContainText("Not reproduced here");
   });
 });

@@ -124,13 +124,13 @@ export function PrintChapterOpener({ chapter, page, firstPlatePage }: { chapter:
               <li key={p.id} className="flex items-baseline gap-4 border-b border-foreground/40 py-[9px] text-[15px] leading-5 font-medium">
                 <span className="w-10 shrink-0 font-mono text-[12px] text-foreground/70">{plateNumber(chapter, i)}</span>
                 <span className="flex-1">{p.title}</span>
-                {p.status && p.status !== "established" && <StatusTag status={p.status} className="text-[9.5px]" />}
+                {p.status && <StatusTag status={p.status} className="text-[10px]" />}
                 <span className="font-mono text-[12px] text-foreground/70">{String(firstPlatePage + i).padStart(2, "0")}</span>
               </li>
             ))}
           </ol>
         </div>
-        <p className={cn(LABEL, "flex justify-between text-[10px] text-foreground/55")}>
+        <p className={cn(LABEL, "flex justify-between text-[11px] text-foreground/60")}>
           <span>
             Version {MANUAL.version} · {MANUAL.status}
           </span>

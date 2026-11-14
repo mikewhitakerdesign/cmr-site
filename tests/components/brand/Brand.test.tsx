@@ -140,19 +140,35 @@ describe("chapter pages", () => {
         expect(section.id).toBe(p.id);
         expect(within(section as HTMLElement).getByRole("heading", { level: 2, name: p.title })).toHaveAttribute("id", `${p.id}-heading`);
         expect(section).toHaveTextContent(plateNumber(chapter, i));
-        expect(section.querySelector(`[data-status=${p.status}]`)).not.toBeNull();
+        // A tag only where something is unfinished.
+        if (p.status) expect(section.querySelector(`[data-status=${p.status}]`)).not.toBeNull();
+        else expect(section.querySelector("header [data-status]")).toBeNull();
       });
       // Anchor ids are unique across the whole page (plates, their headings, anything inside them).
       const ids = [...container.querySelectorAll("[id]")].map((e) => e.id);
       expect(new Set(ids).size).toBe(ids.length);
       expect(container.querySelectorAll("h1")).toHaveLength(0);
+      // No implementation commentary: no source lines, repository paths or Figma node ids (Review 01).
+      expect(container.querySelector("[data-slot=brand-source]")).toBeNull();
+      expect(container.textContent).not.toMatch(/\bsrc\/|\.tsx?\b|scripts\/|\.aiom|Figma node|\b\d{2,}:\d{3}\b/);
+      expect(container.textContent).not.toMatch(/\b(Established|Inferred|Unresolved)\b/);
       expect(await axeViolations(container)).toEqual([]);
     });
   }
+
+  it("Marks › Files offers every logo file as a real download, and the whole set as a ZIP", () => {
+    const marks = chapters.find((c) => c.slug === "marks")!;
+    const files = marks.plates.find((p) => p.id === "files")!;
+    render(<WebPlate plate={files} number="02.7" />);
+    const hrefs = screen.getAllByRole("link", { name: /^Download the .* as (SVG|PNG)$/ }).map((a) => [a.getAttribute("href"), a.getAttribute("download")]);
+    expect(hrefs).toHaveLength(8);
+    for (const m of ["badge", "wordmark"]) for (const ink of ["black", "white"]) for (const ext of ["svg", "png"]) expect(hrefs).toContainEqual([`/brand/logos/cmr-${m}-${ink}.${ext}`, `cmr-${m}-${ink}.${ext}`]);
+    expect(screen.getByRole("link", { name: /Download all logo files \(ZIP\)/ })).toHaveAttribute("href", "/brand/logos/cmr-logos.zip");
+  });
 });
 
 describe("landing page", () => {
-  it("has one h1, a section for each sticky-bar anchor, every chapter in order, and two PDF downloads besides the bar's", async () => {
+  it("has one h1, no buttons in the hero, a section for each sticky-bar anchor, every chapter in order, and one PDF download besides the bar's", async () => {
     pathname.current = "/brand";
     const { container } = render(<BrandLandingPage />);
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
@@ -160,14 +176,16 @@ describe("landing page", () => {
     for (const s of LANDING_SECTIONS) expect(container.querySelector(`section#${s.id}`), s.id).not.toBeNull();
     const list = container.querySelector("#chapters ol")!;
     expect([...list.querySelectorAll("a")].map((a) => a.getAttribute("href"))).toEqual(chapters.map((c) => `/brand/${c.slug}`));
+    expect(container.querySelector("[data-slot=brand-hero] a, [data-slot=brand-hero] button")).toBeNull();
     const downloads = screen.getAllByRole("link", { name: /Download PDF/ });
-    expect(downloads).toHaveLength(3);
+    expect(downloads).toHaveLength(2);
+    expect(screen.getByRole("link", { name: "Logo files" })).toHaveAttribute("href", "/brand/marks#files");
     for (const d of downloads) expect(d).toHaveAttribute("href", MANUAL.pdfHref);
     expect(container).toHaveTextContent(`Version ${MANUAL.version}`);
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("explains all four status tags", () => {
+  it("explains both status tags", () => {
     pathname.current = "/brand";
     render(<BrandLandingPage />);
     for (const s of Object.keys(STATUS) as Status[]) expect(screen.getAllByText(STATUS[s].meaning).length).toBeGreaterThan(0);
@@ -312,7 +330,7 @@ describe("interactive demonstrations", () => {
     expect(container.querySelector("[data-slot=brand-tee]")).toHaveAttribute("data-view", "back");
     expect(screen.queryByRole("button", { name: "Badge, left chest" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Wordmark" })).toHaveAttribute("aria-pressed", "true");
-    expect(container.querySelector("[data-status=proposed]")).not.toBeNull();
+    expect(container.querySelector("[data-status=provisional]")).not.toBeNull();
     expect(await axeViolations(container)).toEqual([]);
   });
 });

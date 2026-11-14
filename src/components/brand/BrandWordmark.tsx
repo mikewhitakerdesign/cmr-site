@@ -3,9 +3,8 @@ import { cn } from "@/lib/utils";
 
 /**
  * The CMR wordmark as inline vector, in the current text color, for use inside
- * the Brand Standards (website and PDF). Same artwork and same proportions
- * (1858:888) as the site's CmrWordmark, which draws it as a mask; nothing is
- * redrawn. The site's own footer keeps CmrWordmark.
+ * the Brand Standards (website and PDF): the vector master, nothing redrawn.
+ * The site's own footer keeps CmrWordmark (the earlier trace, drawn as a mask).
  */
 export function BrandWordmark({ className, decorative = false }: { className?: string; decorative?: boolean }) {
   return (
@@ -16,9 +15,9 @@ export function BrandWordmark({ className, decorative = false }: { className?: s
       aria-hidden={decorative || undefined}
       focusable="false"
       data-slot="cmr-wordmark"
-      className={cn("block aspect-[1858/888] fill-current", className)}
+      className={cn("block aspect-[1857.8/887.2] fill-current", className)}
     >
-      <path d={WORDMARK_PATH} fillRule="evenodd" />
+      <path d={WORDMARK_PATH} />
     </svg>
   );
 }

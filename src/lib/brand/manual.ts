@@ -11,28 +11,27 @@ export const MANUAL = {
   title: "Chicago Mountain Runners Brand Standards",
   shortTitle: "Brand Standards",
   /** Bump with every Owner-approved change to a standard (see /brand/governance). */
-  version: "0.9",
-  status: "Owner review draft",
+  version: "1.0",
+  /** Until the Owner approves this edition, it is a release candidate, and says so wherever the version is printed. */
+  status: "Release candidate",
   /** Date of this edition (YYYY-MM-DD). */
-  date: "2026-11-13",
+  date: "2026-11-14",
   /** The pre-built PDF, a static file (public/downloads). Rebuild with `npm run brand:pdf`. */
   pdfHref: "/downloads/cmr-brand-standards.pdf",
   pdfFile: "public/downloads/cmr-brand-standards.pdf",
-  pdfDownloadName: "CMR-Brand-Standards-v0.9.pdf",
+  pdfDownloadName: "CMR-Brand-Standards-v1.0-RC.pdf",
 } as const;
 
 /**
- * How firmly a statement in the manual is supported. The site already marks
- * approximate figures "≈" and unconfirmed content "provisional"; the manual
- * uses the same honesty for its own standards.
+ * Everything in the manual is the standard unless it carries one of these two
+ * tags. They mark the few things that are genuinely not finished, so a tag
+ * always means something is still to be done.
  */
-export type Status = "established" | "inferred" | "proposed" | "unresolved";
+export type Status = "provisional" | "pending";
 
 export const STATUS: Record<Status, { label: string; meaning: string }> = {
-  established: { label: "Established", meaning: "In approved artwork, tokens or copy, or used consistently on the live site." },
-  inferred: { label: "Inferred", meaning: "Clear from how the site is built, but never written down as a rule until now." },
-  proposed: { label: "Proposed", meaning: "A recommendation in this manual. Not a standard until the Owner approves it." },
-  unresolved: { label: "Unresolved", meaning: "Not enough evidence to specify. Needs an Owner decision or a missing source file." },
+  provisional: { label: "Provisional", meaning: "In use for now. Confirm it with a proof or a test before relying on it for production." },
+  pending: { label: "Pending", meaning: "Not specified yet. Needs a proof, a source file or a decision." },
 };
 
 export type PlateTone = "light" | "dark" | "muted";
@@ -52,7 +51,7 @@ export type BrandPlate = {
 
 export type BrandChapter = {
   slug: string;
-  /** "01" … "10". */
+  /** "01" … "09". */
   number: string;
   /** Display title, with its period: "Colour." */
   title: string;
@@ -79,8 +78,15 @@ export const chapterPath = (slug: string) => `/brand/${slug}`;
  * Chapter slugs in reading order, as plain data: the sitemap reads these
  * without loading the chapters themselves. tests/lib/brand.test.ts checks that
  * the list matches the chapters in src/content/brand exactly.
+ *
+ * Apparel (src/content/brand/apparel.tsx) is deferred by the Owner (Review 01,
+ * 2026-11-14): kept in the repository for a later edition, but not published,
+ * so it has no route, no number and no PDF pages.
  */
-export const CHAPTER_SLUGS = ["premise", "marks", "color", "typography", "graphic-language", "photography", "voice", "digital", "apparel", "governance"] as const;
+export const CHAPTER_SLUGS = ["premise", "marks", "color", "typography", "graphic-language", "photography", "voice", "digital", "governance"] as const;
+
+/** Where the downloadable logo files live (public/brand/logos), and the section of the manual that offers them. */
+export const LOGO_DOWNLOADS = { dir: "/brand/logos", section: "/brand/marks#files" } as const;
 
 /** Every public Brand Standards path: the landing page, then the chapters. The print route is not public. */
 export const brandPaths = (): string[] => ["/brand", ...CHAPTER_SLUGS.map(chapterPath)];
@@ -115,5 +121,6 @@ export const LANDING_SECTIONS = [
   { id: "essentials", label: "The short version" },
   { id: "chapters", label: "Chapters" },
   { id: "how-to-read", label: "How to read it" },
+  // Download: the PDF and the logo files.
   { id: "download", label: "Download" },
 ] as const;

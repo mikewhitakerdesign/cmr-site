@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { ArrowLink } from "@/components/ArrowLink";
-import { Figure, Frame, Pending, Rule, Source, SpecList, SpecTable } from "@/components/brand/kit";
+import { Figure, Frame, Pending, Rule, SpecList, SpecTable } from "@/components/brand/kit";
 import { LABEL, PRINT_BOTTOM, PRINT_FILL, PRINT_FILL_COL, PRINT_GROW, PRINT_ROWS_1, WEB_ONLY } from "@/components/brand/styles";
 import { ctaLinkVariants } from "@/components/CtaLink";
 import { MotionToggle } from "@/components/MotionToggle";
@@ -94,7 +94,6 @@ export const digital: BrandChapter = {
       id: "tokens",
       title: "Where values live.",
       nav: "Tokens",
-      status: "established",
       lede: "A color or a size is decided once, in Figma, and travels to the site through a checked pipeline. Nobody types a hex code into a component, and this manual reads the same values the site does.",
       render: () => (
         <>
@@ -103,16 +102,16 @@ export const digital: BrandChapter = {
               MWDS variables, CMR mode
             </Stage>
             <Stage n={2} name="Token files" note="A read-only, checksummed export. A hand edit fails the build.">
-              tokens/mwds/*.tokens.json
+              Exported tokens
             </Stage>
             <Stage n={3} name="Generated CSS" note="Custom properties, preserving Figma's alias chain. Never edited by hand.">
-              src/styles/generated/
+              CSS variables
             </Stage>
             <Stage n={4} name="Semantic names" note="The only vocabulary components use: primary, muted, border, accent.">
               bg-primary · text-muted-foreground
             </Stage>
             <Stage n={5} name="Components" note="Buttons, links, inputs and sections, built only from those names.">
-              src/components/
+              The website
             </Stage>
           </ol>
           <div className={cn("mt-8 grid gap-8 lg:grid-cols-12", PRINT_BOTTOM)}>
@@ -122,18 +121,17 @@ export const digital: BrandChapter = {
                 head={["Layer", "Holds", "Changed by"]}
                 mono={[]}
                 rows={[
-                  ["MWDS tokens", "Black, white, neutrals, mint, cream, type scale, spacing, radii, shadows.", "Editing Figma, then re-exporting."],
-                  ["CMR layer", "The pastel tints, contour grays, footer ink, tie-dye recipe, motion.", "src/styles/cmr.css, with Owner direction."],
-                  ["Brand specification", "Measurements of artwork and mirrors of component values, for this manual.", "src/lib/brand/, checked by tests."],
+                  ["MWDS tokens", "Black, white, neutrals, the interface accent, type scale, spacing, radii, shadows.", "Editing Figma, then re-exporting."],
+                  ["CMR layer", "The secondary colors, contour grays, footer ink, tie-dye recipe, motion.", "The site's CMR stylesheet, with Owner direction."],
+                  ["Brand specification", "Measurements of artwork and mirrors of component values, for this manual.", "The manual's data, checked by tests."],
                 ]}
               />
             </div>
             <div className="grid gap-6 lg:col-span-5">
-              <Rule title="No second palette.">Tailwind&apos;s default colors are switched off, so a stray `text-zinc-600` cannot exist.</Rule>
+              <Rule title="No second palette.">The framework&apos;s default colors are switched off, so a stray gray from outside the system cannot exist.</Rule>
               <Rule title="Proven against Figma.">Tests compare every generated color with what Figma itself resolves for a real CMR frame.</Rule>
             </div>
           </div>
-          <Source className="mt-6">tokens/README.md; tests/tokens.test.ts; src/lib/brand/tokens.ts.</Source>
         </>
       ),
     },
@@ -141,7 +139,6 @@ export const digital: BrandChapter = {
       id: "layout",
       title: "Layout.",
       nav: "Layout",
-      status: "established",
       lede: "The site is designed at three widths and is exact at each of them. Between them, type and spacing move in straight lines, so there is no width at which a layout snaps.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
@@ -165,7 +162,6 @@ export const digital: BrandChapter = {
               <Rule title="The page never scrolls sideways.">A row that cannot fit (the phone navigation, a wide table) scrolls inside itself. Tested at every width.</Rule>
               <Rule title="Reading order is source order.">Columns reflow, but text always comes before its figure in the markup, so every screen and screen reader agree.</Rule>
             </div>
-            <Source className="mt-6">src/lib/fluid.ts; src/components/Container.tsx.</Source>
           </div>
         </div>
       ),
@@ -174,8 +170,7 @@ export const digital: BrandChapter = {
       id: "controls",
       title: "Buttons and links.",
       nav: "Controls",
-      status: "established",
-      lede: "Four buttons, one link. Every state is a solid fill with an opposite label, so a button is 21:1 whether it sits on white, on black or on a photograph. These are the live components: hover and press them.",
+      lede: "Four buttons, one link. Every state is a solid fill with an opposite label, so a button is 21:1 whether it sits on white, on black or on a photograph. When a filled button inverts, it keeps a thin outline, so it never vanishes into the page. These are the live components: hover and press them.",
       render: () => (
         <>
           <div className={cn("grid gap-4 md:grid-cols-2", PRINT_GROW, PRINT_ROWS_1)}>
@@ -201,8 +196,8 @@ export const digital: BrandChapter = {
             caption="Button variants and their states"
             head={["Variant", "Rest", "Hover", "Pressed", "Used for"]}
             rows={[
-              ["Primary", "Black fill, white label", "White fill, black label", "Neutral 200 fill", "The main action on white and on photographs."],
-              ["Secondary", "White fill, black label", "Black fill, white label", "Neutral 800 fill", "The second action on photographs and black."],
+              ["Primary", "Black fill, white label", "White fill, black label, 1 px black outline", "Neutral 200 fill, outline kept", "The main action on white and on photographs."],
+              ["Secondary", "White fill, black label", "Black fill, white label, 1 px white outline", "Neutral 800 fill, outline kept", "The second action on photographs and black."],
               ["Outline", "1 px black border", "Black fill, white label", "Neutral 800 fill", "The header's “Join the club.” Light surfaces."],
               ["Outline on dark", "1 px white border", "White fill, black label", "Neutral 200 fill", "Black sections."],
               ["Arrow link", "Medium text, 16 px arrow", "Underline; arrow moves 2 px", "—", "Onward navigation inside a section."],
@@ -212,9 +207,8 @@ export const digital: BrandChapter = {
             <div className="flex items-center gap-3">
               <Button>Join the list</Button>
               <Button disabled>Sending…</Button>
-              <span className="text-[13px] leading-5 text-foreground/70">Form buttons: the MWDS Button, 8 px radius.</span>
+              <span className="text-[14px] leading-5 text-foreground/70">Form buttons: the MWDS Button, 8 px radius. Hover darkens; disabled is half strength and does nothing.</span>
             </div>
-            <Source>src/components/CtaLink.tsx; src/components/ArrowLink.tsx; src/components/ui/button.tsx.</Source>
           </div>
         </>
       ),
@@ -223,7 +217,6 @@ export const digital: BrandChapter = {
       id: "focus",
       title: "Focus.",
       nav: "Focus",
-      status: "established",
       lede: "Keyboard focus is a 3 px ring with a 2 px gap between it and the control. The ring takes the opposite color of the surface and the gap takes the surface's own color, so the ring is visible everywhere, including on a solid black button.",
       render: () => (
         <>
@@ -253,7 +246,6 @@ export const digital: BrandChapter = {
             <Rule title="Errors change the ring.">An invalid field gets a red border and a pale red ring, and says what is wrong in text.</Rule>
           </div>
           <p className={cn("mt-6 text-p-sm text-foreground/70", WEB_ONLY)}>Press Tab on this page to see the real thing: the examples above are drawn in their focused state.</p>
-          <Source className="mt-4">src/lib/surfaces.ts; src/app/globals.css (--focus-offset); src/components/ui/input.tsx.</Source>
         </>
       ),
     },
@@ -261,7 +253,6 @@ export const digital: BrandChapter = {
       id: "motion",
       title: "Motion.",
       nav: "Motion",
-      status: "established",
       lede: "Slow, small and optional. Decorative motion follows one site-wide preference, set by the visitor's system or by a control in the footer. Nothing important ever depends on something moving.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
@@ -272,7 +263,6 @@ export const digital: BrandChapter = {
               mono={[1]}
               rows={MOTION.map((m) => [m.name, m.value, m.where])}
             />
-            <Source className="mt-4">{MOTION.map((m) => m.source).filter((s, i, a) => a.indexOf(s) === i).join("; ")}.</Source>
           </div>
           <div className="flex flex-col lg:col-span-5">
             <div className={cn("rounded-xl bg-muted p-6 [--focus-offset:var(--muted)]", WEB_ONLY)}>
@@ -296,8 +286,7 @@ export const digital: BrandChapter = {
       id: "accessibility",
       title: "Accessibility.",
       nav: "Accessibility",
-      status: "established",
-      lede: "The target is WCAG 2.2 AA for anything a visitor reads or operates. It is checked by automated tests at three screen widths on every change, and the two places that fall short are written down.",
+      lede: "The target is WCAG 2.2 AA for anything a visitor reads or operates. It is checked by automated tests at three screen widths on every change, and the one place that falls short is written down.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
           <div className="lg:col-span-7">
@@ -315,11 +304,10 @@ export const digital: BrandChapter = {
                 ["Motion is optional", "System setting honored; a visible pause control on every page."],
               ]}
             />
-            <Source className="mt-4">tests/e2e (Playwright with axe-core at 393, 768 and 1440 px); tests/components (axe on components).</Source>
           </div>
           <div className="flex flex-col gap-4 lg:col-span-5">
-            <Pending status="established" title="Two accepted exceptions.">
-              The homepage hero headline and the “Just show up.” body copy sit on photographs below AA contrast. Both were accepted by the Owner on 2026-11-08 and are described in Photography. No other exception exists.
+            <Pending title="One known exception.">
+              The homepage hero headline sits on a pale sky below AA contrast. The Owner has accepted it, and it is not claimed to conform; the measurements and the options are in Photography.
             </Pending>
             <Rule title="Expression and function are separate.">Contour lines and tie-dye may be faint, because they carry no information. The moment something carries information, it meets the standard.</Rule>
             <Rule title="New work is tested the same way.">A page is not finished until it passes axe at all three widths and can be used start to finish from the keyboard.</Rule>
@@ -332,7 +320,6 @@ export const digital: BrandChapter = {
       id: "mwds",
       title: "Next: MWDS.",
       nav: "MWDS",
-      status: "proposed",
       lede: "CMR's tokens already come from the MWDS design system in Figma. A fuller integration is planned as its own project. This is what is expected to move when it happens, so that the standards change their sources and not their look.",
       render: () => (
         <>
@@ -341,22 +328,17 @@ export const digital: BrandChapter = {
             head={["Area", "Today", "With MWDS", "Parity risk"]}
             rows={[
               ["Core color, spacing, radii", "MWDS tokens, CMR theme, exported from Figma.", "Unchanged in principle; consumed from the MWDS package.", "Low. Same values, new delivery."],
-              ["Pastel tints, contour grays, footer ink", "CMR-only variables in cmr.css.", "Promoted to MWDS variables in the CMR theme, then aliased.", "Low, if the hex values are carried over exactly."],
+              ["Secondary colors, contour grays, footer ink", "CMR-only variables in the CMR stylesheet.", "Promoted to MWDS variables in the CMR theme, then aliased.", "Low, if the hex values are carried over exactly."],
               ["Display type roles", "Five fluid roles in code, off the MWDS scale.", "Candidates for MWDS text styles with per-breakpoint values.", "Medium. Line height and tracking must match to the pixel."],
               ["Buttons", "A CMR button for marketing surfaces; the MWDS Button for forms.", "One MWDS Button with CMR variants, if it gains on-photo states.", "Medium. Hover inversion and the focus gap are CMR-specific."],
               ["Tie-dye, contours, hill profiles", "CMR artwork and code.", "Stay CMR. Brand graphics are not design-system components.", "None."],
-              ["This manual", "Reads values through src/lib/brand.", "Repoint the two source paths and the variable names.", "Low. Layouts and graphics do not change."],
+              ["This manual", "Reads the same values as the site.", "Repoint the two source paths and the variable names.", "Low. Layouts and graphics do not change."],
             ]}
           />
-          <div className={cn("mt-8 grid gap-4 md:grid-cols-2", PRINT_BOTTOM)}>
-            <Pending status="proposed" title="Not part of this edition.">
-              No MWDS package, Storybook or token migration is included here. The manual documents CMR as it is built today.
-            </Pending>
-            <Pending status="proposed" title="A Figma edition of this manual.">
-              Planned as a native, editable Figma file built on MWDS variables and components once the integration lands. This PDF is not a substitute for it.
-            </Pending>
+          <div className={cn("mt-8 grid gap-x-8 gap-y-6 md:grid-cols-2", PRINT_BOTTOM)}>
+            <Rule title="Not part of this edition.">No MWDS package, Storybook or token migration is included here. The manual documents CMR as it is built today.</Rule>
+            <Rule title="A Figma edition of this manual.">Planned as a native, editable Figma file built on MWDS variables and components once the integration lands. This PDF is not a substitute for it.</Rule>
           </div>
-          <Source className="mt-6">docs/brand-standards.md (integration map and Figma production notes).</Source>
         </>
       ),
     },

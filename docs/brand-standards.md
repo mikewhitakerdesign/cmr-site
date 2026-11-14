@@ -1,19 +1,26 @@
 # Brand Standards
 
-The CMR Brand Standards are a ten-chapter manual that lives on the website at
-`/brand` and is also published as a PDF. Both are made from the same source,
-so they cannot disagree. This file is for the people who maintain it.
+The CMR Brand Standards are a nine-chapter manual that lives on the website at
+`/brand` and is also published as a PDF, with the logo files downloadable from
+Marks › Files. All three are made from the same sources, so they cannot
+disagree. This file is for the people who maintain it.
 
-**Status: Owner review draft, version 0.9.** Nothing here has been merged or
-deployed. Anything the manual tags *Proposed* or *Unresolved* is not an
-approved standard (see "Open decisions" in the manual, chapter 10).
+**Status: version 1.0, release candidate** (Review 01 refinements, 2026-11-14).
+Not merged, not deployed; it becomes 1.0 when the Owner approves it. The manual
+tags only what is unfinished: *Provisional* (in use, confirm before production)
+and *Pending* (not specified yet). Everything untagged is the standard.
+
+**Apparel is deferred.** `src/content/brand/apparel.tsx` (and `Tee.tsx`,
+`demos/PlacementLab.tsx`) are kept for a later edition but are not in
+`chapters` or `CHAPTER_SLUGS`, so the chapter has no route and no PDF pages.
+To publish it, add it back to both lists, give it a number, and rebuild the PDF.
 
 ## What is where
 
 | Path | What it is |
 |---|---|
-| `src/content/brand/*.tsx` | The ten chapters. Each is one `BrandChapter`: a slug, a title, and plates (one plate is one section on the web and one page in the PDF). `index.ts` is the reading order. |
-| `src/lib/brand/manual.ts` | Version, chapter and plate types, the four status tags, page arithmetic for the PDF, public paths. |
+| `src/content/brand/*.tsx` | The chapters (Apparel kept but unpublished). Each is one `BrandChapter`: a slug, a title, and plates (one plate is one section on the web and one page in the PDF). `index.ts` is the reading order. |
+| `src/lib/brand/manual.ts` | Version, chapter and plate types, the two status tags, page arithmetic for the PDF, public paths. |
 | `src/lib/brand/spec.ts` | Specifications that are **not** design tokens: measurements of the approved artwork, and mirrors of component values. |
 | `src/lib/brand/palette.ts`, `tokens.ts` | The palette. Values are read from the site's stylesheets at build time. No color is typed into a chapter. |
 | `src/lib/brand/color.ts`, `voice.ts` | Pure functions: WCAG contrast, HSL, CMYK arithmetic; the headline checks. |
@@ -21,15 +28,21 @@ approved standard (see "Open decisions" in the manual, chapter 10).
 | `src/app/brand/` | Routes: `(manual)/page.tsx` (landing), `(manual)/[chapter]/page.tsx`, `print/page.tsx` (the PDF's source, noindex). |
 | `src/styles/brand.css` | Loaded by the brand routes only. Scroll offsets, the PDF page size, mask-edge trimming. |
 | `scripts/brand/build-pdf.mjs` | Prints `/brand/print` to the PDF and validates it. |
-| `scripts/assets/trace-badge.mjs` | Traces the approved badge raster into the **proposed** vector. |
+| `public/brand/logos/` | The logo files: `cmr-badge-black.svg` and `cmr-wordmark-black.svg` are the **vector masters**; the white SVGs, the 3000 px PNGs and `cmr-logos.zip` are derived. |
+| `scripts/assets/trace-badge.mjs` | Traces the approved badge raster into the badge master (one-off; needs potrace). |
+| `scripts/assets/outline-wordmark.mjs` | Outlines the wordmark master from Geist Black (one-off; needs fontkit and wawoff2). |
+| `scripts/brand/build-logo-assets.mjs` | `npm run brand:logos` (`:check`): derives every other logo file and the site icons (`src/app/icon.svg`, `favicon.ico`, `apple-icon.png`) from the two masters. Deterministic. |
 | `public/downloads/cmr-brand-standards.pdf` | The PDF the Download button serves. A static file. |
-| `public/brand/proposed/` | Artwork awaiting Owner approval. Nothing in production uses it. |
 
-The one shared file outside `/brand` that changed is
-`src/components/SectionNav.tsx`: it gained optional `leading` and `trailing`
-slots (the chapter menu and Download PDF). Without them its markup is
-unchanged, so The Science and the FAQ are unaffected. The footer gained one link
-(`src/lib/navigation.tsx`) and the sitemap lists the manual's pages
+Shared files outside `/brand`: `src/components/SectionNav.tsx` gained optional
+`leading` and `trailing` slots (the chapter menu and Download PDF; without them
+its markup is unchanged). Review 01 also changed, by Owner direction: the
+footer (Brand Standards is the last link of the secondary row,
+`src/lib/navigation.tsx`); the homepage hero gradient (25%,
+`HomeHero.tsx`, `PhotoBackdrop.tsx`); the inverted hover of the filled CTA
+buttons (a 1 px inset outline, `CtaLink.tsx`); the "Just show up" shade and
+copy (38%, full white, which brings the copy to WCAG AA, `JustShowUp.tsx`); and
+the site icons (`src/app`). The sitemap lists the manual's pages
 (`src/lib/sitemap-paths.ts`).
 
 ## One source, two layouts
@@ -48,15 +61,15 @@ size), change its source, not the chapter.
 
 | Value | Source of truth | How the manual gets it |
 |---|---|---|
-| Colors (black, white, neutrals, mint, cream, accent, borders) | Figma MWDS, CMR theme, exported to `tokens/mwds` and compiled to `src/styles/generated/mwds-tokens.css` | `tokens.ts` parses that file and follows the `var()` chain |
-| CMR-only colors (tints, contour grays, quiet ink) | `src/styles/cmr.css` | Same parser; `color-mix` is evaluated |
+| Primary colors (black, white, neutrals) and the working colors (accent, borders) | Figma MWDS, CMR theme, exported to `tokens/mwds` and compiled to `src/styles/generated/mwds-tokens.css` | `tokens.ts` parses that file and follows the `var()` chain |
+| Secondary colors (the six wash and dye families), contour grays, quiet ink | `src/styles/cmr.css` | Same parser; `color-mix` is evaluated |
 | Display type roles | `src/lib/headings.ts` | Mirrored in `spec.ts`; a test compares them with `fluidType` |
 | Mesh gradient control colors | `scripts/assets/bake-mesh-gradient.mjs` | Mirrored in `spec.ts`; a test parses the script and compares all 16 |
-| Badge, wordmark, silhouette geometry | The approved artwork in `public/brand` and Figma | Measured once, recorded in `spec.ts` with the source node |
-| Contrast ratios, HSL, CMYK | Computed | `color.ts` |
+| Badge, wordmark, silhouette geometry | The vector masters in `public/brand/logos` and the approved artwork | Measured once, recorded in `spec.ts` |
+| Contrast ratios, HSL | Computed | `color.ts` |
 
-CMYK values are device arithmetic with no ICC profile. The manual labels them
-"unproofed", and no spot colors are specified.
+The manual prints no CMYK, Pantone or thread values: color for print is matched
+by proofing (Owner decision, Review 01).
 
 `tests/lib/brand.test.ts` checks every mirror against its source, so a change to
 a token or to `headings.ts` fails a test until the manual is updated.
@@ -85,6 +98,7 @@ The script refuses to write a PDF if any of these fail:
 - content reaches past its page's content box;
 - any element spills out of its own container (this is what catches overlap);
 - an image failed to load or decode.
+- a visible link would become a PDF link to the build server (addresses are printed as text).
 
 It then reads the written PDF's own page tree and compares the count. It does
 not loosen those checks to pass; fix the layout instead.
@@ -104,10 +118,11 @@ page, PDF filename and PDF title. Raise it with every Owner-approved change.
 
 ## Photography and rights
 
-Only the homepage hero is cleared (Owner, 2026-11-13). The "Just show up"
-photograph and the About photograph are not, and the About photograph shows
-identifiable people, so the manual deliberately does **not** reproduce it. Do not
-add either image to the manual until a rights and consent record exists.
+The homepage hero is the Owner's and cleared. The About ("path") photograph is
+cleared for its current use on About (Owner, Review 01); it shows recognizable
+people, so the manual does **not** reproduce it, and any other use is asked for
+first. The "Just show up" (tree-line) photograph has no rights record yet: it
+stays where it is on the website and is not to be reused elsewhere.
 
 ## Future MWDS integration map
 
@@ -141,27 +156,31 @@ Proposed approach, for a later authorized task:
    size. This repository already gives the exact hierarchy: chapter slug, plate
    id, number and title (`src/content/brand/*.tsx`).
 3. **Build the repeating blocks as components**: plate header, status tag, spec
-   table, spec list, rule, usage example (do and don't), pending note, source line.
+   table, spec list, rule, usage example (do and don't), pending note.
    These mirror `src/components/brand/kit.tsx` one to one.
 4. **Take content from the chapters**, not from screenshots: every spec table is
    structured data in the chapter files and can be exported as JSON.
-5. **Place artwork from the masters**: the badge (after the vector is approved),
-   the wordmark (outline the live Geist text, Figma node 113:467), the contour
-   SVG and the hill profile SVGs. Demos become static frames; the interactive
+5. **Place artwork from the masters**: the badge and wordmark from
+   `public/brand/logos`, the contour SVG and the hill profile SVGs. Demos become static frames; the interactive
    states are documented as component variants.
 6. **Reconcile with the website** by diffing the Figma export against the chapter
    data before each new edition.
 
 ## Known limitations of this edition
 
-- The badge has no approved vector master. `public/brand/proposed/` holds a
-  trace of the approved raster (0.001% of pixels differ), awaiting review.
-- The hill silhouette is a raster (373 × 1540 px).
-- No favicon (the site still serves its framework default) and no social
-  sharing image exist.
-- No merchandise artwork, vendor, proof or print color has been specified. The
-  Apparel chapter is entirely proposal.
-- Two of the three photographs lack a rights record.
-- CMYK is unproofed arithmetic; no spot colors are specified.
+- The badge master is a trace of the approved 1386 px raster (no original
+  vector exists). It reproduces it faithfully (0.18% of inked pixels differ, all
+  on the edge; checked by `tests/lib/brand.test.ts`) but inherits the raster's
+  edge texture, visible only on close inspection at very large sizes (a
+  multi-foot banner). For that, proof first, or commission an approved redraw.
+- The site header and footer still draw the marks from the earlier raster
+  masks and trace (`CmrLogo`, `CmrWordmark`); the masters match them to within
+  a pixel. Switching them over is optional and was not part of Review 01.
+- The hill silhouette is a raster (373 × 1540 px). No social sharing image exists.
+- The favicon at 16 px is a small horizontal shape (the badge is 2.29 : 1).
+- No print, embroidery or thread colors and no physical minimum sizes: these
+  come from vendor proofs.
+- The homepage hero headline is below WCAG AA (1.4 to 1.9:1 against 3:1), an
+  Owner-accepted exception; the options are in Photography › Type on photos.
 - The PDF uses fixed-size pages validated at one Geist version; see the MWDS
-  table above.
+  table above. Some pages keep white space above bottom-anchored content.

@@ -5,7 +5,7 @@ import { LABEL } from "@/components/brand/styles";
 import { checkHeadline } from "@/lib/brand/voice";
 import { cn } from "@/lib/utils";
 
-const STARTERS = ["Bad weather. Good hills.", "Unleash Your Inner Mountain Warrior!", "New here? Good.", "Join Us For An Epic Journey"];
+const STARTERS = ["Bad weather. Good hills.", "The Hills Are Calling!", "New here? Good.", "Join Us For An Epic Journey"];
 
 /**
  * Type a headline and see whether it sounds like CMR. The checks are the

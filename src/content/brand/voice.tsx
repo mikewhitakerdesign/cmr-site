@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { HeadlineCheck } from "@/components/brand/demos/HeadlineCheck";
-import { Frame, Pending, Rule, Source, SpecTable, StatusTag } from "@/components/brand/kit";
+import { Frame, Rule, SpecTable } from "@/components/brand/kit";
 import { LABEL, PRINT_BOTTOM, PRINT_GROW, WEB_ONLY } from "@/components/brand/styles";
 import type { BrandChapter } from "@/lib/brand/manual";
 import { AVOID_WORDS, MAX_HEADLINE_WORDS } from "@/lib/brand/voice";
@@ -57,7 +57,6 @@ export const voice: BrandChapter = {
       id: "character",
       title: "Deadpan, specific, kind.",
       nav: "Character",
-      status: "established",
       lede: "The voice is a knowledgeable friend who finds the whole enterprise slightly ridiculous and does it anyway. It states the facts, lets one dry remark through, and moves on without waiting for the laugh.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
@@ -87,7 +86,6 @@ export const voice: BrandChapter = {
             <Balance left="Brief" right="In depth" at={28}>
               Short by default. The Science is the one place that earns length, and it earns it with citations.
             </Balance>
-            <Source className="mt-4">The positions are editorial judgment from the live copy, not measurements.</Source>
           </div>
         </div>
       ),
@@ -96,8 +94,7 @@ export const voice: BrandChapter = {
       id: "devices",
       title: "Five devices.",
       nav: "Devices",
-      status: "established",
-      lede: "Almost every line that sounds like CMR is using one of these. Use one per line. Two in the same sentence is trying too hard.",
+      lede: "Almost every line that sounds like CMR is using one of these. One per line is usually plenty; two in the same sentence starts to sound like trying.",
       render: () => (
         <div className={PRINT_GROW}>
           <Device
@@ -109,7 +106,7 @@ export const voice: BrandChapter = {
               </>
             }
           >
-            A visible second thought. The struck word stays readable, and stays in the text for screen readers. One per page.
+            A visible second thought. The struck word stays readable, and stays in the text for screen readers. Sparingly: it stops being funny when it is everywhere.
           </Device>
           <Device n={2} name="The understatement." example="It isn't tall, but it isn't nothing either.">
             Describe something modest with total composure. Never add “lol,” an emoji or an exclamation mark to help it along.
@@ -130,8 +127,7 @@ export const voice: BrandChapter = {
       id: "words",
       title: "Words we use.",
       nav: "Vocabulary",
-      status: "established",
-      lede: "A small vocabulary, used consistently. The three terms for the club itself are settled by the Owner; the rest is how the site already writes.",
+      lede: "A small vocabulary, used consistently. It is how the site already writes.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
           <div className="lg:col-span-7">
@@ -143,12 +139,11 @@ export const voice: BrandChapter = {
                 ["Running community", "Describing what CMR is.", "“…is a running community for finding elevation…”"],
                 ["Group runs", "The organized activity.", "“Join the club to join the weekly group runs.”"],
                 ["Hill / mountain / mtn", "The same thing. Pick whichever is funnier or shorter.", "“Every mountain range needs a backstory.” “MAKE YOUR OWN MTNS”"],
-                ["Repeats", "The workout. Never “reps” or “intervals.”", "“Hills on repeat.” “At this point, locating it may count as the first repeat.”"],
+                ["Repeats", "The workout. Rather than “reps” or “intervals.”", "“Hills on repeat.” “At this point, locating it may count as the first repeat.”"],
                 ["Elevation, vertical, climb", "What is being collected.", "“Vertical climbed.” “Lots of elevation.”"],
                 ["Show up", "The only ask.", "“Just show up.” “Show up, run the hill, repeat.”"],
               ]}
             />
-            <Source className="mt-4">Club, running community, group runs: Owner decision, 2026-11-13. Examples: live site copy.</Source>
           </div>
           <div className="flex flex-col lg:col-span-5">
             <h3 className={cn(LABEL, "mb-3 text-foreground/65")}>Not in the vocabulary</h3>
@@ -160,7 +155,7 @@ export const voice: BrandChapter = {
               ))}
             </ul>
             <div className={cn("grid gap-6", PRINT_BOTTOM)}>
-              <Rule title="No stock motivation.">Nothing to crush, conquer or unleash. If a line would fit on any gym wall, it is not CMR.</Rule>
+              <Rule title="No stock motivation.">No tough talk and no battle language. If a line would fit on any gym wall, it is not CMR.</Rule>
               <Rule title="No ranking of runners.">No “elite,” “real runners,” “serious athletes,” or anything that implies a pace matters. It does not.</Rule>
               <Rule title="No inflated claims.">No “Chicago&apos;s premier,” no member counts we cannot show, no “official” anything without the permit to match.</Rule>
             </div>
@@ -172,8 +167,7 @@ export const voice: BrandChapter = {
       id: "mechanics",
       title: "Mechanics.",
       nav: "Mechanics",
-      status: "inferred",
-      lede: "The small habits that make copy look edited. Each is taken from how the site already writes; none is a new rule.",
+      lede: "The small habits that make copy look edited. Each is taken from how the site already writes.",
       render: () => (
         <>
           <SpecTable
@@ -181,10 +175,10 @@ export const voice: BrandChapter = {
             head={["Thing", "Convention", "Example"]}
             rows={[
               ["Headlines", "Sentence case, with a period. A question mark when it is a question.", "“New here? Good.”"],
-              ["Statements", "All caps, for three lines only, plus hill names in their heroes.", "“JUST SHOW UP.”"],
+              ["Statements", "All caps, rarely: a few short statements, and hill names in their heroes.", "“JUST SHOW UP.”"],
               ["Expressions as names", "Title Case when used as a label or in a sentence. No ™.", "Hills on Repeat"],
               ["The name", "In full first, then CMR. The ™ appears in the artwork and the homepage statement only.", "Chicago Mountain Runners"],
-              ["Exclamation marks", "Two on the whole site: a thank-you, and the moon.", "“We're going to the moon!”"],
+              ["Exclamation marks", "Rare. The whole site has two: a thank-you, and the moon.", "“We're going to the moon!”"],
               ["Numbers", "Numerals for measurements; “≈” when approximate; “K” for thousands in totals.", "≈ 620 ft · 132K ft"],
               ["Distance", "Feet and miles. Leading zero dropped, the way runners say it.", ".2 miles"],
               ["Time", "Twelve-hour, AM/PM in caps. Day as three capitals, in mono, with a middle dot.", "WED · 5:30 AM"],
@@ -204,7 +198,6 @@ export const voice: BrandChapter = {
       id: "live",
       title: "As written.",
       nav: "Real examples",
-      status: "established",
       lede: "The voice, in place. Every line here is on the live site today, quoted exactly.",
       render: () => (
         <SpecTable
@@ -228,10 +221,9 @@ export const voice: BrandChapter = {
     },
     {
       id: "drafts",
-      title: "Proposed lines.",
-      nav: "Proposed lines",
-      status: "proposed",
-      lede: "Starting points for situations the site has not had to write for yet. None of these is approved copy, and none describes an event that has happened. They show the method, for the Owner to accept, change or throw out.",
+      title: "More examples.",
+      nav: "More examples",
+      lede: "The method, applied to situations the site has not had to write for yet. Use them as patterns, not as copy: none describes an event that has happened.",
       render: () => (
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -244,7 +236,7 @@ export const voice: BrandChapter = {
             <Draft context="Weather: cancelled" why="No joke in the first sentence. Safety news is delivered straight.">
               Tonight&apos;s run is cancelled for lightning. The hill will keep.
             </Draft>
-            <Draft context="Membership" why="The existing promise, extended by one honest clause.">
+            <Draft context="Joining" why="The existing promise, extended by one honest clause.">
               No fees. No commitments. You do have to climb the hill yourself.
             </Draft>
             <Draft context="Apparel slogan" why="An existing expression, set as it is on the site. Nothing new invented.">
@@ -265,7 +257,7 @@ export const voice: BrandChapter = {
             <Draft context="Member welcome" why="Echoes the Join page’s “officially unofficial.”">
               You&apos;re in. There was no vetting process.
             </Draft>
-            <Draft context="Safety" why="No humor at all. This register is covered on the next page.">
+            <Draft context="Safety" why="No humor at all. This register is on the next page.">
               Lightning within ten miles cancels the run. Check the calendar before you leave.
             </Draft>
             <Draft context="Participation" why="Plain, complete, and kind. The voice here is clarity.">
@@ -279,9 +271,9 @@ export const voice: BrandChapter = {
             </p>
             <HeadlineCheck />
           </div>
-          <Pending status="proposed" title="Details in these drafts are placeholders." className={cn("mt-8", PRINT_BOTTOM)}>
-            Days, times, temperatures, repeat counts and the lightning distance are invented for illustration. Real communications use the real schedule and the club&apos;s actual weather policy.
-          </Pending>
+          <p className={cn("mt-8 max-w-[80ch] text-p-sm text-foreground/70", PRINT_BOTTOM)}>
+            Days, times, temperatures, repeat counts and the lightning distance above are for illustration. Real messages use the real schedule and the club&apos;s actual weather policy.
+          </p>
         </>
       ),
     },
@@ -289,7 +281,6 @@ export const voice: BrandChapter = {
       id: "serious",
       title: "Where the jokes stop.",
       nav: "Serious register",
-      status: "established",
       lede: "When the subject is someone's safety, money, data or legal position, the voice drops the wit and keeps everything else: short sentences, plain words, no hedging. The FAQ already shows how.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
@@ -306,7 +297,6 @@ export const voice: BrandChapter = {
                 ["Risk notice", "“Running carries inherent physical risk. Participate within your own limits and consult a physician before beginning any new training. Not medical advice.”"],
               ]}
             />
-            <Source className="mt-4">src/content/faq.ts; src/components/weather/WeatherGuidance.tsx; src/lib/navigation.tsx (risk notice).</Source>
           </div>
           <div className="flex flex-col lg:col-span-5">
             <div className="grid gap-6">
@@ -315,8 +305,7 @@ export const voice: BrandChapter = {
               <Rule title="Say exactly what is true.">“May,” “when possible,” and “we&apos;ll try” are honest, not weak. Do not promise supervision, cancellations or outcomes the club cannot guarantee.</Rule>
               <Rule title="The Science stays sourced.">Exercise claims carry a citation. It informs; it never prescribes. “Not medical advice” means it.</Rule>
             </div>
-            <div className={cn("flex items-start gap-3 rounded-lg bg-muted p-5", PRINT_BOTTOM, "[.brand-print_&]:mt-auto")}>
-              <StatusTag status="established" className="mt-0.5" />
+            <div className={cn("rounded-lg bg-muted p-5", PRINT_BOTTOM, "[.brand-print_&]:mt-auto")}>
               <p className="text-p-sm text-foreground/80">Legal documents are the Owner&apos;s, not the brand&apos;s. This manual describes their tone and changes none of their wording.</p>
             </div>
           </div>

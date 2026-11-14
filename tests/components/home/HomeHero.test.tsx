@@ -75,7 +75,7 @@ describe("HomeHero", () => {
     expect(img.className).toMatch(/object-\[50%_0%\]/);
     expect(img.className).toMatch(/lg:object-\[50%_77%\]/);
     expect(img.closest("[aria-hidden]")).not.toBeNull();
-    expect(container.querySelector("[data-slot=mesh-gradient]")).toHaveClass("opacity-20");
+    expect(container.querySelector("[data-slot=mesh-gradient]")).toHaveClass("opacity-25");
   });
 
   it("flips each CTA to its opposite on hover, with no border on either filled button", () => {

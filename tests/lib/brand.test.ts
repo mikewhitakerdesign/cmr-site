@@ -7,9 +7,9 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { chapters, getChapter } from "@/content/brand";
 import { contrast, formatCmykUnproofed, formatHsl, formatRatio, formatRgb, mixSrgb, overlay, wcagGrade } from "@/lib/brand/color";
-import { CHAPTER_SLUGS, LANDING_SECTIONS, MANUAL, MANUAL_ADDRESS, brandPaths, chapterPath, outlineOf, pdfPageMap, plateNumber } from "@/lib/brand/manual";
-import { allColors, colorById, core, cream, functional, mint, neutrals, tints } from "@/lib/brand/palette";
-import { BADGE, BADGE_RATIO, HEADING_ROLES, MESH_GRADIENT, WORDMARK, meshHex, type HeadingRoleKey } from "@/lib/brand/spec";
+import { CHAPTER_SLUGS, LANDING_SECTIONS, LOGO_DOWNLOADS, MANUAL, MANUAL_ADDRESS, STATUS, brandPaths, chapterPath, outlineOf, pdfPageMap, plateNumber } from "@/lib/brand/manual";
+import { allColors, colorById, functional, neutrals, primary, tints } from "@/lib/brand/palette";
+import { BADGE, BADGE_RATIO, HEADING_ROLES, MESH_GRADIENT, MESH_OPACITY, WORDMARK, meshHex, type HeadingRoleKey } from "@/lib/brand/spec";
 import { cssVar, parseDeclarations, resolveValue } from "@/lib/brand/tokens";
 import { AVOID_WORDS, checkHeadline, headlinePasses } from "@/lib/brand/voice";
 import { WORDMARK_PATH, WORDMARK_VIEWBOX } from "@/components/brand/wordmark-path";
@@ -108,13 +108,17 @@ describe("palette", () => {
     for (const c of all) expect(c.hex, c.id).toMatch(/^#[0-9a-f]{6}$/);
   });
 
-  it("has black and white as the core, an 11-step neutral and mint ramp, cream, and six tint pairs", () => {
-    expect(core.map((c) => c.hex)).toEqual(["#000000", "#ffffff"]);
+  it("is pure black and white with the unchanged neutral scale as Primary, and six wash and dye families as Secondary (Review 01)", () => {
+    expect(primary.map((c) => c.hex)).toEqual(["#000000", "#ffffff"]);
     expect(neutrals).toHaveLength(11);
-    expect(mint).toHaveLength(11);
-    expect(cream.hex).toBe("#f4f1e8");
+    // The neutral scale is unchanged (Owner decision, Review 01): these are its values, 50 to 950.
+    expect(neutrals.map((n) => n.hex)).toEqual(["#ffffff", "#f5f5f5", "#ececec", "#d4d4d4", "#a3a3a3", "#737373", "#525252", "#404040", "#262626", "#171717", "#000000"]);
     expect(tints.map((t) => t.name)).toEqual(["mint", "peach", "lavender", "blue", "mauve", "gray"]);
-    expect(colorById("accent").hex).toBe(colorById("mint-100").hex);
+    // No standalone mint ramp and no cream in the documented palette.
+    const ids = allColors().map((c) => c.id);
+    expect(ids.filter((id) => /^mint-\d+$/.test(id) || id === "cream")).toEqual([]);
+    // The interface accent is still documented, as a working color, and is the mint dye's value.
+    expect(colorById("accent").hex).toBe(colorById("mint-dye").hex);
   });
 
   it("keeps black type on every tint at AAA, as the manual states", () => {
@@ -151,48 +155,128 @@ describe("specification mirrors", () => {
 
   it("badge and wordmark measurements are internally consistent with the artwork files", () => {
     expect(read("public/brand/cmr-logo-mask-shape.svg")).toContain(`width="${BADGE.raster.w}" height="${BADGE.raster.h}"`);
-    expect(BADGE_RATIO).toBeCloseTo(2.28, 2);
-    expect(BADGE.lozenge.x + BADGE.lozenge.w).toBeLessThanOrEqual(BADGE.raster.w);
+    expect(BADGE_RATIO).toBeCloseTo(2.29, 2);
+    expect(BADGE.raster.crop.x + BADGE.master.w).toBeLessThanOrEqual(BADGE.raster.w);
+    expect(read(`public${LOGO_DOWNLOADS.dir}/cmr-badge-black.svg`)).toContain(`viewBox="0 0 ${BADGE.master.w} ${BADGE.master.h}"`);
+    expect(read(`public${LOGO_DOWNLOADS.dir}/cmr-wordmark-black.svg`)).toContain(`viewBox="0 0 ${WORDMARK.master.w} ${WORDMARK.master.h}"`);
+    // The footer's earlier trace: three lines of equal cap height and two gaps fill its height (to within the 2 px trim margin).
     expect(read("public/brand/cmr-wordmark.svg")).toContain(`viewBox="0 0 ${WORDMARK.traced.w} ${WORDMARK.traced.h}"`);
-    // Three lines of equal cap height and two gaps fill the traced height (to within the 2 px trim margin).
     expect(3 * WORDMARK.traced.capHeight + 2 * WORDMARK.traced.lineGap).toBeGreaterThanOrEqual(WORDMARK.traced.h - 2);
     expect(WORDMARK.trackingPx / WORDMARK.fontSizePx).toBeCloseTo(-1 / 64, 4);
+    // The master's caps: 0.71 em (Geist) at the specified size, overshot by the round letters at the top.
+    expect(WORDMARK.master.capHeight).toBeCloseTo(0.71 * WORDMARK.fontSizePx, 1);
   });
 
-  it("the manual's badge images are the approved mask's own pixels (alpha = the mask), in one flat color each", async () => {
-    const sharp = (await import("sharp")).default;
-    const b64 = read("public/brand/cmr-logo-mask-shape.svg").match(/base64,([^"]+)"/)![1];
-    const mask = await sharp(Buffer.from(b64, "base64")).greyscale().raw().toBuffer({ resolveWithObject: true });
-    for (const [name, value] of [["black", 0], ["white", 255]] as const) {
-      const img = await sharp(resolve(root, `src/components/brand/art/cmr-badge-${name}.png`)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-      expect([img.info.width, img.info.height]).toEqual([BADGE.raster.w, BADGE.raster.h]);
-      let wrong = 0;
-      for (let i = 0; i < mask.data.length; i++) {
-        const [r, g, b, a] = [img.data[i * 4], img.data[i * 4 + 1], img.data[i * 4 + 2], img.data[i * 4 + 3]];
-        if (a !== mask.data[i] || (a > 0 && (r !== value || g !== value || b !== value))) wrong++;
-      }
-      expect(wrong, name).toBe(0);
-    }
-  });
-
-  it("the manual's inline wordmark is the approved traced path, unchanged", () => {
-    const file = read("public/brand/cmr-wordmark.svg");
-    expect(file.match(/<path d="([^"]+)"/)![1]).toBe(WORDMARK_PATH);
+  it("the manual's inline wordmark is the vector master's path, unchanged", () => {
+    const file = read(`public${LOGO_DOWNLOADS.dir}/cmr-wordmark-black.svg`);
+    expect(file.match(/ d="([^"]+)"/)![1]).toBe(WORDMARK_PATH);
     expect(file).toContain(`viewBox="${WORDMARK_VIEWBOX}"`);
   });
 
-  it("the proposed vector badge shares the approved raster's frame and is labeled as proposed", () => {
-    const svg = read("public/brand/proposed/cmr-badge-proposed.svg");
-    expect(svg).toContain(`viewBox="0 0 ${BADGE.raster.w} ${BADGE.raster.h}"`);
-    expect(svg).toMatch(/PROPOSED/);
-    expect(svg).toMatch(/Not approved/);
+  it("the homepage hero's gradient is the manual's 25%, and Just show up keeps 50%", () => {
+    expect(MESH_OPACITY).toEqual({ hero: 25, justShowUp: 50 });
+    expect(read("src/components/home/HomeHero.tsx")).toMatch(new RegExp(`gradientOpacity="${MESH_OPACITY.hero}"`));
+    expect(read("src/components/home/JustShowUp.tsx")).toMatch(new RegExp(`gradientOpacity="${MESH_OPACITY.justShowUp}"`));
+  });
+});
+
+describe("logo files and site icon (Marks › Files)", () => {
+  const logo = (f: string) => resolve(root, `public${LOGO_DOWNLOADS.dir}/${f}`);
+  const MARKS = ["badge", "wordmark"] as const;
+
+  it("are genuine vector masters: one filled path each, no embedded image, black and white versions of the same artwork", () => {
+    for (const m of MARKS) {
+      const black = read(`public${LOGO_DOWNLOADS.dir}/cmr-${m}-black.svg`);
+      const white = read(`public${LOGO_DOWNLOADS.dir}/cmr-${m}-white.svg`);
+      for (const svg of [black, white]) {
+        expect(svg, m).not.toMatch(/<image|base64|<rect/i);
+        expect(svg.match(/<path /g), m).toHaveLength(1);
+        expect(svg, m).toMatch(/viewBox="0 0 [\d.]+ [\d.]+"/);
+      }
+      expect(black).toContain('fill="#000"');
+      expect(white).toContain('fill="#fff"');
+      expect(black.match(/ d="([^"]+)"/)![1], m).toBe(white.match(/ d="([^"]+)"/)![1]);
+    }
+    // The badge: the outline and six knocked-out shapes (C, M, R, the R's counter, and the ™'s T and M).
+    const d = read(`public${LOGO_DOWNLOADS.dir}/cmr-badge-black.svg`).match(/ d="([^"]+)"/)![1];
+    expect(d.match(/M /g)).toHaveLength(7);
+  });
+
+  it("the badge master reproduces the approved artwork: under 0.5% of its inked pixels differ, all at the edge", async () => {
+    const sharp = (await import("sharp")).default;
+    const b64 = read("public/brand/cmr-logo-mask-shape.svg").match(/base64,([^"]+)"/)![1];
+    const mask = await sharp(Buffer.from(b64, "base64")).greyscale().raw().toBuffer({ resolveWithObject: true });
+    const { w, h } = BADGE.raster;
+    const body = read(`public${LOGO_DOWNLOADS.dir}/cmr-badge-black.svg`).match(/<path [^>]+>/)![0];
+    const placed = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}"><g transform="translate(${BADGE.raster.crop.x} ${BADGE.raster.crop.y})">${body}</g></svg>`;
+    const vec = await sharp(Buffer.from(placed)).flatten({ background: "#ffffff" }).greyscale().negate().raw().toBuffer();
+    let inked = 0;
+    let differ = 0;
+    for (let i = 0; i < w * h; i++) {
+      if (mask.data[i] >= 128) inked++;
+      if (mask.data[i] >= 128 !== vec[i] >= 128) differ++;
+    }
+    expect(differ / inked).toBeLessThan(0.005);
+  });
+
+  it("PNGs are 3000 px wide, transparent, in the master's proportions", async () => {
+    const sharp = (await import("sharp")).default;
+    for (const m of MARKS) {
+      const master = m === "badge" ? BADGE.master : WORDMARK.master;
+      for (const ink of ["black", "white"]) {
+        const img = sharp(logo(`cmr-${m}-${ink}.png`));
+        const meta = await img.metadata();
+        expect(meta.format).toBe("png");
+        expect(meta.hasAlpha, `${m} ${ink}`).toBe(true);
+        expect(meta.width).toBe(3000);
+        expect(meta.height! / meta.width!).toBeCloseTo(master.h / master.w, 2);
+        const { data, info } = await img.ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+        expect(data[3], "top-left corner is transparent").toBe(0);
+        expect(data[(info.width * info.height - 1) * 4 + 3], "bottom-right corner is transparent").toBe(0);
+      }
+    }
+  });
+
+  it("the ZIP holds the eight files, byte for byte, and a README", async () => {
+    const { inflateRawSync } = await import("node:zlib");
+    const zip = readFileSync(logo("cmr-logos.zip"));
+    const entries = new Map<string, Buffer>();
+    for (let o = 0; zip.readUInt32LE(o) === 0x04034b50; ) {
+      const method = zip.readUInt16LE(o + 8);
+      const size = zip.readUInt32LE(o + 18);
+      const nameLen = zip.readUInt16LE(o + 26);
+      const name = zip.subarray(o + 30, o + 30 + nameLen).toString("utf8");
+      const body = zip.subarray(o + 30 + nameLen, o + 30 + nameLen + size);
+      entries.set(name, method === 8 ? inflateRawSync(body) : Buffer.from(body));
+      o += 30 + nameLen + size;
+    }
+    const files = MARKS.flatMap((m) => ["black", "white"].flatMap((ink) => [`cmr-${m}-${ink}.svg`, `cmr-${m}-${ink}.png`]));
+    expect([...entries.keys()].sort()).toEqual([...files.map((f) => `cmr-logos/${f}`), "cmr-logos/README.txt"].sort());
+    for (const f of files) expect(entries.get(`cmr-logos/${f}`)!.equals(readFileSync(logo(f))), f).toBe(true);
+    expect(entries.get("cmr-logos/README.txt")!.toString()).toMatch(/96 px/);
+  });
+
+  it("the site icon is the badge's outline alone: one shape, no letters, black on white", () => {
+    const icon = read("src/app/icon.svg");
+    const d = icon.match(/ d="([^"]+)"/)![1];
+    expect(d.match(/M /g)).toHaveLength(1);
+    expect(icon).toContain('fill="#fff"');
+    expect(icon).toContain('fill="#000"');
+    const ico = readFileSync(resolve(root, "src/app/favicon.ico"));
+    expect(ico.readUInt16LE(2)).toBe(1);
+    expect(ico.readUInt16LE(4)).toBe(3);
+    expect([0, 1, 2].map((i) => ico.readUInt8(6 + 16 * i))).toEqual([16, 32, 48]);
   });
 });
 
 describe("chapters", () => {
-  it("are the ten chapters, in order, numbered 01 to 10", () => {
+  it("are the nine published chapters, in order, numbered 01 to 09; Apparel is deferred and unpublished", () => {
     expect(chapters.map((c) => c.slug)).toEqual([...CHAPTER_SLUGS]);
-    expect(chapters.map((c) => c.number)).toEqual(["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"]);
+    expect(chapters.map((c) => c.number)).toEqual(["01", "02", "03", "04", "05", "06", "07", "08", "09"]);
+    expect(CHAPTER_SLUGS).not.toContain("apparel");
+    expect(getChapter("apparel")).toBeUndefined();
+    // Kept for a later edition.
+    expect(existsSync(resolve(root, "src/content/brand/apparel.tsx"))).toBe(true);
   });
 
   it("each have a title ending in a period, a one-sentence summary and at least five plates", () => {
@@ -217,12 +301,15 @@ describe("chapters", () => {
     }
   });
 
-  it("mark every plate with an evidence level", () => {
-    for (const c of chapters) for (const p of c.plates) expect(p.status, `${c.slug}/${p.id}`).toBeDefined();
+  it("tag a plate only when something in it is unfinished, with one of the two tags", () => {
+    for (const c of chapters) for (const p of c.plates) if (p.status) expect(Object.keys(STATUS), `${c.slug}/${p.id}`).toContain(p.status);
+    expect(Object.keys(STATUS)).toEqual(["provisional", "pending"]);
   });
 
-  it("present nothing in Apparel as established: it is all proposal or open", () => {
-    expect(getChapter("apparel")!.plates.map((p) => p.status)).not.toContain("established");
+  it("is a release candidate of version 1.0, and says so", () => {
+    expect(MANUAL.version).toBe("1.0");
+    expect(MANUAL.status).toMatch(/release candidate/i);
+    expect(MANUAL.pdfDownloadName).toBe("CMR-Brand-Standards-v1.0-RC.pdf");
   });
 
   it("build paths, numbers and outlines", () => {

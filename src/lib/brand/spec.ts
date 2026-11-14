@@ -20,39 +20,44 @@ import type { Fluid } from "@/lib/fluid";
 /* ------------------------------------------------------------------ */
 
 /**
- * The CMR badge. Geometry measured from the approved raster
- * (public/brand/cmr-logo-mask-shape.svg, an embedded 1386 × 728 px image; Figma
- * "Brand / CMR logo" 39:152, 188 × 98). No vector master exists in the repository.
+ * The CMR badge. The vector master (public/brand/logos/cmr-badge-black.svg) is
+ * traced from the approved artwork, the 1386 × 728 Figma export
+ * (public/brand/cmr-logo-mask-shape.svg), and cropped to the badge itself.
+ * Letter geometry is measured in the master's own coordinates.
  */
 export const BADGE = {
-  figmaNode: "39:152",
-  figmaFrame: { w: 188, h: 98 },
-  raster: { w: 1386, h: 728 },
-  /** The black lozenge inside the raster. */
-  lozenge: { x: 21, y: 68, w: 1341, h: 587 },
-  /** The knocked-out "CMR" with its ™. */
-  letters: { x: 135, y: 250, w: 1096, h: 301 },
-  /** Widths in production (src/components/Header.tsx), CSS px. */
+  /** The vector master's viewBox: the badge, edge to edge. */
+  master: { w: 1341.2, h: 586.6 },
+  /** The approved raster the master is traced from, and where the badge sits in its frame. */
+  raster: { w: 1386, h: 728, crop: { x: 21.1, y: 68.1 } },
+  /** The knocked-out "CMR" with its ™, in master coordinates. */
+  letters: { x: 113.9, y: 181.9, w: 1096, h: 301 },
+  /** Widths in production (src/components/Header.tsx), CSS px, including the header's own frame around the badge. */
   production: { mobile: 100, tablet: 128, tabletCompact: 96, desktop: 188, desktopCompact: 112 },
+  /** Provisional smallest screen width (Owner, Review 01): the smallest the site already shows it. */
+  minScreenPx: 96,
 } as const;
 
-/** Lozenge proportion, width ÷ height. */
-export const BADGE_RATIO = BADGE.lozenge.w / BADGE.lozenge.h;
+/** Badge proportion, width ÷ height. */
+export const BADGE_RATIO = BADGE.master.w / BADGE.master.h;
 
 /**
- * The stacked wordmark. Type specification read from the live text in Figma
- * ("CMR Logo Wordmark" 113:467); the repository's SVG is a trace of a PNG export
- * of that frame (scripts/assets/trace-wordmark.mjs), 1858 × 888.
+ * The stacked wordmark. Type specification read from the live text in the
+ * Owner's Figma file; the vector master (public/brand/logos/cmr-wordmark-black.svg)
+ * is outlined from Geist Black to this specification
+ * (scripts/assets/outline-wordmark.mjs). The site footer still draws the
+ * earlier trace (public/brand/cmr-wordmark.svg, 1858 × 888), which the master
+ * matches to within a pixel.
  */
 export const WORDMARK = {
-  figmaNode: "113:467",
-  figmaFrame: { w: 1916, h: 941 },
   typeface: "Geist Black",
   fontSizePx: 350.14,
   lineHeightPx: 313.667,
   trackingPx: -5.4709,
   tm: { fontSizePx: 115.191, trackingPx: -1.7999 },
-  /** The traced artwork (public/brand/cmr-wordmark.svg), trimmed to the letters. */
+  /** The vector master's viewBox, and where the first line's caps sit in it (the round letters overshoot them by 5.6 px). */
+  master: { w: 1857.8, h: 887.2, capTop: 5.6, capHeight: 248.6 },
+  /** Measured on the footer's trace: its frame, the cap height, the gap between lines, and each line's width (the last with its ™). */
   traced: { w: 1858, h: 888, capHeight: 260, lineGap: 54, lineWidths: [1607, 1850, 1850] },
 } as const;
 
@@ -156,8 +161,8 @@ export const MESH_GRADIENT: readonly (readonly [number, number, number])[][] = [
 export const meshHex = ([r, g, b]: readonly [number, number, number]) =>
   `#${[r, g, b].map((v) => Math.round(v * 255).toString(16).padStart(2, "0")).join("")}`;
 
-/** Layer opacity of the gradient over a photograph (src/components/PhotoBackdrop.tsx). */
-export const MESH_OPACITY = { hero: 20, justShowUp: 50 } as const;
+/** Layer opacity of the gradient over a photograph (src/components/PhotoBackdrop.tsx): 25% on the homepage hero, 50% on "Just show up." (Owner, Review 01). */
+export const MESH_OPACITY = { hero: 25, justShowUp: 50 } as const;
 
 /** Circle systems in production. */
 export const CIRCLES = {

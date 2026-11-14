@@ -26,7 +26,7 @@ const TONE: Record<PlateTone, string> = {
   muted: "bg-muted [--focus-offset:var(--muted)]",
 };
 
-/** The four evidence levels, as a tag. Solid = settled; outlined = observed; dashed = not yet a standard. */
+/** The two "not finished" levels, as a tag. Outlined = in use for now; dashed = not specified yet. Untagged means settled. */
 export function StatusTag({ status, className }: { status: Status; className?: string }) {
   return (
     <span
@@ -34,10 +34,8 @@ export function StatusTag({ status, className }: { status: Status; className?: s
       title={STATUS[status].meaning}
       className={cn(
         "inline-flex items-center rounded-xs border px-1.5 py-0.5 font-mono text-[11px] leading-4 tracking-[0.08em] whitespace-nowrap uppercase",
-        status === "established" && "border-foreground bg-foreground text-background",
-        status === "inferred" && "border-foreground text-foreground",
-        status === "proposed" && "border-dashed border-foreground text-foreground",
-        status === "unresolved" && "border-dashed border-foreground/60 text-foreground/70",
+        status === "provisional" && "border-foreground text-foreground",
+        status === "pending" && "border-dashed border-foreground text-foreground",
         className,
       )}
     >
@@ -140,14 +138,14 @@ export function PrintPage({
         children
       ) : (
         <>
-          <p className={cn(LABEL, "flex justify-between text-[10px] text-foreground/55")}>
+          <p className={cn(LABEL, "flex justify-between text-[11px] text-foreground/60")}>
             <span>CMR Brand Standards</span>
             <span>{running}</span>
           </p>
           <div data-slot="brand-page-content" className="mt-9 mb-6 flex min-h-0 flex-1 flex-col">
             {children}
           </div>
-          <p className={cn(LABEL, "flex justify-between text-[10px] text-foreground/55")}>
+          <p className={cn(LABEL, "flex justify-between text-[11px] text-foreground/60")}>
             <span>{MANUAL_ADDRESS}</span>
             <span data-slot="brand-folio">{String(page).padStart(2, "0")}</span>
           </p>
@@ -279,15 +277,6 @@ export function SpecTable({
   );
 }
 
-/** Where a value comes from. Mono, small, quiet: every specification can be traced. */
-export function Source({ children, className }: { children: ReactNode; className?: string }) {
-  return (
-    <p data-slot="brand-source" className={cn("font-mono text-[12px] leading-5 text-foreground/60 [.brand-print_&]:text-[11px] [.brand-print_&]:leading-4", className)}>
-      <span className="tracking-[0.1em] uppercase">Source</span> {children}
-    </p>
-  );
-}
-
 /** A short rule or principle: bold line, one supporting sentence. */
 export function Rule({ title, children, className }: { title: ReactNode; children?: ReactNode; className?: string }) {
   return (
@@ -358,8 +347,8 @@ export function Usage({
   );
 }
 
-/** A note that something is not yet a standard, with what would settle it. */
-export function Pending({ status = "unresolved", title, children, className }: { status?: Status; title: ReactNode; children: ReactNode; className?: string }) {
+/** A note that something is not finished, with what would settle it. */
+export function Pending({ status = "pending", title, children, className }: { status?: Status; title: ReactNode; children: ReactNode; className?: string }) {
   return (
     <aside data-slot="brand-pending" className={cn("rounded-lg border border-dashed border-foreground/50 p-5 [.brand-print_&]:p-4", className)}>
       <p className="flex flex-wrap items-center gap-x-3 gap-y-2">

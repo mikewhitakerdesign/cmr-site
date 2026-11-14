@@ -1,7 +1,7 @@
 import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 import { ContourLab } from "@/components/brand/demos/ContourLab";
-import { Figure, Frame, Pending, Rule, Source, SpecList, SpecTable } from "@/components/brand/kit";
+import { Figure, Frame, Pending, Rule, SpecList, SpecTable } from "@/components/brand/kit";
 import { LABEL, PRINT_BOTTOM, PRINT_FILL, PRINT_FILL_COL, PRINT_GROW, PRINT_ONLY, PRINT_ROWS_1, WEB_ONLY } from "@/components/brand/styles";
 import { HillContourArt } from "@/components/hills/HillContourArt";
 import { HillProfile } from "@/components/HillProfile";
@@ -19,11 +19,10 @@ import {
   RepeatIcon,
   RocketIcon,
   ShareIcon,
-  UserIcon,
 } from "@/components/icons";
 import { WeatherGlyph } from "@/components/weather/WeatherGlyph";
 import type { BrandChapter } from "@/lib/brand/manual";
-import { CIRCLES, CONTOUR, HILL_PROFILE, LAYOUT } from "@/lib/brand/spec";
+import { CIRCLES, CONTOUR, HILL_PROFILE, LAYOUT, SILHOUETTE } from "@/lib/brand/spec";
 import { REPEAT_TARGETS_FT, getHill, listedHills, routeCounts } from "@/lib/hills";
 import { grayTintVars, tintVars } from "@/lib/tints";
 import { cn } from "@/lib/utils";
@@ -86,6 +85,15 @@ function Band({ kind, label, h }: { kind: "white" | "black" | "photo" | "gray"; 
 
 const cricket = () => getHill("cricket-hill")!;
 
+/** The hill silhouette, exactly as the homepage draws it. */
+function Silhouette({ className }: { className?: string }) {
+  return (
+    <span aria-hidden className={cn("relative block shrink-0", className)} style={{ aspectRatio: `${SILHOUETTE.raster.w} / ${SILHOUETTE.raster.h}` }}>
+      <Image src="/home/community-mark.png" alt="" fill sizes="93px" className="object-fill" />
+    </span>
+  );
+}
+
 export const graphicLanguage: BrandChapter = {
   slug: "graphic-language",
   number: "05",
@@ -97,7 +105,6 @@ export const graphicLanguage: BrandChapter = {
       id: "elements",
       title: "Signature and occasional.",
       nav: "Elements",
-      status: "inferred",
       lede: "Five elements appear across the site and carry the identity. Three more are saved for particular moments. Knowing which is which keeps the loud ones rare.",
       render: () => (
         <>
@@ -157,8 +164,7 @@ export const graphicLanguage: BrandChapter = {
       id: "contours",
       title: "Contour lines.",
       nav: "Contours",
-      status: "established",
-      lede: "The lines on a topographic map, drawn as hairlines. On CMR's hero sections they drift slowly, like terrain that has not made up its mind. They are the one piece of mountain iconography the brand allows itself.",
+      lede: "The lines on a topographic map, drawn as hairlines. On CMR's hero sections they drift slowly, like terrain that has not made up its mind. They are the one piece of mountain iconography the brand allows itself, and they are artwork, not a map.",
       render: () => (
         <>
           <div className={WEB_ONLY}>
@@ -173,25 +179,20 @@ export const graphicLanguage: BrandChapter = {
             </Frame>
           </div>
           <div className="mt-8 grid gap-8 lg:grid-cols-12">
-            <div className="lg:col-span-7">
-              <SpecTable
-                caption="Contour field settings in production"
-                head={["Where", "Scale", "Levels", "Ground", "Line color"]}
-                mono={[1, 2, 4]}
-                rows={CONTOUR.settings.map((s) => [s.name, `${s.scale} px`, String(s.levels), s.ground, s.line])}
-              />
+            <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:col-span-7">
+              <Rule title="Animated or still.">On the website the large fields drift slowly; under reduced motion, with motion paused, and in print they are one still frame. Both are the same artwork.</Rule>
+              <Rule title="One weight, faint.">A single hairline in a light gray on white or a mid gray on black, so type crossing them loses nothing.</Rule>
             </div>
             <SpecList
               className="lg:col-span-5"
               rows={[
-                ["Line weight, moving", `${CONTOUR.lineWidthPx} px, constant at any size`],
-                ["Line weight, static", `${CONTOUR.staticLineWidthPx} px`],
-                ["Static pattern", `${CONTOUR.staticPattern.paths} vector paths, tileless`],
-                ["Speed", `${CONTOUR.defaults.speed} noise units per second`],
+                ["Line, animated", `${CONTOUR.lineWidthPx} px, constant at any size`],
+                ["Line, still pattern", `${CONTOUR.staticLineWidthPx} px`],
+                ["Still pattern", `${CONTOUR.staticPattern.paths} vector paths, no repeating tile`],
+                ["Color", "Neutral 300 on white; neutral 500 to 600 on black"],
               ]}
             />
           </div>
-          <Source className="mt-4">src/components/ContourField.tsx; public/home/topo.svg (traced from the approved Figma pattern).</Source>
         </>
       ),
     },
@@ -199,12 +200,11 @@ export const graphicLanguage: BrandChapter = {
       id: "contour-rules",
       title: "How contours behave.",
       nav: "Contour rules",
-      status: "established",
-      lede: "Contours are a ground, never a subject. They sit behind type, run off every edge, and stay faint enough that a headline crossing them loses nothing.",
+      lede: "Contours are used two ways: as a full-bleed ground behind a whole section, or as a small drawing beside the facts it decorates. Either way they stay behind the content and never pretend to be data.",
       render: () => (
         <>
           <div className={cn("grid gap-4 md:grid-cols-3", PRINT_GROW, PRINT_ROWS_1)}>
-            <Figure className={PRINT_FILL_COL} caption="Full-bleed behind a headline. Lines run off all four edges.">
+            <Figure className={PRINT_FILL_COL} caption="Full-bleed: behind a headline, running off all four edges.">
               <Frame ground="black" className={cn("flex aspect-[4/3] items-end p-5", PRINT_FILL)}>
                 <TopoPattern className="-z-10 text-(--cmr-contour-on-dark)" />
                 <p className="text-[40px] leading-[0.9] font-black tracking-[-0.045em]">
@@ -214,7 +214,7 @@ export const graphicLanguage: BrandChapter = {
                 </p>
               </Frame>
             </Figure>
-            <Figure className={PRINT_FILL_COL} caption="Light gray on white. Black type crossing a line still measures 15:1.">
+            <Figure className={PRINT_FILL_COL} caption="Full-bleed on white, in light gray. Black type crossing a line still measures 15:1.">
               <Frame className={cn("flex aspect-[4/3] items-center justify-center p-5", PRINT_FILL)}>
                 <TopoPattern className="-z-10 text-(--cmr-contour-on-light)" />
                 <p className="text-center text-[34px] leading-[0.9] font-black tracking-[-0.045em]">
@@ -225,17 +225,17 @@ export const graphicLanguage: BrandChapter = {
                 </p>
               </Frame>
             </Figure>
-            <Figure className={PRINT_FILL_COL} caption="A small closed drawing beside a hill's facts. Decorative, and labeled as not a map.">
+            <Figure className={PRINT_FILL_COL} caption="A small detail: a closed drawing beside a hill's facts. Decorative, and labeled as not a map.">
               <Frame className={cn("flex aspect-[4/3] items-center justify-center p-5", PRINT_FILL)}>
                 <HillContourArt slug="horner-hill" className="h-[78%]" />
               </Frame>
             </Figure>
           </div>
           <div className={cn("mt-10 grid gap-x-8 gap-y-6 md:grid-cols-2 lg:grid-cols-4", PRINT_BOTTOM)}>
-            <Rule title="Behind, never over.">Contours go under type and never across a photograph, a button or a face.</Rule>
-            <Rule title="One field per section.">A section has one contour ground or none. Do not stack patterns or change density mid-section.</Rule>
-            <Rule title="Motion is optional.">Under reduced motion, or with the site&apos;s motion paused, the field holds one still frame. Nothing depends on it moving.</Rule>
-            <Rule title="Decoration is not data.">Only the hill profiles are drawn from elevation data. Every other contour is artwork and must never be captioned as a map.</Rule>
+            <Rule title="Behind the content.">Contours go under type, not across a photograph, a button or a face. Keep the area under small text calm.</Rule>
+            <Rule title="Even density.">Keep one density and one line weight across a section. Layering patterns, or mixing dense and sparse, turns a ground into noise.</Rule>
+            <Rule title="Motion is optional.">Nothing depends on the lines moving. The still frame has to work on its own.</Rule>
+            <Rule title="Decoration is not data.">Only the hill profiles are drawn from elevation data. Every other contour is artwork and is never captioned or described as measured terrain.</Rule>
           </div>
         </>
       ),
@@ -244,8 +244,7 @@ export const graphicLanguage: BrandChapter = {
       id: "profiles",
       title: "Hill profiles.",
       nav: "Hill profiles",
-      status: "established",
-      lede: "Each hill gets a terrain drawing built from public elevation data: black line, white fill, twelve bands, seen from the south. The pastel tags carry the numbers, and every number admits it is approximate.",
+      lede: "Each hill gets a terrain drawing built from public elevation data: black line, white fill, seen from the same angle. The pastel tags carry the numbers, and every number admits it is approximate.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
           <div className="lg:col-span-7">
@@ -268,19 +267,49 @@ export const graphicLanguage: BrandChapter = {
           <div className="flex flex-col lg:col-span-5">
             <SpecList
               rows={[
-                ["Data", HILL_PROFILE.data],
-                ["Contour bands", `${HILL_PROFILE.contourBands}, equal. No interval is claimed.`],
+                ["Data", "USGS 3DEP elevation data"],
                 ["Figures", `Rounded to ${HILL_PROFILE.rounding}, always with ≈`],
-                ["Vertical scale", HILL_PROFILE.exaggeration],
                 ["Ink", "Black line, white fill. No grays."],
                 ["Tags", "Mint: summit. Peach: base. Blue: total rise."],
+                ["Caption", "“Shape and figures from USGS 3DEP elevation data, approximate.”"],
               ]}
             />
             <div className={cn("mt-6 grid gap-6", PRINT_BOTTOM)}>
-              <Rule title="Same view, every hill.">One viewing angle and one style for all five, so they compare honestly.</Rule>
+              <Rule title="Same view, every hill.">One viewing angle and one style for all five, so they compare honestly. The height is exaggerated the same way for each, so a gentle hill still reads.</Rule>
               <Rule title="No data, no number.">Warren Hill could not be found in the elevation data. Its drawing is labeled illustrative and shows no figures.</Rule>
             </div>
-            <Source className="mt-6">scripts/assets/terrain; public/home/README.md; src/lib/hill-profiles.generated.ts.</Source>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "silhouette",
+      title: "The hill silhouette.",
+      nav: "Silhouette",
+      lede: "A hill profile turned on its side, solid black. It appears once on the site, as a tall shape standing at the left of the opening statement. It is a graphic element, not a logo: it works like a drop cap.",
+      render: () => (
+        <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
+          <Figure className="flex flex-col lg:col-span-7" caption="The homepage statement, as built. The silhouette is centered on the block of text at every size.">
+            <Frame className="flex flex-1 items-center gap-6 p-8 md:p-10">
+              <Silhouette className="h-[220px] md:h-[280px] [.brand-print_&]:h-[300px]" />
+              <p className="ss08 text-[clamp(22px,2.9vw,36px)] leading-[1.07] font-black">
+                Chicago Mountain Runners
+                <sup className="relative -top-[1.6em] ml-[0.06em] align-baseline text-[0.3em] leading-none">TM</sup>{" "}
+                <span className="text-muted-foreground">
+                  is a running community for finding elevation, running it repeatedly and occasionally questioning our <s>sanity</s> decisions.
+                </span>
+              </p>
+            </Frame>
+          </Figure>
+          <div className="flex flex-col lg:col-span-5">
+            <div className="grid gap-6">
+              <Rule title="Upright, flat edge toward the text.">Always vertical, with the straight edge facing the statement it introduces.</Rule>
+              <Rule title="Black, and never alone.">It needs the statement beside it to mean anything. It is not an avatar, an icon, a pattern or a substitute for the badge.</Rule>
+              <Rule title="Scaled with the text.">On the homepage it is as tall as the statement beside it, from about 130 px on a phone to 385 px on a desktop.</Rule>
+            </div>
+            <Pending title="Web artwork only." className={cn("mt-6", PRINT_BOTTOM)}>
+              The silhouette exists as a {SILHOUETTE.raster.w} × {SILHOUETTE.raster.h} px image, enough for the website. Large or printed use needs a vector made from the original artwork first.
+            </Pending>
           </div>
         </div>
       ),
@@ -289,7 +318,6 @@ export const graphicLanguage: BrandChapter = {
       id: "circles",
       title: "Circles.",
       nav: "Circles",
-      status: "established",
       lede: "A circle holds one thing: a number with its label, or a single short phrase. Circles come in rows of four, all the same size, and are the only place the pastel colors live.",
       render: () => {
         const counts = routeCounts(cricket().page!.route)!;
@@ -332,7 +360,6 @@ export const graphicLanguage: BrandChapter = {
       id: "tie-dye",
       title: "Tie-dye.",
       nav: "Tie-dye",
-      status: "established",
       lede: "Four soft layers and a blur: tie-dye turned down until it is almost a memory of one. It exists only on screen so far.",
       render: () => (
         <>
@@ -358,12 +385,11 @@ export const graphicLanguage: BrandChapter = {
               </Rule>
             </div>
             <div className="lg:col-span-4">
-              <Pending status="unresolved" title="No print master exists.">
-                The effect is CSS gradients and a blur. For fabric or paper it needs to be rebuilt as high-resolution artwork and proofed. See Apparel.
+              <Pending title="No print master yet.">
+                On the website the effect is drawn live, from gradients and a blur. For fabric or paper it needs to be made as high-resolution artwork and proofed.
               </Pending>
             </div>
           </div>
-          <Source className="mt-6">src/styles/cmr.css (`cmr-tie-dye`); src/lib/tints.ts.</Source>
         </>
       ),
     },
@@ -371,8 +397,7 @@ export const graphicLanguage: BrandChapter = {
       id: "composition",
       title: "Composition.",
       nav: "Composition",
-      status: "inferred",
-      lede: "A CMR page is a stack of full-width bands, each with one job and one headline. The drama is in scale: a line of type 200 pixels tall beside a label 14 pixels tall, with nothing in between.",
+      lede: "A CMR page is a stack of full-width bands, each with one job and one headline. The drama is in scale: a very large line of type beside a very small label, with little in between.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
           <Figure className="flex flex-col lg:col-span-4" caption="The homepage, as bands. White, black and photograph alternate; nothing shares a band.">
@@ -390,12 +415,12 @@ export const graphicLanguage: BrandChapter = {
           </Figure>
           <div className="flex flex-col lg:col-span-8">
             <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
-              <Rule title="Full-width bands.">Sections run edge to edge and change color completely. No cards floating on a tinted page, no boxed layouts.</Rule>
-              <Rule title="One headline per band.">Each section makes one statement. If a section needs two headlines, it is two sections.</Rule>
-              <Rule title="Extreme scale contrast.">The largest type and the smallest sit together. The middle sizes are used sparingly.</Rule>
-              <Rule title="Left, with room on the right.">Headlines hang on the left edge of the container. Supporting copy sits narrow, often in a right-hand column.</Rule>
-              <Rule title="Hairlines, not boxes.">Lists are rows divided by 1 px rules, numbered 01 to 05 in mono. Borders around things are rare.</Rule>
-              <Rule title="Radius is small.">6 to 8 px on buttons and panels, 12 to 24 px on a few large cards. Circles are the only fully round shape.</Rule>
+              <Rule title="Full-width bands.">Sections run edge to edge and change color completely. The page is built from bands, not from a grid of boxes.</Rule>
+              <Rule title="One headline per band.">Each section makes one statement. If a section needs two headlines, it is usually two sections.</Rule>
+              <Rule title="Strong scale contrast.">The largest type and the smallest sit together. The middle sizes are used sparingly.</Rule>
+              <Rule title="Generous space.">Room above and below every band, and a narrow measure for copy. Spacing comes from the design system&apos;s steps, not by eye.</Rule>
+              <Rule title="Hairlines first.">Lists are rows divided by fine rules, numbered in mono. Cards and boxes are for things that work as a unit: a run card, a form, a dialog.</Rule>
+              <Rule title="Radius is small.">6 to 8 px on buttons and panels, 12 to 24 px on larger cards. Circles are the only fully round shape.</Rule>
             </div>
             <SpecList
               className={cn("mt-8", PRINT_BOTTOM)}
@@ -406,7 +431,6 @@ export const graphicLanguage: BrandChapter = {
                 ["Spacing unit", `${LAYOUT.baseUnit} px`],
               ]}
             />
-            <Source className="mt-4">src/components/Container.tsx; src/lib/fluid.ts; src/app/page.tsx.</Source>
           </div>
         </div>
       ),
@@ -415,13 +439,12 @@ export const graphicLanguage: BrandChapter = {
       id: "icons",
       title: "Icons and diagrams.",
       nav: "Icons",
-      status: "established",
       lede: "Small, thin and literal. Icons label things that already have words next to them. Diagrams explain the science and are drawn in the same black line as everything else.",
       render: () => (
         <div className={cn("grid gap-8 lg:grid-cols-12", PRINT_GROW)}>
           <div className="lg:col-span-7">
             <h3 className={cn(LABEL, "mb-3 text-foreground/65")}>The icon set</h3>
-            <ul className="grid grid-cols-4 gap-px overflow-hidden rounded-xl bg-foreground/15 ring-1 ring-foreground/15 sm:grid-cols-7">
+            <ul className="grid grid-cols-4 gap-px overflow-hidden rounded-xl bg-foreground/15 ring-1 ring-foreground/15 sm:grid-cols-6">
               {(
                 [
                   ["Clock", ClockIcon],
@@ -435,13 +458,12 @@ export const graphicLanguage: BrandChapter = {
                   ["Effort", ActivityIcon],
                   ["Hill", MountainIcon],
                   ["Bring", BackpackIcon],
-                  ["Person", UserIcon],
                   ["Moon", RocketIcon],
                 ] as const
               ).map(([name, Icon]) => (
                 <li key={name} className="flex aspect-square flex-col items-center justify-center gap-2 bg-background p-2">
                   <Icon className="size-6" />
-                  <span className="text-center text-[11px] leading-3 text-foreground/65">{name}</span>
+                  <span className="text-center text-[12px] leading-4 text-foreground/65">{name}</span>
                 </li>
               ))}
             </ul>
@@ -453,17 +475,13 @@ export const graphicLanguage: BrandChapter = {
                 </li>
               ))}
             </ul>
-            <Source className="mt-4">src/components/icons.tsx (Lucide geometry, exported from the CMR Figma file); src/components/weather/WeatherGlyph.tsx.</Source>
           </div>
           <div className="flex flex-col lg:col-span-5">
             <div className="grid gap-6">
               <Rule title="Line only.">16 to 24 px, about 1.2 px stroke, round caps and joins, never filled. They take the color of the text beside them.</Rule>
               <Rule title="Beside a label, always.">No icon stands alone as a control. The word does the work; the icon helps the eye find it.</Rule>
-              <Rule title="Diagrams are black line.">Charts and figures in The Science use the same hairlines, mono labels, and a gray tie-dye frame.</Rule>
+              <Rule title="Diagrams are black line.">Charts and figures in The Science use the same hairlines, mono labels, and a gray tie-dye frame. An illustration is numbered and captioned as a figure.</Rule>
             </div>
-            <Pending status="established" title="Figure 3, the uphill runner." className={cn("mt-6", PRINT_BOTTOM)}>
-              Owner-directed, AI-assisted original artwork: created by the Owner with Claude&apos;s assistance. It is an illustration, not a photograph, and is captioned as a figure.
-            </Pending>
           </div>
         </div>
       ),
