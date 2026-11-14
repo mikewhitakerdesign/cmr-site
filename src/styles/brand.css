@@ -1,0 +1,116 @@
+/*
+ * Brand Standards (/brand) — imported by the brand routes only (src/app/brand),
+ * so nothing here loads on, or can affect, any other page. Plain CSS: no tokens
+ * are defined here, only layout that reads them.
+ */
+
+/*
+ * The sticky bar under the site header (SectionNav, as on The Science and the
+ * FAQ): anchors, fragment URLs and keyboard focus must clear the header and the
+ * bar. Same arithmetic as those pages (src/styles/cmr.css).
+ */
+:root:has([data-slot="brand-nav"]) {
+  scroll-padding-top: calc(114px + 49px + 20px);
+}
+@media (min-width: 768px) {
+  :root:has([data-slot="brand-nav"]) {
+    scroll-padding-top: calc(72px + 49px + 28px);
+  }
+}
+@media (min-width: 1024px) {
+  :root:has([data-slot="brand-nav"]) {
+    scroll-padding-top: calc(75px + 49px + 36px);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  :root:has([data-slot="brand-nav"]) {
+    scroll-behavior: smooth;
+  }
+}
+
+/*
+ * The PDF (/brand/print → scripts/brand/build-pdf.mjs).
+ *
+ * One `.brand-page` is one PDF page: US Letter landscape, 11 × 8.5 in, laid out
+ * at 1320 × 1020 CSS px (the PDF is printed at 80% scale, so 16px body type
+ * lands at about 9.6pt and the site's desktop layouts apply). Pages have a fixed
+ * size and never flow into one another, so page numbers are arithmetic
+ * (src/lib/brand/manual.ts `pdfPageMap`) and the build script can prove that no
+ * page clips its content.
+ */
+.brand-print {
+  --page-w: 1320px;
+  --page-h: 1020px;
+}
+
+.brand-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: var(--page-w);
+  height: var(--page-h);
+  padding: 44px 60px 40px;
+  overflow: hidden;
+  break-after: page;
+  break-inside: avoid;
+}
+
+/*
+ * Grids in the manual that only set columns from a breakpoint up (`lg:grid-cols-12`)
+ * would otherwise have one auto-sized column on a phone, and that column grows to
+ * its widest content: a table's minimum width stretched the whole page sideways.
+ * A base track of `minmax(0, 1fr)` keeps every column to the viewport. It is in
+ * the base layer, so any `grid-cols-*` utility (at any breakpoint) still wins.
+ */
+@layer base {
+  [data-slot="brand-body"] .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Full-bleed pages (cover, chapter openers) own their whole sheet. */
+.brand-page[data-bleed] {
+  padding: 0;
+}
+
+/* The site chrome (header, footer, Questions button, skip link) is not part of the manual. */
+body:has(.brand-print) > :not(main) {
+  display: none !important;
+}
+
+@media screen {
+  /* On screen the print route is a proofing table: pages on a gray ground. */
+  .brand-print {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+    padding: 32px;
+    background: var(--mwd-brand-brand-neutrals-300);
+    overflow-x: auto;
+  }
+  .brand-page {
+    flex: none;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+  }
+}
+
+@media print {
+  @page {
+    size: 11in 8.5in;
+    margin: 0;
+  }
+  html,
+  body {
+    background: #fff;
+  }
+  .brand-print {
+    display: block;
+  }
+  .brand-page {
+    /* Backgrounds are part of the design (black pages, tints). */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

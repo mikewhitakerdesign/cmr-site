@@ -1,4 +1,5 @@
 import { participationGuidelines, privacyPolicy, websiteTerms } from "@/content/legal";
+import { brandPaths } from "@/lib/brand/manual";
 import { hillsWithPages } from "@/lib/hills";
 import { OFFICIAL_RUNS_ON_HOLD } from "@/lib/permit-hold";
 import { listedRuns } from "@/lib/runs";
@@ -8,7 +9,9 @@ import { listedRuns } from "@/lib/runs";
  *   - a legal document is listed only once its text is published (an entry of `null` is noindex),
  *   - run pages exist only while official runs are not on hold and the run has content,
  *   - hill pages are the hills with page content (the same set as `generateStaticParams`),
- *   - the participation waiver is noindex, so it is never listed.
+ *   - the participation waiver is noindex, so it is never listed,
+ *   - the Brand Standards are the landing page and its chapters; its print route (/brand/print, the PDF's
+ *     source) is noindex and never listed.
  * `held` and the inputs are parameters so tests can exercise both states.
  */
 export function sitemapPaths({
@@ -32,6 +35,7 @@ export function sitemapPaths({
     "/the-science",
     "/join",
     "/faq",
+    ...brandPaths(),
     ...(legal.privacy ? ["/privacy"] : []),
     ...(legal.terms ? ["/terms"] : []),
     ...(legal.guidelines ? ["/participation-guidelines"] : []),

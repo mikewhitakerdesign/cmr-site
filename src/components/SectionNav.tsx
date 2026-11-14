@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 /** The line, as a fraction of the viewport height, a section's top must pass to become current. */
@@ -42,8 +42,27 @@ export type SectionNavItem = { id: string; label: string };
  * URLs and history all behave normally. Scroll offsets come from
  * `scroll-padding-top` on this page (src/styles/cmr.css), sized to the
  * tallest header state plus this bar, so headings are never hidden.
+ *
+ * Optional `leading` and `trailing` content (Brand Standards: the chapter menu
+ * and the Download PDF action) sits in the same row, outside the scrolling
+ * list, so it never scrolls away. Without them the markup is exactly as before.
  */
-export function SectionNav({ sections: items, label, slot }: { sections: readonly SectionNavItem[]; label: string; slot: string }) {
+export function SectionNav({
+  sections: items,
+  label,
+  slot,
+  leading,
+  trailing,
+}: {
+  sections: readonly SectionNavItem[];
+  label: string;
+  slot: string;
+  /** Pinned before the links (never scrolls). */
+  leading?: ReactNode;
+  /** Pinned after the links (never scrolls). */
+  trailing?: ReactNode;
+}) {
+  const slotted = leading !== undefined || trailing !== undefined;
   const navRef = useRef<HTMLElement>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState<string | null>(null);
@@ -158,6 +177,47 @@ export function SectionNav({ sections: items, label, slot }: { sections: readonl
     el.scrollTo({ left: target, behavior: smooth ? "smooth" : "auto" });
   }, [active]);
 
+  const scroller = (
+    <div
+      ref={scrollerRef}
+      data-slot={`${slot}-scroller`}
+      data-fade-start={edges.start ? undefined : ""}
+      data-fade-end={edges.end ? undefined : ""}
+      className={cn(
+        slotted ? "min-w-0 flex-1" : "mx-auto max-w-[1400px]",
+        "overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        "data-[fade-end]:[mask-image:linear-gradient(to_right,black_calc(100%-48px),transparent)]",
+        "data-[fade-start]:[mask-image:linear-gradient(to_left,black_calc(100%-48px),transparent)]",
+        "data-[fade-start]:data-[fade-end]:[mask-image:linear-gradient(to_right,transparent,black_48px,black_calc(100%-48px),transparent)]",
+      )}
+    >
+      <ul className={cn("flex w-max min-w-full gap-6 md:gap-8 lg:gap-10", slotted ? "px-4 md:px-6" : "px-6 md:px-12")}>
+        {items.map((s) => {
+          const current = active === s.id;
+          return (
+            <li key={s.id} className="flex">
+              <a
+                href={`#${s.id}`}
+                onClick={() => pinRef.current?.(s.id)}
+                aria-current={current ? "location" : undefined}
+                className={cn(
+                  "relative flex h-12 items-center text-[14px] leading-5 font-medium whitespace-nowrap outline-none",
+                  "text-foreground/65 hover:text-foreground aria-[current=location]:text-foreground",
+                  "focus-visible:text-foreground focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-inset focus-visible:rounded-xs",
+                  // The current-item rule sits on the bar's bottom edge.
+                  "after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 aria-[current=location]:after:opacity-100",
+                  "motion-safe:transition-colors motion-safe:after:transition-opacity",
+                )}
+              >
+                {s.label}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+
   return (
     <nav
       ref={navRef}
@@ -169,43 +229,15 @@ export function SectionNav({ sections: items, label, slot }: { sections: readonl
         "top-[114px] md:top-[100px] lg:top-[123px]",
       )}
     >
-      <div
-        ref={scrollerRef}
-        data-slot={`${slot}-scroller`}
-        data-fade-start={edges.start ? undefined : ""}
-        data-fade-end={edges.end ? undefined : ""}
-        className={cn(
-          "mx-auto max-w-[1400px] overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-          "data-[fade-end]:[mask-image:linear-gradient(to_right,black_calc(100%-48px),transparent)]",
-          "data-[fade-start]:[mask-image:linear-gradient(to_left,black_calc(100%-48px),transparent)]",
-          "data-[fade-start]:data-[fade-end]:[mask-image:linear-gradient(to_right,transparent,black_48px,black_calc(100%-48px),transparent)]",
-        )}
-      >
-        <ul className="flex w-max min-w-full gap-6 px-6 md:gap-8 md:px-12 lg:gap-10">
-          {items.map((s) => {
-            const current = active === s.id;
-            return (
-              <li key={s.id} className="flex">
-                <a
-                  href={`#${s.id}`}
-                  onClick={() => pinRef.current?.(s.id)}
-                  aria-current={current ? "location" : undefined}
-                  className={cn(
-                    "relative flex h-12 items-center text-[14px] leading-5 font-medium whitespace-nowrap outline-none",
-                    "text-foreground/65 hover:text-foreground aria-[current=location]:text-foreground",
-                    "focus-visible:text-foreground focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-inset focus-visible:rounded-xs",
-                    // The current-item rule sits on the bar's bottom edge.
-                    "after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 aria-[current=location]:after:opacity-100",
-                    "motion-safe:transition-colors motion-safe:after:transition-opacity",
-                  )}
-                >
-                  {s.label}
-                </a>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+      {slotted ? (
+        <div data-slot={`${slot}-row`} className="mx-auto flex max-w-[1400px] items-stretch">
+          {leading}
+          {scroller}
+          {trailing}
+        </div>
+      ) : (
+        scroller
+      )}
     </nav>
   );
 }

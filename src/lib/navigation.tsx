@@ -55,6 +55,8 @@ export function buildFooterNav(social: SocialLinks): NavItem[] {
     primaryNav.find((i) => i.href === "/the-science")!,
     { label: "About", href: "/about" },
     { label: "FAQ", href: "/faq" },
+    // Brand Standards (Owner direction, 2026-11-13): the identity manual at /brand. Footer only, not in the header.
+    { label: "Brand Standards", href: "/brand" },
     { label: "Join the club", href: "/join" },
     ...(social.instagram ? [{ label: "Instagram", href: social.instagram, external: true }] : []),
     ...(social.strava ? [{ label: "Strava", href: social.strava, external: true }] : []),

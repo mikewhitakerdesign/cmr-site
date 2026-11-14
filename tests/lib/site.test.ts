@@ -56,13 +56,13 @@ describe("sitemap.xml", () => {
 
   it("includes the home page, the primary routes and every hill detail page", () => {
     expect(urls).toContain(SITE_ORIGIN);
-    for (const p of ["/about", "/calendar", "/hills", "/the-science", "/join", "/faq"]) expect(urls).toContain(`${SITE_ORIGIN}${p}`);
+    for (const p of ["/about", "/calendar", "/hills", "/the-science", "/join", "/faq", "/brand"]) expect(urls).toContain(`${SITE_ORIGIN}${p}`);
     for (const h of hillsWithPages()) expect(urls).toContain(`${SITE_ORIGIN}/hills/${h.slug}`);
   });
 
   it("never lists the participant waiver, the ICS downloads or the placeholder scaffold", () => {
     for (const u of urls) {
-      expect(u).not.toMatch(/participant-waiver|\/ics|example-hill/);
+      expect(u).not.toMatch(/participant-waiver|\/ics|example-hill|brand\/print/);
     }
   });
 
