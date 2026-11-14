@@ -68,7 +68,7 @@ test.describe("/hills directory", () => {
 
   test("title, heading and the five hills in order, each linked", async ({ page }) => {
     await expect(page).toHaveTitle("Hills on Hills | Chicago Mountain Runners");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hills on hills on hills.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("These are our hills mountains.");
     const rows = page.locator("main ol > li");
     await expect(rows).toHaveCount(5);
     for (const [i, slug] of SLUGS.entries()) {
@@ -84,7 +84,7 @@ test.describe("/hills directory", () => {
     await expect(page.locator("main ol [data-hill-profile]")).toHaveCount(0);
   });
 
-  test("headline: no eyebrow, “Hills on hills on hills.” in the Display Large size without overflow", async ({ page }) => {
+  test("headline: no eyebrow, “These are our hills mountains.” in the Display Large size without overflow", async ({ page }) => {
     const h1 = page.getByRole("heading", { level: 1 });
     await expect(page.locator("main section").first().locator("p").first()).not.toContainText("hills ·");
     for (const w of [320, 393, 768, 1024, 1440, 1920]) {
