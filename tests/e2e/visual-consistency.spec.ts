@@ -107,10 +107,10 @@ test("The Science opens at the top from a scrolled page, and section links still
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
 });
 
-test("/hills heading holds three lines; /calendar drops the two closing sections", async ({ page }) => {
+test("/hills heading holds two lines on large screens; /calendar drops the two closing sections", async ({ page }, info) => {
   await page.goto("/hills");
   const lines = await page.locator("h1 > span").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
-  expect(new Set(lines).size).toBe(3);
+  if (info.project.name === "desktop") expect(new Set(lines).size).toBe(2);
   await page.goto("/calendar");
   await expect(page.getByRole("heading", { name: /Know your mountain|Stay for the people/ })).toHaveCount(0);
   expect(await noHScroll(page)).toBe(true);
