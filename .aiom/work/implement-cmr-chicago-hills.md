@@ -9,7 +9,7 @@ objective: >-
   approved Hill Details frames (Figma 1:6363 / 1:6703 / 1:7032), the merged
   MWDS foundation, shared UI and HillProfile illustrations, with geographic,
   approximate, illustrative and provisional information kept visibly distinct.
-status: active
+status: complete
 stage: implementation
 active_capability: ui-implementation
 bundle_references:
@@ -19,22 +19,26 @@ bundle_references:
   - content-publication
 authority_requirement: none
 validation_state: passed
-blocker_state: awaiting-owner-review
-current_responsibility: owner
+blocker_state: none
+current_responsibility: orchestrator
 created_at: '2026-11-08T23:30:00.000Z'
-updated_at: '2026-11-09T12:00:00.000Z'
+updated_at: '2026-11-09T17:00:00.000Z'
 ---
 ## Status
 
-**Implemented, then refined at the Owner's direction (refinement pass, below), on
-branch `feat/cmr-chicago-hills` (from `origin/main` at `776cafc`); PR #4 open for
-one coordinated Owner/GPT review. Not merged; nothing deployed to production
-(Vercel Preview only).** `validation_state: passed` covers the deterministic checks
-listed under Validation; the visual and content judgments are Owner decisions, not
-mechanical passes. See "Delivery" for the PR, head commits, CI runs and Preview.
+**Complete and merged (2026-11-09).** PR #4 (`feat/cmr-chicago-hills`) was merged
+into `main` at the Owner's direction as merge commit **`6701842`**, from the
+approved head `8bbf4d0`. Post-merge CI on `main` passed. The merge triggered
+Vercel's automatic production deployment (see "Delivery"). The work was
+implemented, then refined at the Owner's direction over several passes, all
+recorded below. `validation_state: passed` covers the deterministic checks listed
+under Validation; the visual and content judgments were Owner decisions, not
+mechanical passes. `blocker_state: none`: what remains (see "Remaining non-blocking
+content and launch dependencies") does not block the milestone.
 
 Sections below "Refinement pass" record the first milestone delivery as it was;
-where the refinement pass changed something, the refinement section governs.
+where a later pass changed something, the later section governs. The newest
+passes are first.
 
 ## Final mobile, motion and content refinements (Owner direction, 2026-11-09)
 
@@ -461,6 +465,33 @@ the park/landmark and say so; runs come only from `src/lib/runs.ts`.
 
 ## Delivery
 
+**Merged (2026-11-09).** The Owner approved PR #4 at head `8bbf4d0` and
+authorized a squash-merge. GitHub refused it: the ruleset "Protect default
+branch" allows only merge commits. The Owner then chose a merge commit, the same
+method as PRs #1 to #3. The merge was pinned to head `8bbf4d0`, and no branch was
+deleted.
+- **Merge commit `6701842`** on `main`: "Merge pull request #4 from
+  mikewhitakerdesign/feat/cmr-chicago-hills". `main`'s tree equals `8bbf4d0`'s.
+- **Post-merge CI** (run 42651620237 on `6701842`): `validate` and `browser`
+  pass (249 browser tests).
+- **Vercel:** the commit status on `6701842` is "Deployment has completed". The
+  production alias `cmr-site-xi.vercel.app` (the repository's homepage URL) now
+  serves the merged build (the new `/hills` title and the footer back-to-top
+  link), so **the merge automatically triggered a production deployment**.
+  Domains and production settings were not touched, and no extra deployment was
+  started. No live Formspree submission was made.
+- **Cleanup:** the local feature worktree and branch were removed after
+  verifying `main` contains the approved changes. The remote branch
+  `feat/cmr-chicago-hills` is kept (deleting it was not authorized). The
+  original checkout on `plan/cmr-join-page` and its uncommitted files were not
+  touched.
+- This record was closed out in a follow-up docs PR.
+
+**Final passes (before merge):** see the "Final mobile, motion and content
+refinements" and "Final refinement pass" sections for each pass's commits and CI.
+The last was commit `c770b6c` (CI fix), recorded by `8bbf4d0`; GitHub CI on
+`8bbf4d0` passed (run 42590903076).
+
 **Refinement pass:** commits `01f2e20` (implementation), `f14b171` (tests and
 baselines), `c91c7ea` (record and evidence), `20587b6` (contrast-sweep fix),
 `ede9a00` (record), `7920223` (software-renderer still frame). Verified head
@@ -489,7 +520,32 @@ Milestone delivery (history):
   result). The test now waits for the hero photo only. Thresholds are unchanged,
   and it passed 9/9 locally with `--repeat-each=3` and on the second CI run.
 
-## Decisions needed before merging
+## Remaining non-blocking content and launch dependencies
+
+The Owner approved the merge with these still open. None blocked it; they are
+carried forward, not resolved. The list below keeps the decisions as they stood
+at approval (the headings that say "decisions" or "confirm" are now follow-ups).
+
+**Launch dependencies** (from the code and this milestone, not yet done):
+- **Club totals and the moon distance are sample figures.** `clubTotals` is
+  `provisional` (Figma sample data) and the moon distance is static
+  (1,261,022,400 ft = 1,261,154,400 less the 132K ft "Vertical climbed"). Replace
+  with real totals and update both together, or hide the section, before launch.
+- **Route data for four hills.** Warren, Horner, Schiller and Mt. Trashmore show
+  TBD repeat counts until their route distance and gain per repeat are supplied.
+  Cricket Hill's counts are derived from the Owner's baseline (about 0.2 mi and
+  40 ft per repeat) and are approximate, not surveyed.
+- **Hill locations and content.** Where CMR runs at Warren Park, Horner Park and
+  Schiller Woods; all five hills stay `provisional` until verified. Schiller Woods
+  still has no citable source (the Forest Preserves pages refused automated reads).
+- **Newsletter signup** stays disabled until a provider endpoint is configured
+  (`NEXT_PUBLIC_NEWSLETTER_FORM_ACTION`); the questions widget posts to Formspree
+  but was only tested with mocked responses.
+- **Join (paused):** the FAQ, Terms and Privacy pages the Owner wants, the "Join
+  the club" link in the moon line, and two em dashes still in
+  `src/app/join/page.tsx`. Footer legal links stay hidden until those pages exist.
+- **Photography and map credits.** Photo rights for the Owner's homepage image are
+  unconfirmed; the OpenStreetMap static maps need their attribution kept.
 
 Final mobile pass: no new blockers. Mobile nav cells share the width by
 content (`flex-auto`) rather than strictly equal widths, so "Chicago Hills
