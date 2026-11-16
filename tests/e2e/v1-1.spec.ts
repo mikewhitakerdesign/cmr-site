@@ -129,9 +129,11 @@ test("Homepage 'We're going to the moon!' sits in the About card's gray containe
 test("About founder letter carries the approved copy", async ({ page }) => {
   await page.goto("/about");
   const s = page.locator("section[aria-labelledby=founder-heading]");
-  await expect(s).toContainText("I've spent a good part of my life finding ways to go uphill. It started with endurance sports, triathlon and cyclocross");
-  await expect(s).toContainText("with temperatures around -10°F. A great introduction to the pain and joy of ultrarunning.");
-  await expect(s).toContainText("sledding hills, park inclines, trash mounds, etc.");
+  await expect(s).toContainText("I've spent a good part of my life finding ways to push my aerobic and anaerobic limits.");
+  await expect(s).toContainText("a six-hour winter race in January 2024 introduced me to ultrarunning.");
+  await expect(s).toContainText("Training with elevation gain, while living in Chicago presents an obvious problem.");
+  await expect(s).toContainText("local trash hills in our Chicago parks districts");
+  await expect(s).toContainText("Chicago Mountain Runners grew out of that idea.");
   await expect(s).toContainText("how far a little elevation training can take them.");
   await expect(s).not.toContainText("-20°F");
   await expect(s).toContainText("Michael Whitaker");
